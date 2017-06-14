@@ -1,0 +1,6 @@
+[package]
+name = "curl"
+version = "0.1.0"
+authors = ["Paul D Handy <paul@pauldhandy.com>"]
+
+[dependencies]
