@@ -1,6 +1,9 @@
 [package]
-name = "trytes"
+name = "iota-trytes"
 version = "0.1.0"
-authors = ["Paul D Handy <paul.d.handy@gmail.com>"]
+authors = [
+        "Paul D Handy <paul.d.handy@gmail.com>",
+        "Andreas C. Osowski <andreas@osowski.de>"
+        ]
 
 [dependencies]
