@@ -1,72 +1,71 @@
-use globals::*;
-use trit_bytes::*;
-use trits_trytes::*;
-use tryte_trits::*;
-use bytes_trits::*;
-use mappings::*;
+use std::fmt;
+use constants::*;
+use util::*;
 
+#[derive(Clone, Eq, PartialEq)]
 pub struct Trinary {
-    trytes: Option<String>,
-    trits: Option<Vec<Trit>>,
-    bytes: Option<Vec<i8>>,
+    bytes: Vec<i8>,
+    length: usize
+    
+}
+
+impl fmt::Display for Trinary {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let s: String = self.chars().into_iter().collect();
+        fmt.write_str(s.as_str())
+    }
+}
+
+impl fmt::Debug for Trinary {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Trinary({}, {}, {:?})", self, self.length, self.bytes)
+    }
+    
 }
 
 impl Trinary {
-    pub fn from_trytes(trytes: &str) -> Trinary {
+    pub fn new(bytes: Vec<i8>, length: usize) -> Trinary {
         Trinary {
-            trytes: Some(trytes.to_string()),
-            trits: None,
-            bytes: None,
-        }
-    }
-    pub fn from_trits(trits: Vec<Trit>) -> Trinary {
-        Trinary {
-            trytes: None,
-            trits: Some(trits),
-            bytes: None,
-        }
-    }
-    pub fn from_bytes(bytes: Vec<i8>) -> Trinary {
-        Trinary {
-            trytes: None,
-            trits: None,
-            bytes: Some(bytes),
+            bytes: bytes,
+            length: length
         }
     }
 
-    pub fn bytes(&self) -> Option<Vec<i8>> {
-        match self.bytes {
-            Some(ref x) => Some(x.to_vec()),
-            None => {
-                match self.trits {
-                    Some(ref x) => Some(trits_to_bytes(x.as_slice())),
-                    None => {
-                        match self.trytes {
-                            Some(ref x) => Some(trits_to_bytes(trytes_to_trits(x).as_slice())),
-                            None => None,
-                        }
-                    }
-                }
+    pub fn trits(&self) -> Vec<Trit> {
+        let mut trits: Vec<Trit> = Vec::new();
+        let mut cnt = self.length;
+
+        for b in &self.bytes {
+            let mut t = byte_to_trits(*b);
+
+            if cnt > TRITS_PER_BYTE {
+                t.reverse();
+                trits.append(&mut t);
+            } else {
+                trits.extend(t[0..cnt].iter().rev().cloned());
+                break;
             }
+            cnt -= TRITS_PER_BYTE;
         }
+
+        trits
+    }
+    pub fn chars(&self) -> Vec<char> {
+        self.trits().chunks(3).map(trits_to_char).collect()
     }
 
-    pub fn trytes(&self) -> Option<String> {
-        match self.trytes {
-            Some(ref x) => Some(x.to_string()),
-            None => {
-                match self.trits {
-                    Some(ref x) => Some(trits_to_trytes(x.as_slice())),
-                    None => {
-                        match self.bytes {
-                            Some(ref x) => {
-                                Some(trits_to_trytes(bytes_to_trits(x.as_slice()).as_slice()))
-                            }
-                            None => None,
-                        }
-                    }
-                }
-            }
-        }
+    pub fn bytes(self) -> Vec<i8> {
+        self.bytes
+    }
+
+    pub fn len_trits(self) -> usize {
+        self.length
+    }
+
+    pub fn len_chars(self) -> usize {
+        self.length / TRITS_PER_TRYTE
     }
 }
+
+
+

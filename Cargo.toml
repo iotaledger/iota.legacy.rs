@@ -1,6 +1,5 @@
-[package]
-name = "iota"
-version = "0.1.0"
-authors = ["Paul Handy <paul@pauldhandy.com>"]
-
-[dependencies]
+[workspace]
+members = [
+        "curl",
+        "trytes"
+        ]
