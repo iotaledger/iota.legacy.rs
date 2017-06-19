@@ -1,8 +1,8 @@
 [package]
-name = "curl"
+name = "iota-curl"
 version = "0.1.0"
 authors = ["Paul D Handy <paul@pauldhandy.com>",
            "Andreas C. Osowski <andreas@osowski.de>"]
 
 [dependencies]
-trytes = { path = "../trytes" }
+iota-trytes = { path = "../trytes" }

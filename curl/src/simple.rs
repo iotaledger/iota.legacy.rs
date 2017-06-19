@@ -2,8 +2,14 @@ use constants::*;
 use trytes::*;
 use curl::*;
 
+/// Sponge size
+const STATE_LENGTH: usize = HASH_LENGTH * 3;
+const TRUTH_TABLE: [Trit; 9] = [1, 0, -1, 1, -1, 0, -1, 1, 0];
+
+/// Basic unoptimised implementation of the `Curl` hashing algorithm
 #[derive(Copy)]
 pub struct SimpleCurl {
+    /// The sponge state
     state: [Trit; STATE_LENGTH],
 }
 
@@ -67,9 +73,9 @@ impl Curl for SimpleCurl {
         }
     }
 
-    fn squeeze(&mut self, length: usize) -> Trinary {
-        let mut len = length;
-        let mut out: Vec<Trit> = Vec::with_capacity(length);
+    fn squeeze(&mut self, trit_count: usize) -> Trinary {
+        let mut len = trit_count;
+        let mut out: Vec<Trit> = Vec::with_capacity(trit_count);
         let mut offset = 0;
 
         loop {
