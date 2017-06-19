@@ -1,5 +1,4 @@
 use std::iter::FromIterator;
-use std::str::FromStr;
 
 use trinary::*;
 use constants::*;

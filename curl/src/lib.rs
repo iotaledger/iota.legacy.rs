@@ -1,7 +1,9 @@
-extern crate trytes;
+extern crate iota_trytes as trytes;
 
 pub mod constants;
 pub mod curl;
+pub mod simple;
+mod tests;
 
-pub use constants::*;
+pub use tests::testsuite;
 pub use curl::*;
