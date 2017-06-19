@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 // constant definitions
 pub mod constants;
 pub mod mappings;
