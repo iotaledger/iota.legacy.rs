@@ -7,14 +7,17 @@ use util::*;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum TrinaryParseError {
+    /// Input string contained an invalid character
     InvalidCharacter,
+    /// Input string was empty
     EmptyString,
 }
 
+/// Converts an `Iterator<char>` to an instance of `Trinary`
 impl FromIterator<char> for Trinary {
     fn from_iter<I: IntoIterator<Item = char>>(iter: I) -> Self {
         let mut trits: Vec<Trit> = Vec::new();
-        let mut bytes: Vec<i8> = Vec::new();
+        let mut bytes: Vec<u8> = Vec::new();
         let mut n: usize = 0;
 
         for c in iter {
@@ -32,6 +35,7 @@ impl FromIterator<char> for Trinary {
     }
 }
 
+/// Default deserialisation path from string to an instance of `Trinary`
 impl FromStr for Trinary {
     type Err = TrinaryParseError;
 
@@ -42,9 +46,8 @@ impl FromStr for Trinary {
         }
 
         if s.chars()
-            .filter(|&c| TRYTE_ALPHABET.find(c).is_none())
-            .count() > 0
-        {
+               .filter(|&c| TRYTE_ALPHABET.find(c).is_none())
+               .count() > 0 {
             return Err(InvalidCharacter);
         }
 
@@ -70,14 +73,12 @@ mod tests {
 
     #[test]
     fn fromstr_test1() {
-        let in_bytes: [i8; 6] = [20, 25, -14, -2, 83, 1];
+        let in_bytes: [u8; 6] = [20, 25, -14_i8 as u8, -2_i8 as u8, 83, 1];
         let trytes = "UYSSM9KIH";
 
-        println!("{:?}", Trinary::from_str(trytes).ok().map(|a| a.trits()));
-
-        let opt = Trinary::from_str(trytes).ok().map(
-            |a| a.bytes() == in_bytes,
-        );
+        let opt = Trinary::from_str(trytes)
+            .ok()
+            .map(|a| a.bytes() == in_bytes);
         assert!(opt.is_some() && opt.unwrap());
     }
 
@@ -93,6 +94,6 @@ mod tests {
         let trytes = "LCUNQ99HCQM9HSATSQOPOWXXKGKDVZSEKVWJZRGWFRVLEQ9XG9INIPKAM9BQVGCIRNPZOS9LUZRBHB9P";
         let back = Trinary::from_str(trytes).ok().map(|a| a.to_string());
         assert!(back.is_some() && back.unwrap() == trytes);
-        
+
     }
 }
