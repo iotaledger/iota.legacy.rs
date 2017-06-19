@@ -1,28 +1,36 @@
-const HASH_LENGTH: usize = 243;
-const STATE_LENGTH: usize = HASH_LENGTH * 3;
-const TRUTH_TABLE: [i32; 9] = [1, 0, -1, 1, -1, 0, -1, 1, 0];
-const NUMBER_OF_ROUNDS: usize = 27;
+use constants::*;
+use trytes::*;
 
-
-trait Sponge {
-    fn absorb(&self, trits: &[i32], length: usize) -> Self;
-    fn squeeze(&self, length: usize) -> Vec<i32>;
+#[derive(Copy)]
+pub struct Curl {
+    state: [Trit; STATE_LENGTH],
 }
 
-trait Tansformable {
-    fn transform(&self) -> Self;
+impl Default for Curl {
+    fn default() -> Self {
+        Curl { state: [0; STATE_LENGTH] }
+    }
 }
 
-impl Tansformable for [i32; STATE_LENGTH] {
-    fn transform(&self) -> Self {
-        let mut scratchpad = *self.clone();
-        let mut out = *self.clone();
+impl Clone for Curl {
+    fn clone(&self) -> Curl {
+        *self
+    }
+}
+
+impl Curl {
+    fn transform(&mut self) {
+        // Required memory space type for computation
+        type Space = i32;
+
+
+        let mut scratchpad: [Space; STATE_LENGTH] = [0; STATE_LENGTH];
         let mut scratchpad_index: usize = 0;
         let mut scratchpad_index_save: usize;
-        let mut round = 0;
-        while round < NUMBER_OF_ROUNDS {
-            round += 1;
-            scratchpad.clone_from_slice(&out);
+
+        for _ in 0..NUMBER_OF_ROUNDS {
+            let state_space: Vec<Space> = self.state.iter().map(|&c| c as Space).collect();
+            scratchpad.clone_from_slice(state_space.as_slice());
             for state_index in 0..STATE_LENGTH {
                 scratchpad_index_save = scratchpad_index;
                 if scratchpad_index < 365 {
@@ -30,85 +38,107 @@ impl Tansformable for [i32; STATE_LENGTH] {
                 } else {
                     scratchpad_index -= 365;
                 };
-                out[state_index] = TRUTH_TABLE[(scratchpad[scratchpad_index_save] + scratchpad[scratchpad_index] * 3 +
-                 4) as usize];
+                self.state[state_index] = TRUTH_TABLE[(scratchpad[scratchpad_index_save] +
+                                                       scratchpad[scratchpad_index] * 3 +
+                                                       4) as
+                                                      usize];
             }
         }
+    }
+
+    fn absorb(&mut self, trits: &Vec<Trit>, length: usize) {
+        let mut len = length;
+        let mut offset = 0;
+        while {
+                  let to = offset + if len < HASH_LENGTH { len } else { HASH_LENGTH };
+                  self.state[0..HASH_LENGTH].clone_from_slice(&trits[offset..to]);
+
+                  self.transform();
+
+                  offset += HASH_LENGTH;
+                  len -= HASH_LENGTH;
+                  len >= HASH_LENGTH
+              } {}
+    }
+
+    fn squeeze(&mut self, length: usize) -> Vec<Trit> {
+        let mut len = length;
+        let mut out: Vec<Trit> = Vec::with_capacity(length);
+        let mut offset = 0;
+        while {
+                  out.extend_from_slice(&self.state[0..HASH_LENGTH]);
+                  self.transform();
+
+                  offset += HASH_LENGTH;
+                  len -= HASH_LENGTH;
+                  len > HASH_LENGTH
+              } {}
         out
     }
 }
 
-impl Sponge for [i32; STATE_LENGTH] {
-    fn absorb(&self, trits: &[i32], length: usize) -> Self {
-        let mut len = length;
-        let mut state = *self.clone();
-        let mut offset = 0;
-        while len > HASH_LENGTH {
-            state[0..HASH_LENGTH].clone_from_slice(&trits[offset..(offset + HASH_LENGTH)]);
-            state = state.transform();
-            offset += HASH_LENGTH;
-            len -= HASH_LENGTH;
-        }
-        state[0..len].clone_from_slice(&trits[offset..offset + len]);
-        state.transform()
-    }
-    fn squeeze(&self, length: usize) -> Vec<i32> {
-        let mut len = length;
-        let mut state = *self.clone();
-        let mut out = vec![0i32; length];
-        let mut offset = 0;
-        while len > HASH_LENGTH {
-            out[offset..(offset + HASH_LENGTH)].clone_from_slice(&state[0..HASH_LENGTH]);
-            state = state.transform();
-            offset += HASH_LENGTH;
-            len -= HASH_LENGTH;
-        }
-        out[offset..len].clone_from_slice(&state[0..len]);
-        out
-    }
-}
-
-/*
-fn state() -> [i32; STATE_LENGTH] {
-    [0i32; STATE_LENGTH]
-}
-*/
 
 #[cfg(test)]
 mod tests {
-    use super::{Sponge, HASH_LENGTH, STATE_LENGTH};
-    const TRITS: [i32; STATE_LENGTH] =
-        [1, 1, 1, 1, 1, 0, 0, 0, 1, -1, 0, -1, 0, 0, 0, 0, 1, 0, 1, 0, 1, -1, 1, 1, 1, 1, 1, 1, 1,
-         0, 1, 0, -1, 1, 0, -1, -1, 1, 1, 0, 1, 1, 1, 1, 0, -1, 0, 1, 0, -1, 0, 0, 1, 1, 0, 0, 0,
-         0, -1, 0, 0, 1, 0, -1, 1, 0, 1, 1, 1, -1, 1, 1, 1, 1, 1, 0, 1, 1, -1, 1, 1, 1, -1, 0, 1,
-         0, 1, -1, -1, 0, 1, 1, 0, 1, 0, -1, 1, 1, 1, 0, 1, 0, 1, 1, -1, -1, -1, -1, -1, 1, -1, 0,
-         1, 1, 0, 1, 0, -1, -1, -1, -1, 0, 0, 1, 1, 0, 0, 1, -1, 0, 1, 1, 1, -1, 0, -1, 0, -1, 1,
-         1, 1, 0, 1, 1, -1, 0, -1, -1, -1, 0, 0, 1, -1, -1, 0, 0, -1, 1, -1, 1, 0, 0, -1, 1, 1, 1,
-         -1, -1, 1, -1, 0, 0, -1, 1, -1, -1, 0, 0, 1, 0, 0, 1, 0, -1, -1, -1, 1, 1, -1, 0, -1, 1,
-         -1, 0, 0, 0, 1, -1, 1, 0, 1, 1, 1, -1, -1, 0, 1, -1, 1, 0, 0, 0, 1, -1, 0, -1, 1, 1, 0,
-         0, -1, -1, 1, -1, 0, -1, 0, 1, 0, 1, 0, -1, 0, 1, -1, 0, 1, 1, 0, -1, -1, -1, -1, 1, 0,
-         -1, 1, 0, -1, 0, 0, 0, -1, 0, -1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, -1, 1, 1, -1, 0, 0,
-         -1, 1, -1, -1, -1, -1, -1, -1, 0, 0, -1, -1, 0, -1, 1, 0, 1, 1, 1, -1, 0, 1, 0, 1, 1, -1,
-         -1, -1, 0, 1, 1, -1, 1, 0, 0, 0, 1, 1, 0, -1, 0, 1, 1, 1, 0, 0, 0, 1, -1, 1, 0, 0, 0, 0,
-         -1, 1, 0, 0, 1, 0, 0, 0, -1, -1, 1, 0, 1, 0, 0, 1, -1, -1, 0, 0, 0, 1, 0, -1, 0, -1, 1,
-         -1, -1, 0, 1, 1, 0, -1, 1, -1, -1, 1, 1, 0, -1, 0, 1, -1, 1, -1, 1, 1, 1, 0, 0, -1, 0, 0,
-         1, -1, 1, 0, -1, 0, 1, 1, 1, 0, 1, 0, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 0, 1,
-         -1, 0, -1, 1, 1, 1, 1, 0, 1, -1, 0, 0, 1, -1, 1, -1, 1, -1, -1, 0, -1, 1, 0, 0, 0, 1, 0,
-         0, 0, 1, 0, 1, 0, -1, -1, -1, 0, 0, -1, 1, -1, -1, 1, 1, 0, -1, 1, 0, 0, 1, -1, 1, 0, 1,
-         0, 1, 0, 1, 1, 0, 1, 0, 0, -1, 0, -1, 1, 1, 1, 1, 1, 1, 1, 0, -1, 0, 0, 0, -1, 1, 1, 1,
-         1, 0, 1, 0, 1, 0, 1, 0, -1, 1, 1, -1, 1, 1, -1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1,
-         0, -1, 0, 1, 1, 0, -1, 1, 1, 0, 1, 1, -1, 0, 0, 0, -1, 1, -1, 1, -1, 1, -1, 0, 1, -1, -1,
-         -1, 0, 0, 1, -1, -1, -1, 0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -1, 0, 0, 1, 1, 0, -1, 0, 1, 1,
-         -1, 0, 0, 1, 0, 1, 1, -1, 1, -1, 1, 0, -1, 0, 0, -1, 1, 0, 1, -1, -1, 0, 1, 0, 1, 0, 0,
-         -1, 1, -1, -1, 1, 0, -1, -1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, -1, 1, 1, -1, 0, -1, 1, -1,
-         1, 1, 1, 1, 1, -1, -1, 0, 1, 0, 1, -1, 1, 1, -1, -1, -1, 0, -1, 1, 1, 0, 0, 0, 0, 0, 1,
-         0, -1, -1, -1, 0, 0, 0, -1, -1, -1, -1, 1, -1, 0, -1, 0, 0, 0, 1, 1, 0, -1, 1, 1, -1, 0,
-         1, 0, 0, -1, 0, 0, 0, 1, 1, 0, 1, -1, 1, -1, 1, -1, 0, 1, 1, -1, -1, -1, -1, 1, 1, 0, 0,
-         1, 0, -1, 0, 0, 1, 0, 0, 0, 0, 1, 1, -1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 1];
+    use super::*;
     #[test]
-    fn it_works() {
-        let hash = [0i32; STATE_LENGTH].absorb(&TRITS, STATE_LENGTH).squeeze(HASH_LENGTH);
-        assert_eq!(hash.len(), HASH_LENGTH);
-        println!("{:?}", hash);
+    fn hash_works() {
+        let trans: Trinary = "9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              9999999999999999999999999999999999999999999999999999999999999\
+                              999999999999999999999999999999T999999999999999999999999999999\
+                              99999999999999999999999OLOB99999999999999999999999"
+            .chars()
+            .collect();
+
+        let ex_hash: Trinary = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
+                             DANIYSMFYPVABX9999"
+            .chars()
+            .collect();
+
+        let mut curl = Curl::default();
+        curl.absorb(&trans.trits(), trans.len_trits());
+        let hash: Trinary = curl.squeeze(HASH_LENGTH).into_iter().collect();
+
+        assert_eq!(hash, ex_hash);
     }
 }
