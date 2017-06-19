@@ -76,8 +76,6 @@ mod tests {
         let in_bytes: [u8; 6] = [20, 25, -14_i8 as u8, -2_i8 as u8, 83, 1];
         let trytes = "UYSSM9KIH";
 
-        println!("{:?}", Trinary::from_str(trytes).ok().map(|a| a.trits()));
-
         let opt = Trinary::from_str(trytes)
             .ok()
             .map(|a| a.bytes() == in_bytes);
