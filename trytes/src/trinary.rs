@@ -53,10 +53,10 @@ impl Trinary {
             let mut t = byte_to_trits(*b);
 
             if cnt > TRITS_PER_BYTE {
-                t.reverse();
                 trits.append(&mut t);
             } else {
-                trits.extend(t[0..cnt].iter().rev().cloned());
+                let i = TRITS_PER_BYTE - cnt;
+                trits.extend(t[i..TRITS_PER_BYTE].iter().cloned());
                 break;
             }
             cnt -= TRITS_PER_BYTE;
