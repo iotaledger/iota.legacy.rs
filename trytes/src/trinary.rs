@@ -71,17 +71,17 @@ impl Trinary {
     }
 
     /// Returns the `Vec<u8>` representation of this `Trinary` 
-    pub fn bytes(self) -> Vec<u8> {
-        self.bytes
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
     }
 
     /// Length of this `Trinary` in trits 
-    pub fn len_trits(self) -> usize {
+    pub fn len_trits(&self) -> usize {
         self.length
     }
 
     /// Length of this `Trinary` in trytes
-    pub fn len_chars(self) -> usize {
+    pub fn len_chars(&self) -> usize {
         self.length / TRITS_PER_TRYTE
     }
 }
