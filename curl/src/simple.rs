@@ -53,41 +53,45 @@ impl Curl for SimpleCurl {
         }
     }
 
+    fn reset(&mut self) {
+        self.state = [0; STATE_LENGTH];
+    }
+
     fn absorb(&mut self, trits: &[Trit]) {
         let mut len = trits.len();
         let mut offset = 0;
         loop {
-            let to = offset + if len < HASH_LENGTH { len } else { HASH_LENGTH };
-            self.state[0..HASH_LENGTH].clone_from_slice(&trits[offset..to]);
+            let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
+            self.state[0..to].clone_from_slice(&trits[offset..offset+to]);
 
             self.transform();
 
             offset += HASH_LENGTH;
-            len -= HASH_LENGTH;
-
-            if len < HASH_LENGTH {
+            if len <= HASH_LENGTH {
                 break;
             }
+            len -= HASH_LENGTH;
         }
     }
 
-    fn squeeze(&mut self, trit_count: usize) -> Trinary {
+    fn squeeze(&mut self, trit_count: usize) -> Vec<Trit> {
         let mut len = trit_count;
         let mut out: Vec<Trit> = Vec::with_capacity(trit_count);
         let mut offset = 0;
 
         loop {
-            out.extend_from_slice(&self.state[offset..offset + HASH_LENGTH]);
+            let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
+            out.extend_from_slice(&self.state[0..to]);
             self.transform();
 
             offset += HASH_LENGTH;
-            len -= HASH_LENGTH;
-            if !(len > HASH_LENGTH) {
+            if len <= HASH_LENGTH {
                 break;
             }
+            len -= HASH_LENGTH;
         }
 
-        out.into_iter().collect()
+        out
     }
 }
 
