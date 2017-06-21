@@ -28,7 +28,7 @@ impl Clone for SimpleCurl {
 impl SimpleCurl {
     fn transform(&mut self) {
         // Required memory space type for computation
-        type Space = i32;
+        type Space = i8;
 
         let mut scratchpad: [Space; STATE_LENGTH] = [0; STATE_LENGTH];
         let mut scratchpad_index: usize = 0;
