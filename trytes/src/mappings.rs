@@ -1,7 +1,7 @@
 use constants::*;
 
 /// Hardcoded mappings from `u8` to 5 `Trit`s
-pub const BYTE_TO_TRITS_MAPPINGS: [[Trit; TRITS_PER_BYTE]; HASH_LENGTH] = [[0, 0, 0, 0, 0],
+pub static BYTE_TO_TRITS_MAPPINGS: [[Trit; TRITS_PER_BYTE]; HASH_LENGTH] = [[0, 0, 0, 0, 0],
                                                                            [0, 0, 0, 0, 1],
                                                                            [0, 0, 0, 1, -1],
                                                                            [0, 0, 0, 1, 0],
@@ -246,7 +246,7 @@ pub const BYTE_TO_TRITS_MAPPINGS: [[Trit; TRITS_PER_BYTE]; HASH_LENGTH] = [[0, 0
                                                                            [0, 0, 0, 0, -1]];
 
 /// Hardcoded tryte to `Trit` mappings
-pub const TRYTE_TO_TRITS_MAPPINGS: [[Trit; TRITS_PER_TRYTE]; TRYTE_SPACE] = [[0, 0, 0],
+pub static TRYTE_TO_TRITS_MAPPINGS: [[Trit; TRITS_PER_TRYTE]; TRYTE_SPACE] = [[0, 0, 0],
                                                                              [1, 0, 0],
                                                                              [-1, 1, 0],
                                                                              [0, 1, 0],
