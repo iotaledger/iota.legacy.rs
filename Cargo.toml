@@ -1,5 +1,6 @@
 [workspace]
 members = [
         "curl",
-        "trytes"
+        "trytes",
+        "pow"
         ]
