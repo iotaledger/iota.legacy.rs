@@ -53,6 +53,10 @@ impl Curl for SimpleCurl {
         }
     }
 
+    fn reset(&mut self) {
+        self.state = [0; STATE_LENGTH];
+    }
+
     fn absorb(&mut self, trits: &[Trit]) {
         let mut len = trits.len();
         let mut offset = 0;
@@ -71,7 +75,7 @@ impl Curl for SimpleCurl {
         }
     }
 
-    fn squeeze(&mut self, trit_count: usize) -> Trinary {
+    fn squeeze(&mut self, trit_count: usize) -> Vec<Trit> {
         let mut len = trit_count;
         let mut out: Vec<Trit> = Vec::with_capacity(trit_count);
         let mut offset = 0;
@@ -87,7 +91,7 @@ impl Curl for SimpleCurl {
             }
         }
 
-        out.into_iter().collect()
+        out
     }
 }
 
