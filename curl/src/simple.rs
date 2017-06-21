@@ -25,7 +25,8 @@ impl Clone for SimpleCurl {
     }
 }
 
-impl SimpleCurl {
+
+impl Curl for SimpleCurl {
     fn transform(&mut self) {
         // Required memory space type for computation
         type Space = i8;
@@ -51,9 +52,7 @@ impl SimpleCurl {
             }
         }
     }
-}
 
-impl Curl for SimpleCurl {
     fn absorb(&mut self, trits: &[Trit]) {
         let mut len = trits.len();
         let mut offset = 0;

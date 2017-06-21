@@ -7,6 +7,8 @@ pub trait Curl {
     fn absorb(&mut self, trits: &[Trit]);
     /// Squeeze the sponge and return a `Trinary` with `tritCount` trits
     fn squeeze(&mut self, trit_count: usize) -> Trinary;
+    /// Transforms the sponge
+    fn transform(&mut self);
 }
 
 /// An implementation of `Curl` that can reset its internal state.
