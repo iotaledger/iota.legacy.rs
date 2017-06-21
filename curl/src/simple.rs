@@ -61,17 +61,16 @@ impl Curl for SimpleCurl {
         let mut len = trits.len();
         let mut offset = 0;
         loop {
-            let to = offset + if len < HASH_LENGTH { len } else { HASH_LENGTH };
-            self.state[0..HASH_LENGTH].clone_from_slice(&trits[offset..to]);
+            let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
+            self.state[0..to].clone_from_slice(&trits[offset..offset+to]);
 
             self.transform();
 
             offset += HASH_LENGTH;
-            len -= HASH_LENGTH;
-
-            if len < HASH_LENGTH {
+            if len <= HASH_LENGTH {
                 break;
             }
+            len -= HASH_LENGTH;
         }
     }
 
@@ -81,14 +80,15 @@ impl Curl for SimpleCurl {
         let mut offset = 0;
 
         loop {
-            out.extend_from_slice(&self.state[offset..offset + HASH_LENGTH]);
+            let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
+            out.extend_from_slice(&self.state[0..to]);
             self.transform();
 
             offset += HASH_LENGTH;
-            len -= HASH_LENGTH;
-            if !(len > HASH_LENGTH) {
+            if len <= HASH_LENGTH {
                 break;
             }
+            len -= HASH_LENGTH;
         }
 
         out
