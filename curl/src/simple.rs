@@ -4,7 +4,7 @@ use curl::*;
 
 /// Sponge size
 const STATE_LENGTH: usize = HASH_LENGTH * 3;
-const TRUTH_TABLE: [Trit; 9] = [1, 0, -1, 1, -1, 0, -1, 1, 0];
+const TRUTH_TABLE: [Trit; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
 /// Basic unoptimised implementation of the `Curl` hashing algorithm
 #[derive(Copy)]
@@ -45,8 +45,8 @@ impl SimpleCurl {
                     scratchpad_index -= 365;
                 };
                 self.state[state_index] = TRUTH_TABLE[(scratchpad[scratchpad_index_save] +
-                                                           scratchpad[scratchpad_index] * 3 +
-                                                           4) as
+                                                           (scratchpad[scratchpad_index] << 2) +
+                                                           5) as
                                                           usize];
             }
         }
