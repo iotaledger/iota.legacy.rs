@@ -45,18 +45,17 @@ impl SimpleCurl {
                     scratchpad_index -= 365;
                 };
                 self.state[state_index] = TRUTH_TABLE[(scratchpad[scratchpad_index_save] +
-                                                       scratchpad[scratchpad_index] * 3 +
-                                                       4) as
-                                                      usize];
+                                                           scratchpad[scratchpad_index] * 3 +
+                                                           4) as
+                                                          usize];
             }
         }
     }
 }
 
 impl Curl for SimpleCurl {
-    fn absorb(&mut self, trinary: Trinary) {
-        let mut len = trinary.len_trits();
-        let trits = trinary.trits();
+    fn absorb(&mut self, trits: &[Trit]) {
+        let mut len = trits.len();
         let mut offset = 0;
         loop {
             let to = offset + if len < HASH_LENGTH { len } else { HASH_LENGTH };

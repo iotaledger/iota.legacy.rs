@@ -59,7 +59,7 @@ pub mod testsuite {
                 .chars()
                 .collect();
 
-            curl.absorb(trans);
+            curl.absorb(&trans.trits());
             let hash: Trinary = curl.squeeze(HASH_LENGTH);
 
             assert_eq!(hash, ex_hash);
