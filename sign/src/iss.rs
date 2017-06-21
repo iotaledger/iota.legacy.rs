@@ -47,10 +47,13 @@ where
     c.absorb(&trits);
     let mut key = c.squeeze(KEY_LENGTH);
 
-    for offset in 0..KEY_LENGTH {
+    for divOffset in 0..(KEY_LENGTH/HASH_LENGTH){
+        let offset = divOffset * HASH_LENGTH;
         c.reset();
-        c.absorb(&key[offset..HASH_LENGTH]);
-        key[offset..HASH_LENGTH].clone_from_slice(c.squeeze(HASH_LENGTH).as_slice());
+        c.absorb(&key[offset..offset+HASH_LENGTH]);
+
+        let squeezed = c.squeeze(HASH_LENGTH);
+        key[offset..offset+squeezed.len()].clone_from_slice(squeezed.as_slice());
     }
 
     key.into_iter().collect()
@@ -146,4 +149,22 @@ where
     }
 
     digestCurl.squeeze(DIGEST_LENGTH).into_iter().collect()
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use curl::simple::*;
+
+    #[test]
+    fn test_nothing_crashes() {
+        let seed: Trinary = "WJRVZJOSSMRCGCJYFN9SSETWFLRCPWSCOEPPT9KNHWUTTW9BTELBWDPMHDRN9NTFGWESKAKZCFHGBJJQZ"
+            .chars()
+            .collect();
+        let subseed = subseed::<SimpleCurl>(seed, 0);
+        let key = key::<SimpleCurl>(subseed);
+        let key_digest = digest_key::<SimpleCurl>(key);
+        let address = address::<SimpleCurl>(key_digest);
+    }
 }
