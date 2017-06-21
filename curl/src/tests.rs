@@ -60,7 +60,7 @@ pub mod testsuite {
                 .collect();
 
             curl.absorb(&trans.trits());
-            let hash: Trinary = curl.squeeze(HASH_LENGTH);
+            let hash: Trinary = curl.squeeze(HASH_LENGTH).into_iter().collect();
 
             assert_eq!(hash, ex_hash);
         }
