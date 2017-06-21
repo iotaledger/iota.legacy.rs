@@ -10,6 +10,7 @@ pub mod trinary;
 pub mod string;
 pub mod trits;
 pub mod iter;
+pub mod bct;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;

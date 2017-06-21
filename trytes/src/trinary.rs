@@ -1,13 +1,13 @@
 use std::fmt;
 use constants::*;
 use util::*;
+use bct::*;
 
 /// `Trinary` holds an array of trinary values.
 #[derive(Clone, Eq, PartialEq)]
 pub struct Trinary {
     bytes: Vec<u8>,
-    length: usize
-    
+    length: usize,
 }
 
 impl fmt::Display for Trinary {
@@ -21,7 +21,6 @@ impl fmt::Debug for Trinary {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Trinary({}, {}, {:?})", self, self.length, self.bytes)
     }
-    
 }
 
 /// Default trait for serialisation into a `Trinary`
@@ -40,11 +39,11 @@ impl Trinary {
     pub fn new(bytes: Vec<u8>, length: usize) -> Trinary {
         Trinary {
             bytes: bytes,
-            length: length
+            length: length,
         }
     }
 
-    /// Returns a `Vec<Trit>` representation of this `Trinary` 
+    /// Returns a `Vec<Trit>` representation of this `Trinary`
     pub fn trits(&self) -> Vec<Trit> {
         let mut trits: Vec<Trit> = Vec::new();
         let mut cnt = self.length;
@@ -65,17 +64,26 @@ impl Trinary {
         trits
     }
 
-    /// Returns a `Vec<char>` of the trytes of this `Trinary` 
+    /// Returns a binary-coded representation of the trits of this `Trinary`.
+    /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
+    pub fn bctrits(&self) -> Vec<BCTrit> {
+        self.trits()
+            .into_iter()
+            .map(trit_to_bct)
+            .collect()
+    }
+
+    /// Returns a `Vec<char>` of the trytes of this `Trinary`
     pub fn chars(&self) -> Vec<char> {
         self.trits().chunks(3).map(trits_to_char).collect()
     }
 
-    /// Returns the `&[u8]` representation of this `Trinary` 
+    /// Returns the `&[u8]` representation of this `Trinary`
     pub fn bytes(&self) -> &[u8] {
         &self.bytes
     }
 
-    /// Length of this `Trinary` in trits 
+    /// Length of this `Trinary` in trits
     pub fn len_trits(&self) -> usize {
         self.length
     }
@@ -90,6 +98,3 @@ impl Trinary {
         self.bytes.len()
     }
 }
-
-
-
