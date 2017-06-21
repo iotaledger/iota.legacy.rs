@@ -20,9 +20,7 @@ pub fn trits_to_byte(trits: &[Trit]) -> u8 {
 }
 
 /// Converts a byte to `Vec<Trit>`
-pub fn byte_to_trits(bu: u8) -> Vec<Trit> {
-    let mut out: Vec<Trit> = Vec::new();
-
+pub fn byte_to_trits(bu: u8) -> &'static [Trit; TRITS_PER_BYTE] {
     let b = bu as i8;
     let bpos: usize = (if b < 0 {
                            (b as isize) + (HASH_LENGTH as isize)
@@ -30,8 +28,7 @@ pub fn byte_to_trits(bu: u8) -> Vec<Trit> {
                            b as isize
                        }) as usize;
 
-    out.extend_from_slice(&BYTE_TO_TRITS_MAPPINGS[bpos]);
-    out
+    &BYTE_TO_TRITS_MAPPINGS[bpos]
 }
 
 /// Converts a slice of trits to a tryte

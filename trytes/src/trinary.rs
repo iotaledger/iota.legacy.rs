@@ -26,12 +26,12 @@ impl fmt::Debug for Trinary {
 
 /// Default trait for serialisation into a `Trinary`
 trait IntoTrinary {
-    fn trinary(self) -> Trinary;
+    fn trinary(&self) -> Trinary;
 }
 
 impl IntoTrinary for Trinary {
-    fn trinary(self) -> Trinary {
-        self
+    fn trinary(&self) -> Trinary {
+        self.clone()
     }
 }
 
@@ -50,13 +50,13 @@ impl Trinary {
         let mut cnt = self.length;
 
         for b in &self.bytes {
-            let mut t = byte_to_trits(*b);
+            let t = byte_to_trits(*b);
 
             if cnt > TRITS_PER_BYTE {
-                trits.append(&mut t);
+                trits.extend_from_slice(t);
             } else {
                 let i = TRITS_PER_BYTE - cnt;
-                trits.extend(t[i..TRITS_PER_BYTE].iter().cloned());
+                trits.extend_from_slice(&t[i..TRITS_PER_BYTE]);
                 break;
             }
             cnt -= TRITS_PER_BYTE;
@@ -70,9 +70,9 @@ impl Trinary {
         self.trits().chunks(3).map(trits_to_char).collect()
     }
 
-    /// Returns the `Vec<u8>` representation of this `Trinary` 
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
+    /// Returns the `&[u8]` representation of this `Trinary` 
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
     }
 
     /// Length of this `Trinary` in trits 
@@ -83,6 +83,11 @@ impl Trinary {
     /// Length of this `Trinary` in trytes
     pub fn len_chars(&self) -> usize {
         self.length / TRITS_PER_TRYTE
+    }
+
+    /// Length of this `Trinary` in bytes
+    pub fn len_bytes(&self) -> usize {
+        self.bytes.len()
     }
 }
 
