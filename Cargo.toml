@@ -2,5 +2,6 @@
 members = [
         "curl",
         "trytes",
-        "pow"
+        "pow",
+        "sign"
         ]
