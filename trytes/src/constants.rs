@@ -1,5 +1,7 @@
 /// Type alias for `Trit`
 pub type Trit = i8;
+/// Binary coded trit, see http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml
+pub type BCTrit = (usize, usize);
 /// Default hash length in trits (81*3)
 pub const HASH_LENGTH: usize = 243;
 pub const RADIX: Trit = 3;
