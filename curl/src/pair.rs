@@ -3,7 +3,6 @@ use constants::*;
 use trytes::*;
 use curl::*;
 use indices::*;
-//use std::mem;
 
 fn step(first: BCTrit, second: BCTrit) -> BCTrit {
     let (alpha, beta) = first;
@@ -15,8 +14,6 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
 /// Tuple implementation of the `Sponge` for Curl
 impl Sponge for Curl<BCTrit> {
     fn transform(&mut self) {
-        // Required memory space type for computation
-        //let mut scratchpad: Vec<BCTrit> = self.state.clone();
         let STATE_INDICES: Vec<_> = (0..STATE_LENGTH).collect();
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 

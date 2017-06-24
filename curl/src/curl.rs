@@ -1,12 +1,12 @@
 use constants::*;
-//use trytes::Trit;
 use trytes::*;
-use trytes::Trinary;
 
 /// All implementations of `Curl` must implement this trait.
 
 pub trait Sponge {
+    /// Transforms the sponge
     fn transform(&mut self);
+    /// Resets the sponge's internal state.
     fn reset(&mut self);
 }
 
@@ -30,9 +30,10 @@ impl<T> Curl<T>
     where T: Clone + Copy + Sized,
           Curl<T>: Sponge
 {
-    fn absorb(&mut self, trits: &[T], offset_in: usize, length_in: usize) {
-        let mut len = length_in;
-        let mut offset = offset_in;
+    /// Absorb a `&[Trit]` into the sponge
+    fn absorb(&mut self, trits: &[T]) {
+        let mut len = trits.len();
+        let mut offset = 0;
         loop {
             let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
             self.state[0..to].clone_from_slice(&trits[offset..offset + to]);
@@ -47,10 +48,11 @@ impl<T> Curl<T>
         }
     }
 
-    fn squeeze(&mut self, offset_in: usize, trit_count: usize) -> Vec<T> {
+    /// Squeeze the sponge and return a `Vec<T>` with `trit_count` trits
+    fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
         let mut len = trit_count;
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
-        let mut offset = offset_in;
+        let mut offset = 0;
 
         loop {
             let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
