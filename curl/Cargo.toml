@@ -6,3 +6,4 @@ authors = ["Paul D Handy <paul@pauldhandy.com>",
 
 [dependencies]
 iota-trytes = { path = "../trytes" }
+rayon = "*"
