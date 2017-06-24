@@ -46,8 +46,9 @@ impl FromStr for Trinary {
         }
 
         if s.chars()
-               .filter(|&c| TRYTE_ALPHABET.find(c).is_none())
-               .count() > 0 {
+            .filter(|&c| TRYTE_ALPHABET.find(c).is_none())
+            .count() > 0
+        {
             return Err(InvalidCharacter);
         }
 
@@ -58,7 +59,8 @@ impl FromStr for Trinary {
 
 #[cfg(test)]
 mod tests {
-    use string::*;
+    use super::*;
+    use trinary::*;
     use TrinaryParseError::*;
 
     #[test]
@@ -73,27 +75,40 @@ mod tests {
 
     #[test]
     fn fromstr_test1() {
-        let in_bytes: [u8; 6] = [20, 25, -14_i8 as u8, -2_i8 as u8, 83, 1];
+        let in_bytes: [u8; 6] = [196, 57, 114, 54, 203, 3];
         let trytes = "UYSSM9KIH";
 
-        let opt = Trinary::from_str(trytes)
-            .ok()
-            .map(|a| a.bytes() == in_bytes);
-        assert!(opt.is_some() && opt.unwrap());
+        let opt = Trinary::from_str(trytes).ok().unwrap();
+        assert_eq!(opt.bytes(), &in_bytes);
     }
 
+    use mappings::*;
     #[test]
     fn fromtostr_test1() {
         let trytes = "UYSSM9KIH";
-        let back = Trinary::from_str(trytes).ok().map(|a| a.to_string());
-        assert!(back.is_some() && back.unwrap() == trytes);
+        let back = Trinary::from_str(trytes).ok().unwrap();
+
+        let trits : Vec<Trit> = back.trits();
+
+        assert_eq!(back.to_string(), trytes);
     }
 
     #[test]
     fn fromtostr_test2() {
         let trytes = "LCUNQ99HCQM9HSATSQOPOWXXKGKDVZSEKVWJZRGWFRVLEQ9XG9INIPKAM9BQVGCIRNPZOS9LUZRBHB9P";
-        let back = Trinary::from_str(trytes).ok().map(|a| a.to_string());
-        assert!(back.is_some() && back.unwrap() == trytes);
+        let back = Trinary::from_str(trytes)
+            .ok()
+            .map(|a| a.to_string())
+            .unwrap();
+        assert_eq!(back.to_string(), trytes);
 
+    }
+
+    #[test]
+    fn fromtostr_test3() {
+        let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQI";
+        let trinary : Trinary = trytes.chars().collect();
+        let in_trits : Vec<Trit> = trinary.trits();
+        assert_eq!(trinary.to_string(), trytes);
     }
 }
