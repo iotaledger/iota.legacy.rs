@@ -24,13 +24,50 @@ impl fmt::Debug for Trinary {
 }
 
 /// Default trait for serialisation into a `Trinary`
-trait IntoTrinary {
+pub trait IntoTrinary {
     fn trinary(&self) -> Trinary;
 }
 
 impl IntoTrinary for Trinary {
     fn trinary(&self) -> Trinary {
         self.clone()
+    }
+}
+
+pub trait IntoTrits<T> {
+    fn trits(&self) -> Vec<T>;
+}
+
+impl IntoTrits<BCTrit> for Trinary {
+    /// Returns a binary-coded representation of the trits of this `Trinary`.
+    /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
+    fn trits(&self) -> Vec<BCTrit> {
+        self.trits()
+            .into_iter()
+            .map(trit_to_bct)
+            .collect()
+    }
+}
+
+impl IntoTrits<Trit> for Trinary {
+    /// Returns a `Vec<Trit>` representation of this `Trinary`
+    fn trits(&self) -> Vec<Trit> {
+        let mut trits: Vec<Trit> = Vec::new();
+        let mut cnt = self.length;
+
+        for b in &self.bytes {
+            let t = byte_to_trits(*b);
+
+            if cnt > TRITS_PER_BYTE {
+                trits.extend_from_slice(t);
+            } else {
+                trits.extend_from_slice(&t[0..cnt]);
+                break;
+            }
+            cnt -= TRITS_PER_BYTE;
+        }
+
+        trits
     }
 }
 
@@ -41,36 +78,6 @@ impl Trinary {
             bytes: bytes,
             length: length,
         }
-    }
-
-    /// Returns a `Vec<Trit>` representation of this `Trinary`
-    pub fn trits(&self) -> Vec<Trit> {
-        let mut trits: Vec<Trit> = Vec::new();
-        let mut cnt = self.length;
-
-        for b in &self.bytes {
-            let t = byte_to_trits(*b);
-
-            if cnt > TRITS_PER_BYTE {
-                trits.extend_from_slice(t);
-            } else {
-                let i = TRITS_PER_BYTE - cnt;
-                trits.extend_from_slice(&t[i..TRITS_PER_BYTE]);
-                break;
-            }
-            cnt -= TRITS_PER_BYTE;
-        }
-
-        trits
-    }
-
-    /// Returns a binary-coded representation of the trits of this `Trinary`.
-    /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
-    pub fn bctrits(&self) -> Vec<BCTrit> {
-        self.trits()
-            .into_iter()
-            .map(trit_to_bct)
-            .collect()
     }
 
     /// Returns a `Vec<char>` of the trytes of this `Trinary`

@@ -8,8 +8,10 @@ pub fn tryte_to_trits(trit: char) -> [Trit; TRITS_PER_TRYTE] {
 
 /// Converts a slice of trits to a byte
 /// `trits.len()` must be less or equal to `TRITS_PER_BYTE`
-pub fn trits_to_byte(trits: &[Trit]) -> u8 {
-    assert!(trits.len() <= TRITS_PER_BYTE);
+pub fn trits_to_byte(tritss: &[Trit]) -> u8 {
+    assert!(tritss.len() <= TRITS_PER_BYTE);
+
+    let trits : Vec<Trit> = tritss.iter().cloned().rev().collect();
 
     let mut value: Trit = 0;
     for j in trits {
@@ -23,11 +25,10 @@ pub fn trits_to_byte(trits: &[Trit]) -> u8 {
 pub fn byte_to_trits(bu: u8) -> &'static [Trit; TRITS_PER_BYTE] {
     let b = bu as i8;
     let bpos: usize = (if b < 0 {
-                           (b as isize) + (HASH_LENGTH as isize)
+                           (b as isize) + (BYTE_TO_TRITS_MAPPINGS.len() as isize)
                        } else {
                            b as isize
                        }) as usize;
-
     &BYTE_TO_TRITS_MAPPINGS[bpos]
 }
 
@@ -60,13 +61,10 @@ mod test {
     #[test]
     fn bytes_to_trits() {
         let bytes: [u8; 6] = [20, 25, -14_i8 as u8, -2_i8 as u8, 83, 1];
-        let exp: [Trit; 27] = [0, 1, -1, 1, -1, 0, 1, 0, -1, 1, 0, -1, 1, 1, 1, 0, 0, 0, -1, 1, 1,
-                               0, 0, 1, -1, 0, 1];
-
+        let exp : Trinary = "TJHLYYRAD".chars().collect();
         let trinary = Trinary::new(bytes.iter().cloned().collect(), 27);
-        let out = trinary.trits();
 
-        assert_eq!(&exp, out.as_slice());
+        assert_eq!(exp, trinary);
 
     }
 }

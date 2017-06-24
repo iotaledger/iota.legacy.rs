@@ -18,5 +18,5 @@ pub enum PoWError {
 ///   TODO Note that this will be changed to use the proper `Transaction` model class in the future.
 /// * `mwm` - minimum weight magnitude
 pub trait PoW {
-    fn searchNonce(transaction: Trinary, mwm: u8) -> Result<Trinary, PoWError>;
+    fn search_nonce(transaction: Trinary, mwm: u8) -> Result<Trinary, PoWError>;
 }
