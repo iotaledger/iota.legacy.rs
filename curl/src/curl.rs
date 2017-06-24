@@ -12,13 +12,15 @@ pub trait Sponge {
 
 #[derive(Copy)]
 pub struct Curl<T>
-    where T: Clone + Copy + Sized
+where
+    T: Clone + Copy + Sized,
 {
     pub state: [T; STATE_LENGTH],
 }
 
 impl<T> Clone for Curl<T>
-    where T: Clone + Copy + Sized
+where
+    T: Clone + Copy + Sized,
 {
     fn clone(&self) -> Self {
         *self
@@ -27,8 +29,9 @@ impl<T> Clone for Curl<T>
 
 
 impl<T> Curl<T>
-    where T: Clone + Copy + Sized,
-          Curl<T>: Sponge
+where
+    T: Clone + Copy + Sized,
+    Curl<T>: Sponge,
 {
     /// Absorb a `&[Trit]` into the sponge
     pub fn absorb(&mut self, trits: &[T]) {
@@ -52,14 +55,12 @@ impl<T> Curl<T>
     pub fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
         let mut len = trit_count;
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
-        let mut offset = 0;
 
         loop {
             let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
             out.extend_from_slice(&self.state[0..to]);
             self.transform();
 
-            offset += HASH_LENGTH;
             if len <= HASH_LENGTH {
                 break;
             }

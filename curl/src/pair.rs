@@ -16,13 +16,15 @@ impl Sponge for Curl<BCTrit> {
     fn transform(&mut self) {
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 
-        for _ in 0..NUMBER_OF_ROUNDS {
+        for r in 0..NUMBER_OF_ROUNDS {
             scratchpad = (0..STATE_LENGTH)
                 .into_par_iter()
                 .map(|i| {
-                         step(scratchpad[TRANSFORM_INDICES[i]],
-                              scratchpad[TRANSFORM_INDICES[i + 1]])
-                     })
+                    step(
+                        scratchpad[TRANSFORM_INDICES[i]],
+                        scratchpad[TRANSFORM_INDICES[i + 1]],
+                    )
+                })
                 .collect();
         }
         self.state.clone_from_slice(&scratchpad);
@@ -35,8 +37,7 @@ impl Sponge for Curl<BCTrit> {
 
 impl Default for Curl<BCTrit> {
     fn default() -> Self {
-        let x: BCTrit = (0, 0);
-        Curl::<BCTrit> { state: [x; STATE_LENGTH] }
+        Curl::<BCTrit> { state: [(0, 0); STATE_LENGTH] }
     }
 }
 
