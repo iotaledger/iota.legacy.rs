@@ -61,8 +61,7 @@ impl IntoTrits<Trit> for Trinary {
             if cnt > TRITS_PER_BYTE {
                 trits.extend_from_slice(t);
             } else {
-                let i = TRITS_PER_BYTE - cnt;
-                trits.extend_from_slice(&t[i..TRITS_PER_BYTE]);
+                trits.extend_from_slice(&t[0..cnt]);
                 break;
             }
             cnt -= TRITS_PER_BYTE;
