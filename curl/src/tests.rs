@@ -1,12 +1,15 @@
+#![allow(unused_imports)]
+
+use curl::*;
+use trytes::*;
+use std::iter::FromIterator;
+
 pub mod testsuite {
-    use curl::*;
-    use trytes::*;
-    use std::iter::FromIterator;
+    use super::*;
 
     #[cfg(test)]
     mod inner {
         use super::*;
-        use trytes::*;
 
         fn test_hash_eq<T>(trans: Trinary, expected: Trinary)
         where
@@ -77,7 +80,6 @@ pub mod testsuite {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
                 .chars()
                 .collect();
-
 
             let hash: Trinary = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
                                  9EFZJKFYCZKQPPBXYSGJ"

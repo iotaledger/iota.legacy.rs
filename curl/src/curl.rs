@@ -27,7 +27,6 @@ where
     }
 }
 
-
 impl<T> Curl<T>
 where
     T: Clone + Copy + Sized,
@@ -35,6 +34,7 @@ where
 {
     /// Absorb a `&[Trit]` into the sponge
     pub fn absorb(&mut self, trits: &[T]) {
+
         for c in trits.chunks(HASH_LENGTH) {
             self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);
@@ -47,7 +47,7 @@ where
 
         let hash_count = trit_count / HASH_LENGTH;
 
-        for i in 0..hash_count {
+        for _ in 0..hash_count {
             out.extend_from_slice(&self.state[0..HASH_LENGTH]);
             Sponge::transform(self);
         }
