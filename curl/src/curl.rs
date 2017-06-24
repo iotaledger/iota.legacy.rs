@@ -34,7 +34,6 @@ where
 {
     /// Absorb a `&[Trit]` into the sponge
     pub fn absorb(&mut self, trits: &[T]) {
-
         for c in trits.chunks(HASH_LENGTH) {
             self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);

@@ -31,13 +31,13 @@ impl Sponge for Curl<BCTrit> {
     }
 
     fn reset(&mut self) {
-        self.state = [(0, 0); STATE_LENGTH];
+        self.state = [(usize::max_value(), usize::max_value()); STATE_LENGTH];
     }
 }
 
 impl Default for Curl<BCTrit> {
     fn default() -> Self {
-        Curl::<BCTrit> { state: [(0, 0); STATE_LENGTH] }
+        Curl::<BCTrit> { state: [(usize::max_value(), usize::max_value()); STATE_LENGTH] }
     }
 }
 
