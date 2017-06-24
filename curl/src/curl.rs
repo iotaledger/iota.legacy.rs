@@ -35,9 +35,6 @@ where
 {
     /// Absorb a `&[Trit]` into the sponge
     pub fn absorb(&mut self, trits: &[T]) {
-        let mut len = trits.len();
-        let mut offset = 0;
-
         for c in trits.chunks(HASH_LENGTH) {
             self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);
@@ -46,7 +43,6 @@ where
 
     /// Squeeze the sponge and return a `Vec<T>` with `trit_count` trits
     pub fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
-        let mut len = trit_count;
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
 
         let hash_count = trit_count / HASH_LENGTH;
@@ -56,7 +52,7 @@ where
             Sponge::transform(self);
         }
 
-        out.extend_from_slice(&self.state[0..(trit_count - hash_count*HASH_LENGTH)]);
+        out.extend_from_slice(&self.state[0..(trit_count - hash_count * HASH_LENGTH)]);
         Sponge::transform(self);
 
         out
