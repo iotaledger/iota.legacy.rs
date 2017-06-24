@@ -37,17 +37,10 @@ where
     pub fn absorb(&mut self, trits: &[T]) {
         let mut len = trits.len();
         let mut offset = 0;
-        loop {
-            let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
-            self.state[0..to].clone_from_slice(&trits[offset..offset + to]);
 
+        for c in trits.chunks(HASH_LENGTH) {
+            self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);
-
-            offset += HASH_LENGTH;
-            if len <= HASH_LENGTH {
-                break;
-            }
-            len -= HASH_LENGTH;
         }
     }
 
@@ -56,16 +49,15 @@ where
         let mut len = trit_count;
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
 
-        loop {
-            let to = if len < HASH_LENGTH { len } else { HASH_LENGTH };
-            out.extend_from_slice(&self.state[0..to]);
-            self.transform();
+        let hash_count = trit_count / HASH_LENGTH;
 
-            if len <= HASH_LENGTH {
-                break;
-            }
-            len -= HASH_LENGTH;
+        for i in 0..hash_count {
+            out.extend_from_slice(&self.state[0..HASH_LENGTH]);
+            Sponge::transform(self);
         }
+
+        out.extend_from_slice(&self.state[0..(trit_count - hash_count*HASH_LENGTH)]);
+        Sponge::transform(self);
 
         out
     }
