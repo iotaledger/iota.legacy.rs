@@ -10,3 +10,6 @@ mod tests;
 
 pub use tests::testsuite;
 pub use curl::*;
+
+use trytes::BCTrit;
+pub type DefaultCurl = Curl<BCTrit>;
