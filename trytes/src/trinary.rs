@@ -24,7 +24,7 @@ impl fmt::Debug for Trinary {
 }
 
 /// Default trait for serialisation into a `Trinary`
-trait IntoTrinary {
+pub trait IntoTrinary {
     fn trinary(&self) -> Trinary;
 }
 
@@ -34,17 +34,24 @@ impl IntoTrinary for Trinary {
     }
 }
 
-impl Trinary {
-    /// Default `Trinary` constructor
-    pub fn new(bytes: Vec<u8>, length: usize) -> Trinary {
-        Trinary {
-            bytes: bytes,
-            length: length,
-        }
-    }
+pub trait IntoTrits<T> {
+    fn trits(&self) -> Vec<T>;
+}
 
+impl IntoTrits<BCTrit> for Trinary {
+    /// Returns a binary-coded representation of the trits of this `Trinary`.
+    /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
+    fn trits(&self) -> Vec<BCTrit> {
+        self.trits()
+            .into_iter()
+            .map(trit_to_bct)
+            .collect()
+    }
+}
+
+impl IntoTrits<Trit> for Trinary {
     /// Returns a `Vec<Trit>` representation of this `Trinary`
-    pub fn trits(&self) -> Vec<Trit> {
+    fn trits(&self) -> Vec<Trit> {
         let mut trits: Vec<Trit> = Vec::new();
         let mut cnt = self.length;
 
@@ -63,14 +70,15 @@ impl Trinary {
 
         trits
     }
+}
 
-    /// Returns a binary-coded representation of the trits of this `Trinary`.
-    /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
-    pub fn bctrits(&self) -> Vec<BCTrit> {
-        self.trits()
-            .into_iter()
-            .map(trit_to_bct)
-            .collect()
+impl Trinary {
+    /// Default `Trinary` constructor
+    pub fn new(bytes: Vec<u8>, length: usize) -> Trinary {
+        Trinary {
+            bytes: bytes,
+            length: length,
+        }
     }
 
     /// Returns a `Vec<char>` of the trytes of this `Trinary`

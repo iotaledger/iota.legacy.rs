@@ -31,7 +31,7 @@ impl<T> Curl<T>
           Curl<T>: Sponge
 {
     /// Absorb a `&[Trit]` into the sponge
-    fn absorb(&mut self, trits: &[T]) {
+    pub fn absorb(&mut self, trits: &[T]) {
         let mut len = trits.len();
         let mut offset = 0;
         loop {
@@ -49,7 +49,7 @@ impl<T> Curl<T>
     }
 
     /// Squeeze the sponge and return a `Vec<T>` with `trit_count` trits
-    fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
+    pub fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
         let mut len = trit_count;
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
         let mut offset = 0;

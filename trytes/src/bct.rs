@@ -3,15 +3,16 @@ use std::iter::FromIterator;
 use constants::BCTrit;
 use constants::Trit;
 use trinary::Trinary;
+use trinary::IntoTrits;
 
 /// Converts an `Iterator<Trit>` to an instance of `Trinary`
-impl<'a> FromIterator<&'a BCTrit> for Trinary {
-    fn from_iter<I: IntoIterator<Item = &'a BCTrit>>(iter: I) -> Self {
+impl FromIterator<BCTrit> for Trinary {
+    fn from_iter<I: IntoIterator<Item = BCTrit>>(iter: I) -> Self {
 
         let mut trits: Vec<Trit> = Vec::new();
 
         for t in iter {
-            trits.push(bct_to_trit(*t));
+            trits.push(bct_to_trit(t));
         }
 
         trits.into_iter().collect()
@@ -52,14 +53,14 @@ mod test {
     #[test]
     fn test_trit_bc() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
-        let bct = t.bctrits();
+        let bct : Vec<BCTrit> = t.trits();
 
         let high = usize::max_value();
         let low = usize::min_value();
 
         assert_eq!(bct, vec![(high, low), (high, high), (low, high)]);
 
-        let tbc: Trinary = bct.iter().collect();
+        let tbc: Trinary = bct.iter().cloned().collect();
         assert_eq!(t, tbc);
     }
 }
