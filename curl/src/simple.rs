@@ -46,7 +46,7 @@ mod tests {
     #[test]
     pub fn run_testsuite() {
         use tests::testsuite;
-        testsuite::run::<Curl<Trit>>();
+        testsuite::run::<Trit>();
     }
 
 }
