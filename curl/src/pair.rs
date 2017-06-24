@@ -16,7 +16,7 @@ impl Sponge for Curl<BCTrit> {
     fn transform(&mut self) {
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 
-        for r in 0..NUMBER_OF_ROUNDS {
+        for _ in 0..NUMBER_OF_ROUNDS {
             scratchpad = (0..STATE_LENGTH)
                 .into_par_iter()
                 .map(|i| {
