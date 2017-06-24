@@ -14,13 +14,12 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
 /// Tuple implementation of the `Sponge` for Curl
 impl Sponge for Curl<BCTrit> {
     fn transform(&mut self) {
-        let STATE_INDICES: Vec<_> = (0..STATE_LENGTH).collect();
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 
         for _ in 0..NUMBER_OF_ROUNDS {
-            scratchpad = STATE_INDICES
-                .par_iter()
-                .map(|&i| {
+            scratchpad = (0..STATE_LENGTH)
+                .into_par_iter()
+                .map(|i| {
                          step(scratchpad[TRANSFORM_INDICES[i]],
                               scratchpad[TRANSFORM_INDICES[i + 1]])
                      })
