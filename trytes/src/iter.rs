@@ -46,7 +46,9 @@ impl<'a> Iterator for TrinaryIterator<'a> {
 
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
+    use core::str::FromStr;
+    use collections::Vec;
+    
     use super::*;
     #[test]
     fn test_iter() {

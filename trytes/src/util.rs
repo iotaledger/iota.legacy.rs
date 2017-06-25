@@ -8,14 +8,12 @@ pub fn tryte_to_trits(trit: char) -> [Trit; TRITS_PER_TRYTE] {
 
 /// Converts a slice of trits to a byte
 /// `trits.len()` must be less or equal to `TRITS_PER_BYTE`
-pub fn trits_to_byte(tritss: &[Trit]) -> u8 {
-    assert!(tritss.len() <= TRITS_PER_BYTE);
-
-    let trits : Vec<Trit> = tritss.iter().cloned().rev().collect();
+pub fn trits_to_byte(trits: &[Trit]) -> u8 {
+    assert!(trits.len() <= TRITS_PER_BYTE);
 
     let mut value: Trit = 0;
-    for j in trits {
-        value = value * RADIX + j;
+    for j in (0..trits.len()).rev() {
+        value = value * RADIX + trits[j];
     }
 
     value as u8

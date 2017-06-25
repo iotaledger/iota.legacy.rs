@@ -1,3 +1,5 @@
+use collections::Vec;
+
 use constants::*;
 use trytes::*;
 use curl::*;
