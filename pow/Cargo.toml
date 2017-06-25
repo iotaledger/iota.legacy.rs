@@ -7,4 +7,5 @@ authors = ["Paul D Handy <paul@pauldhandy.com>",
 [dependencies]
 iota-curl = { path = "../curl" }
 iota-trytes = { path = "../trytes" }
+error-chain = "0.10"
 rayon = "*"
