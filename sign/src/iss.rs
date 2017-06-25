@@ -1,8 +1,11 @@
 // This is a straight clone off https://github.com/Come-from-Beyond/ISS/blob/master/src/cfb/iss/ISS.java for testing purposes.
 // XXX DO NOT EXPECT THE METHODS OR CODE IN THIS MODULE TO PERSIST XXX
+use collections::Vec;
+
 use trytes::*;
 use trytes::constants::RADIX;
 use curl::*;
+
 const TRYTE_WIDTH: usize = 3;
 const MAX_TRYTE_VALUE: i8 = 1;
 const MIN_TRYTE_VALUE: i8 = -1;
@@ -151,7 +154,5 @@ mod test {
         let key = key(subseed);
         let key_digest = digest_key(key);
         let address = address(key_digest);
-
-        println!("{}", address);
     }
 }
