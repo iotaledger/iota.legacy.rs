@@ -3,9 +3,8 @@ use std::iter::FromIterator;
 use constants::BCTrit;
 use constants::Trit;
 use trinary::Trinary;
-use trinary::IntoTrits;
 
-/// Converts an `Iterator<Trit>` to an instance of `Trinary`
+/// Converts an `Iterator<BCTrit>` to an instance of `Trinary`
 impl FromIterator<BCTrit> for Trinary {
     fn from_iter<I: IntoIterator<Item = BCTrit>>(iter: I) -> Self {
 
@@ -50,6 +49,8 @@ pub fn bct_to_trit(t: BCTrit) -> Trit {
 #[cfg(test)]
 mod test {
     use super::*;
+    use trinary::IntoTrits;
+
     #[test]
     fn test_trit_bc() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
