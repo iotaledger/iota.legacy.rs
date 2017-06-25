@@ -10,8 +10,8 @@ pub fn transpose(state: &[BCTrit]) {
     let mut output: [(BigUint, BigUint); mem::size_of::<usize>()];
     let bytes: [u8; state.len()] = [0u8; state.len()];
     for i in 0..mem::size_of::<usize>() {
-        output[i].0 = BigUint::from_bytes_be(&bytes);
-        output[i].1 = BigUint::from_bytes_be(&bytes);
+        output[i].0 = BigUint::from_bytes_le(&bytes);
+        output[i].1 = BigUint::from_bytes_le(&bytes);
         for j in 0..state.len() {
             if state[j].0 & identity[i] != 0 {
                 output[i].0 |= 1 << j;
