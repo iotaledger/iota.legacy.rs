@@ -1,4 +1,5 @@
 use trytes::*;
+use collections::String;
 
 pub enum PoWError {
     /// Input trinary is not of `TRANSACTION_LENGTH`

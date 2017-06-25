@@ -1,4 +1,5 @@
-use std::iter::FromIterator;
+use collections::Vec;
+use core::iter::FromIterator;
 
 use constants::BCTrit;
 use constants::Trit;
@@ -50,11 +51,12 @@ pub fn bct_to_trit(t: BCTrit) -> Trit {
 mod test {
     use super::*;
     use trinary::IntoTrits;
+    use collections::*;
 
     #[test]
     fn test_trit_bc() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
-        let bct : Vec<BCTrit> = t.trits();
+        let bct: Vec<BCTrit> = t.trits();
 
         let high = usize::max_value();
         let low = usize::min_value();
