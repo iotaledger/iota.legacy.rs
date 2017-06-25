@@ -1,3 +1,8 @@
+#![no_std]
+
+#![feature(alloc)]
+extern crate alloc as collections;
+
 extern crate rayon;
 extern crate iota_trytes as trytes;
 

@@ -2,7 +2,7 @@
 
 use curl::*;
 use trytes::*;
-use std::iter::FromIterator;
+use core::iter::FromIterator;
 
 pub mod testsuite {
     use super::*;

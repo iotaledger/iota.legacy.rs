@@ -1,5 +1,6 @@
-use std::iter::FromIterator;
-use std::str::FromStr;
+use collections::vec::Vec;
+use core::iter::FromIterator;
+use core::str::FromStr;
 
 use trinary::*;
 use constants::*;
@@ -16,7 +17,7 @@ pub enum TrinaryParseError {
 /// Converts an `Iterator<char>` to an instance of `Trinary`
 impl FromIterator<char> for Trinary {
     fn from_iter<I: IntoIterator<Item = char>>(iter: I) -> Self {
-        let mut trits: Vec<Trit> = Vec::new();
+        let mut trits: Vec<Trit> = Vec::with_capacity(7);
         let mut bytes: Vec<u8> = Vec::new();
         let mut n: usize = 0;
 
@@ -61,6 +62,7 @@ impl FromStr for Trinary {
 mod tests {
     use super::*;
     use TrinaryParseError::*;
+    use collections::string::ToString;
 
     #[test]
     fn only_valid_chars() {

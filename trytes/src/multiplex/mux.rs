@@ -2,8 +2,9 @@ use trinary::*;
 use constants::*;
 use multiplex::constants::*;
 
-use std::ops::AddAssign;
-use std::ops::Index;
+use core::ops::AddAssign;
+use core::ops::Index;
+use collections::Vec;
 
 pub struct TrinaryMultiplexer<'a> {
     trinaries: Vec<&'a Trinary>,
@@ -126,7 +127,7 @@ impl<'a> TrinaryMultiplexer<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::str::FromStr;
+    use core::str::FromStr;
     
     // demux is already testing the other functionality
 

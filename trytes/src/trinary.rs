@@ -1,4 +1,7 @@
-use std::fmt;
+use collections::vec::Vec;
+use collections::string::String;
+
+use core::fmt;
 use constants::*;
 use util::*;
 use bct::*;

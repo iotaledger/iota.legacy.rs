@@ -2,9 +2,10 @@ use trinary::*;
 use constants::*;
 use multiplex::constants::*;
 
-use std::cmp::min;
-use std::ops::Index;
-use std::iter::IntoIterator;
+use core::cmp::min;
+use core::ops::Index;
+use core::iter::IntoIterator;
+use collections::Vec;
 
 
 pub struct TrinaryDemultiplexer {
@@ -89,7 +90,7 @@ impl TrinaryDemultiplexer {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::str::FromStr;
+    use core::str::FromStr;
     use mux::*;
 
     fn t1() -> Trinary {
