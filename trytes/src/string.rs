@@ -60,7 +60,6 @@ impl FromStr for Trinary {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use trinary::*;
     use TrinaryParseError::*;
 
     #[test]
@@ -82,13 +81,10 @@ mod tests {
         assert_eq!(opt.bytes(), &in_bytes);
     }
 
-    use mappings::*;
     #[test]
     fn fromtostr_test1() {
         let trytes = "UYSSM9KIH";
         let back = Trinary::from_str(trytes).ok().unwrap();
-
-        let trits : Vec<Trit> = back.trits();
 
         assert_eq!(back.to_string(), trytes);
     }
@@ -108,7 +104,6 @@ mod tests {
     fn fromtostr_test3() {
         let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQI";
         let trinary : Trinary = trytes.chars().collect();
-        let in_trits : Vec<Trit> = trinary.trits();
         assert_eq!(trinary.to_string(), trytes);
     }
 }
