@@ -6,7 +6,7 @@ authors = ["Paul D Handy <paul@pauldhandy.com>",
 keywords = ["no_std"]
 
 [features]
-default = ["parallel"]
+default = []
 parallel = ["rayon"]
 
 [dependencies]
