@@ -1,0 +1,9 @@
+[package]
+name = "iota-checksum"
+version = "0.1.0"
+authors = ["Paul D Handy <paul@pauldhandy.com>"]
+
+[dependencies]
+iota-trytes = { path = "../trytes" }
+iota-curl = { path = "../curl" }
+hamming = "*"
