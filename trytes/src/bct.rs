@@ -54,7 +54,7 @@ mod test {
     #[test]
     fn test_trit_bc() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
-        let bct : Vec<BCTrit> = t.trits();
+        let bct: Vec<BCTrit> = t.trits();
 
         let high = usize::max_value();
         let low = usize::min_value();

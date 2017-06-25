@@ -116,9 +116,9 @@ mod test {
         let t3 = t3();
 
         let mut multi = TrinaryMultiplexer::new();
-        multi += &t1;
-        multi += &t2;
-        multi += &t3;
+        multi.add(&t1).ok();
+        multi.add(&t2).ok();
+        multi.add(&t3).ok();
 
         let ex = multi.extract();
         let demux = TrinaryDemultiplexer::new(&ex);
@@ -133,9 +133,9 @@ mod test {
         let t3 = t3();
 
         let mut multi = TrinaryMultiplexer::new();
-        multi += &t1;
-        multi += &t2;
-        multi += &t3;
+        multi.add(&t1).ok();
+        multi.add(&t2).ok();
+        multi.add(&t3).ok();
 
         let ex = multi.extract();
         let demux = TrinaryDemultiplexer::new(&ex);
@@ -153,14 +153,14 @@ mod test {
         let t3 = t3();
 
         let mut multi = TrinaryMultiplexer::new();
-        multi += &t1;
-        multi += &t2;
-        multi += &t3;
+        multi.add(&t1).ok();
+        multi.add(&t2).ok();
+        multi.add(&t3).ok();
 
         let ex = multi.extract();
         let demux = TrinaryDemultiplexer::new(&ex);
 
-        for (a,b) in multi.iter().zip(demux.iter()) {
+        for (a, b) in multi.iter().zip(demux.iter()) {
             assert_eq!(a, b);
         }
     }

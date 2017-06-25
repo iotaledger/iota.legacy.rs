@@ -2,8 +2,8 @@ use trinary::*;
 use constants::*;
 use multiplex::constants::*;
 
-use std::ops::AddAssign;
 use std::ops::Index;
+use errors::*;
 
 pub struct TrinaryMultiplexer<'a> {
     trinaries: Vec<&'a Trinary>,
@@ -13,12 +13,6 @@ impl<'a> Index<usize> for TrinaryMultiplexer<'a> {
     type Output = Trinary;
     fn index(&self, idx: usize) -> &Self::Output {
         self.trinaries[idx]
-    }
-}
-
-impl<'a> AddAssign<&'a Trinary> for TrinaryMultiplexer<'a> {
-    fn add_assign(&mut self, trinary: &'a Trinary) {
-        self.add(trinary);
     }
 }
 
@@ -47,7 +41,8 @@ impl<'a> Iterator for TrinaryMultiplexerIter<'a> {
 }
 
 /// A helper class to encode multiple `Trinary` in a single vector of `BCTrit`
-/// Essentially: for the i-th `Trit` in a `Trinary`, the i-th bit of the `BCTrit` is set to the corresponding bit representation.
+/// Essentially: for the i-th `Trit` in a `Trinary`, the i-th bit of the `BCTrit`
+/// is set to the corresponding bit representation.
 impl<'a> TrinaryMultiplexer<'a> {
     pub fn new() -> Self {
         TrinaryMultiplexer { trinaries: Vec::new() }
@@ -55,19 +50,21 @@ impl<'a> TrinaryMultiplexer<'a> {
 
     /// Adds a `Trinary` to the multiplexer.
     /// This will `assert!` that `len() != max_len()`
-    pub fn add(&mut self, t: &'a Trinary) -> usize {
-        assert!(
-            self.trinaries.len() < Self::max_len(),
-            "Maximum supported number of trinaries already being multiplexed."
-        );
+    pub fn add(&mut self, t: &'a Trinary) -> Result<usize> {
+        if self.trinaries.len() == Self::max_len() {
+            return Err(ErrorKind::MaxMultiplexReached.into());
+        }
 
-        assert!(
-            self.trinaries.len() == 0 || t.len_trits() == self.trinaries[0].len_trits(),
-            "Different Trinary trit lengths are not supported."
-        );
+        if self.trinaries.len() > 0 && t.len_trits() != self.trinaries[0].len_trits() {
+            return Err(
+                ErrorKind::TrinaryLengthNotEqual(self.trinaries[0].len_trits(), t.len_trits())
+                    .into(),
+            );
+        }
 
         self.trinaries.push(t);
-        self.trinaries.len()
+
+        Ok(self.trinaries.len())
     }
 
     pub fn iter(&self) -> TrinaryMultiplexerIter {
@@ -127,11 +124,10 @@ impl<'a> TrinaryMultiplexer<'a> {
 mod test {
     use super::*;
     use std::str::FromStr;
-    
+
     // demux is already testing the other functionality
 
     #[test]
-    #[should_panic]
     fn mux_should_assert_same_trit_size() {
 
         let t1 = Trinary::from_str("ABCD").ok().unwrap();
@@ -139,7 +135,7 @@ mod test {
 
         let mut mux = TrinaryMultiplexer::default();
 
-        mux += &t1;
-        mux += &t2;
+        mux.add(&t1).ok().unwrap();
+        mux.add(&t2).expect_err("incompatible trit lengths");
     }
 }

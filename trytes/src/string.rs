@@ -1,17 +1,11 @@
 use std::iter::FromIterator;
 use std::str::FromStr;
+use std::result;
 
 use trinary::*;
 use constants::*;
 use util::*;
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum TrinaryParseError {
-    /// Input string contained an invalid character
-    InvalidCharacter,
-    /// Input string was empty
-    EmptyString,
-}
+use errors::*;
 
 /// Converts an `Iterator<char>` to an instance of `Trinary`
 impl FromIterator<char> for Trinary {
@@ -37,19 +31,17 @@ impl FromIterator<char> for Trinary {
 
 /// Default deserialisation path from string to an instance of `Trinary`
 impl FromStr for Trinary {
-    type Err = TrinaryParseError;
+    type Err = ErrorKind;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use TrinaryParseError::*;
+    fn from_str(s: &str) -> result::Result<Self, Self::Err> {
         if s.is_empty() {
-            return Err(EmptyString);
+            return Err(ErrorKind::EmptyInputString);
         }
 
-        if s.chars()
-            .filter(|&c| TRYTE_ALPHABET.find(c).is_none())
-            .count() > 0
-        {
-            return Err(InvalidCharacter);
+        for (i, c) in s.chars().enumerate() {
+            if TRYTE_ALPHABET.find(c).is_none() {
+                return Err(ErrorKind::InvalidInputChar(i, c));
+            }
         }
 
         // String has valid length and alphabet
@@ -60,16 +52,15 @@ impl FromStr for Trinary {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use TrinaryParseError::*;
 
     #[test]
     fn only_valid_chars() {
-        assert_eq!(Trinary::from_str("a"), Err(InvalidCharacter))
+        Trinary::from_str("a").expect_err("only_valid_chars");
     }
 
     #[test]
     fn no_empty_string() {
-        assert_eq!(Trinary::from_str(""), Err(EmptyString))
+        Trinary::from_str("").expect_err("no_empty_string");
     }
 
     #[test]
@@ -91,7 +82,8 @@ mod tests {
 
     #[test]
     fn fromtostr_test2() {
-        let trytes = "LCUNQ99HCQM9HSATSQOPOWXXKGKDVZSEKVWJZRGWFRVLEQ9XG9INIPKAM9BQVGCIRNPZOS9LUZRBHB9P";
+        let trytes = "LCUNQ99HCQM9HSATSQOPOWXXKGKDVZSEKVWJZRGWFRVLEQ9XG9INIPKA\
+                      M9BQVGCIRNPZOS9LUZRBHB9P";
         let back = Trinary::from_str(trytes)
             .ok()
             .map(|a| a.to_string())
@@ -103,7 +95,7 @@ mod tests {
     #[test]
     fn fromtostr_test3() {
         let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQI";
-        let trinary : Trinary = trytes.chars().collect();
+        let trinary: Trinary = trytes.chars().collect();
         assert_eq!(trinary.to_string(), trytes);
     }
 }

@@ -32,10 +32,10 @@ mod tests {
 
     #[test]
     fn from_iterator_trit() {
-        let trits : Vec<Trit> = vec![0,0,0,-1,0,1,1,0,-1];
+        let trits: Vec<Trit> = vec![0, 0, 0, -1, 0, 1, 1, 0, -1];
         let expected = "9HS";
 
-        let trinary : Trinary = trits.iter().cloned().collect();
+        let trinary: Trinary = trits.iter().cloned().collect();
         assert_eq!(expected, trinary.to_string());
     }
 }

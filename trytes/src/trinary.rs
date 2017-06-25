@@ -42,10 +42,7 @@ impl IntoTrits<BCTrit> for Trinary {
     /// Returns a binary-coded representation of the trits of this `Trinary`.
     /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
     fn trits(&self) -> Vec<BCTrit> {
-        self.trits()
-            .into_iter()
-            .map(trit_to_bct)
-            .collect()
+        self.trits().into_iter().map(trit_to_bct).collect()
     }
 }
 

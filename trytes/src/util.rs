@@ -11,7 +11,7 @@ pub fn tryte_to_trits(trit: char) -> [Trit; TRITS_PER_TRYTE] {
 pub fn trits_to_byte(tritss: &[Trit]) -> u8 {
     assert!(tritss.len() <= TRITS_PER_BYTE);
 
-    let trits : Vec<Trit> = tritss.iter().cloned().rev().collect();
+    let trits: Vec<Trit> = tritss.iter().cloned().rev().collect();
 
     let mut value: Trit = 0;
     for j in trits {
@@ -61,7 +61,7 @@ mod test {
     #[test]
     fn bytes_to_trits() {
         let bytes: [u8; 6] = [20, 25, -14_i8 as u8, -2_i8 as u8, 83, 1];
-        let exp : Trinary = "TJHLYYRAD".chars().collect();
+        let exp: Trinary = "TJHLYYRAD".chars().collect();
         let trinary = Trinary::new(bytes.iter().cloned().collect(), 27);
 
         assert_eq!(exp, trinary);
