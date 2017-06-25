@@ -5,7 +5,7 @@ use constants::Trit;
 use trinary::Trinary;
 use trinary::IntoTrits;
 
-/// Converts an `Iterator<Trit>` to an instance of `Trinary`
+/// Converts an `Iterator<BCTrit>` to an instance of `Trinary`
 impl FromIterator<BCTrit> for Trinary {
     fn from_iter<I: IntoIterator<Item = BCTrit>>(iter: I) -> Self {
 

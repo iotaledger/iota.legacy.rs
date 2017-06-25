@@ -4,7 +4,7 @@ use util::*;
 use bct::*;
 
 /// `Trinary` holds an array of trinary values.
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Hash, Clone, Eq, PartialEq)]
 pub struct Trinary {
     bytes: Vec<u8>,
     length: usize,

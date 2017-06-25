@@ -11,6 +11,7 @@ pub mod string;
 pub mod trits;
 pub mod iter;
 pub mod bct;
+pub mod multiplex;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;
@@ -21,3 +22,4 @@ pub use trinary::*;
 pub use string::*;
 pub use trits::*;
 pub use iter::*;
+pub use multiplex::*;
