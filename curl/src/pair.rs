@@ -1,4 +1,6 @@
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
+
 use collections::Vec;
 
 use constants::*;
@@ -15,12 +17,32 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
 
 /// Tuple implementation of the `Sponge` for Curl
 impl Sponge for Curl<BCTrit> {
+
+    #[cfg(feature = "parallel")]
     fn transform(&mut self) {
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 
         for _ in 0..NUMBER_OF_ROUNDS {
             scratchpad = (0..STATE_LENGTH)
                 .into_par_iter()
+                .map(|i| {
+                    step(
+                        scratchpad[TRANSFORM_INDICES[i]],
+                        scratchpad[TRANSFORM_INDICES[i + 1]],
+                    )
+                })
+                .collect();
+        }
+        self.state.clone_from_slice(&scratchpad);
+    }
+
+    #[cfg(not(feature = "parallel"))]
+    fn transform(&mut self) {
+        let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
+
+        for _ in 0..NUMBER_OF_ROUNDS {
+            scratchpad = (0..STATE_LENGTH)
+                .into_iter()
                 .map(|i| {
                     step(
                         scratchpad[TRANSFORM_INDICES[i]],

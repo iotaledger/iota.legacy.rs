@@ -3,6 +3,7 @@
 #![feature(alloc)]
 extern crate alloc as collections;
 
+#[cfg(feature = "parallel")]
 extern crate rayon;
 extern crate iota_trytes as trytes;
 
