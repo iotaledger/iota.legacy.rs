@@ -154,5 +154,7 @@ mod test {
         let key = key(subseed);
         let key_digest = digest_key(key);
         let address = address(key_digest);
+
+        address.len_trits();
     }
 }

@@ -1,7 +1,6 @@
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
-use collections::Vec;
 use constants::*;
 use trytes::*;
 use curl::*;
@@ -30,7 +29,6 @@ impl Sponge for Curl<Trit> {
 
     #[cfg(not(feature = "parallel"))]
     fn transform(&mut self) {
-        let mut scratchpad_index: usize = 0;
         let mut state_clone: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
 
         for _ in 0..NUMBER_OF_ROUNDS {
@@ -39,16 +37,6 @@ impl Sponge for Curl<Trit> {
                     TRUTH_TABLE[(self.state[TRANSFORM_INDICES[state_index]] +
                                      (self.state[TRANSFORM_INDICES[state_index + 1]] << 2) +
                                      5) as usize];
-                /*let scratchpad_index_save = scratchpad_index;
-                if scratchpad_index < 365 {
-                    scratchpad_index += 364;
-                } else {
-                    scratchpad_index -= 365;
-                };
-                state_clone[state_index] = TRUTH_TABLE[(self.state[scratchpad_index_save] +
-                                                            (self.state[scratchpad_index] << 2) +
-                                                            5) as
-                                                           usize];*/
             }
 
             self.state.copy_from_slice(&state_clone);

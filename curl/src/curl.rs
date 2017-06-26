@@ -53,7 +53,6 @@ where
         }
 
         out.extend_from_slice(&self.state[0..(trit_count - hash_count * HASH_LENGTH)]);
-        Sponge::transform(self);
 
         out
     }
