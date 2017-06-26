@@ -15,7 +15,7 @@ pub fn curl_pair_new() -> *mut c_void {
 
 #[no_mangle]
 pub fn curl_pair_delete(c_curl: *mut c_void) {
-    let boxed: Box<Curl<BCTrit>> = unsafe { Box::from_raw(c_curl as *mut Curl<BCTrit>) };
+    unsafe { Box::from_raw(c_curl as *mut Curl<BCTrit>) };
 }
 
 #[no_mangle]

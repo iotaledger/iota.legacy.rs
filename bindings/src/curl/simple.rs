@@ -16,7 +16,7 @@ pub fn curl_simple_new() -> *mut c_void {
 #[no_mangle]
 pub fn curl_simple_delete(c_curl: *mut c_void) {
     // Deallocate c_curl
-    let boxed: Box<Curl<Trit>> = unsafe { Box::from_raw(c_curl as *mut Curl<Trit>) };
+    unsafe { Box::from_raw(c_curl as *mut Curl<Trit>) };
 }
 
 #[no_mangle]

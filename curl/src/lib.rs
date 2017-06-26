@@ -1,6 +1,5 @@
-#![cfg(test)]
+#![allow(unused_features)]
 #![feature(test)]
-
 #![feature(alloc)]
 #![no_std]
 extern crate alloc as collections;
