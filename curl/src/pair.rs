@@ -10,13 +10,15 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
     let (alpha, beta) = first;
     let (delta_0, gamma) = second;
     let delta = (alpha | (!gamma)) & (delta_0 ^ beta);
-    (!delta, (alpha ^ gamma) | delta)
+    (!delta, ((alpha ^ gamma) | delta))
 }
 
 /// Tuple implementation of the `Sponge` for Curl
 impl Sponge for Curl<BCTrit> {
     #[cfg(feature = "parallel")]
     fn transform(&mut self) {
+        use collections::Vec;
+
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 
         for _ in 0..NUMBER_OF_ROUNDS {
@@ -35,7 +37,7 @@ impl Sponge for Curl<BCTrit> {
 
     #[cfg(not(feature = "parallel"))]
     fn transform(&mut self) {
-        let mut state_clone : [BCTrit; STATE_LENGTH] = [(0,0); STATE_LENGTH];
+        let mut state_clone: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
         for _ in 0..NUMBER_OF_ROUNDS {
 
