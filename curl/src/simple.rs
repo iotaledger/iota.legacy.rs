@@ -1,7 +1,6 @@
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
-use collections::Vec;
 use constants::*;
 use trytes::*;
 use curl::*;
