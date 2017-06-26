@@ -55,6 +55,10 @@ fn curl_pair(b: &mut Bencher) {
 
     let trits : Vec<BCTrit> = trans.trits();
     let mut curl = Curl::<BCTrit>::default();
+    curl.reset();
+    curl.absorb(&trits);
+    curl.squeeze(243);
+
     b.iter(|| {
         curl.reset();
         curl.absorb(&trits);
@@ -113,6 +117,10 @@ fn curl_simple(b: &mut Bencher) {
 
     let trits : Vec<Trit> = trans.trits();
     let mut curl = Curl::<Trit>::default();
+    curl.reset();
+    curl.absorb(&trits);
+    curl.squeeze(243);
+
     b.iter(|| {
         curl.reset();
         curl.absorb(&trits);
