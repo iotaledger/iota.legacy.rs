@@ -3,7 +3,6 @@ use iota_curl::*;
 use cty::*;
 use alloc::Vec;
 use alloc::string::ToString;
-use core::mem;
 use alloc::boxed::Box;
 
 use util::c_str_to_static_slice;
@@ -16,7 +15,7 @@ pub fn curl_pair_new() -> *mut c_void {
 
 #[no_mangle]
 pub fn curl_pair_delete(c_curl: *mut c_void) {
-    unsafe { mem::drop(Box::from_raw(c_curl)) }
+    let boxed: Box<Curl<BCTrit>> = unsafe { Box::from_raw(c_curl as *mut Curl<BCTrit>) };
 }
 
 #[no_mangle]
@@ -31,13 +30,13 @@ pub fn curl_pair_absorb(c_curl: *mut c_void, trinary: *const c_char) {
 
 #[no_mangle]
 pub fn curl_pair_reset(c_curl: *mut c_void) {
-    let mut curl: Box<Curl<BCTrit>> = unsafe { Box::from_raw(c_curl as *mut Curl<BCTrit>) };
+    let curl: &mut Curl<BCTrit>= unsafe { &mut *(c_curl as *mut Curl<BCTrit>) };
     curl.reset();
 }
 
 #[no_mangle]
 pub fn curl_pair_squeeze(c_curl: *mut c_void, trit_count: isize) -> *const u8 {
-    let mut curl: Box<Curl<BCTrit>> = unsafe { Box::from_raw(c_curl as *mut Curl<BCTrit>) };
+    let curl: &mut Curl<BCTrit>= unsafe { &mut *(c_curl as *mut Curl<BCTrit>) };
     let trits = curl.squeeze(trit_count as usize);
 
     let trinary: Trinary = trits.into_iter().collect();
