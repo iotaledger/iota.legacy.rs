@@ -2,8 +2,8 @@ use constants::*;
 use mappings::*;
 
 /// Converts a tryte to `TRITS_PER_TRYTE` trits
-pub fn tryte_to_trits(trit: char) -> [Trit; TRITS_PER_TRYTE] {
-    TRYTE_TO_TRITS_MAPPINGS[TRYTE_ALPHABET.find(trit).unwrap()]
+pub fn tryte_to_trits(trit: char) -> &'static [Trit; TRITS_PER_TRYTE] {
+    &TRYTE_TO_TRITS_MAPPINGS[TRYTE_ALPHABET.find(trit).unwrap()]
 }
 
 /// Converts a slice of trits to a byte
@@ -48,7 +48,7 @@ mod test {
     fn test_char_to_trit() {
         for (i, c) in TRYTE_ALPHABET.chars().enumerate() {
             let ts = TRYTE_TO_TRITS_MAPPINGS[i];
-            let m = tryte_to_trits(c);
+            let m = tryte_to_trits(c).clone();
 
             assert_eq!(ts, m);
 

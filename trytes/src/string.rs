@@ -23,7 +23,7 @@ impl FromIterator<char> for Trinary {
 
         for c in iter {
             n += 1;
-            trits.extend_from_slice(&tryte_to_trits(c));
+            trits.extend_from_slice(tryte_to_trits(c));
 
             if trits.len() >= TRITS_PER_BYTE {
                 bytes.push(trits_to_byte(&trits[0..TRITS_PER_BYTE]));
