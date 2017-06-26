@@ -22,7 +22,7 @@ parallel = ["iota-sign/parallel", "iota-curl/parallel"]
 
 [dependencies]
 iota-trytes = { path = "../trytes" }
-cty = "*"
+cty = { git = "https://github.com/th0br0/cty.git", branch = "feature/wasm"}
 
 [dependencies.iota-sign]
 path = "../sign"
