@@ -93,10 +93,11 @@ impl<'a> TrinaryMultiplexer<'a> {
 
     /// Internal method for the multiplexing logic.
     fn disjoint_to_multiplexed(ts: &[&Trinary]) -> Vec<BCTrit> {
-        let mut out: Vec<BCTrit> = Vec::new();
-        let trits: Vec<Vec<Trit>> = ts.iter().map(|&t| t.trits()).collect();
-        let trit_count = trits[0].len();
+        let trit_count = ts[0].len_trits();
         let trinary_count = ts.len();
+
+        let mut out: Vec<BCTrit> = Vec::with_capacity(trit_count);
+        let trits: Vec<Vec<Trit>> = ts.iter().map(|&t| t.trits()).collect();
 
         for i in 0..trit_count {
             let (mut low, mut high): BCTrit = (0, 0);

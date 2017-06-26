@@ -55,7 +55,7 @@ impl IntoTrits<BCTrit> for Trinary {
 impl IntoTrits<Trit> for Trinary {
     /// Returns a `Vec<Trit>` representation of this `Trinary`
     fn trits(&self) -> Vec<Trit> {
-        let mut trits: Vec<Trit> = Vec::new();
+        let mut trits: Vec<Trit> = Vec::with_capacity(self.len_trits());
         let mut cnt = self.length;
 
         for b in &self.bytes {
