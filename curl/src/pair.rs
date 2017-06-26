@@ -17,7 +17,6 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
 
 /// Tuple implementation of the `Sponge` for Curl
 impl Sponge for Curl<BCTrit> {
-
     #[cfg(feature = "parallel")]
     fn transform(&mut self) {
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
@@ -38,20 +37,19 @@ impl Sponge for Curl<BCTrit> {
 
     #[cfg(not(feature = "parallel"))]
     fn transform(&mut self) {
-        let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
+        let mut state_clone : [BCTrit; STATE_LENGTH] = [(0,0); STATE_LENGTH];
 
         for _ in 0..NUMBER_OF_ROUNDS {
-            scratchpad = (0..STATE_LENGTH)
-                .into_iter()
-                .map(|i| {
-                    step(
-                        scratchpad[TRANSFORM_INDICES[i]],
-                        scratchpad[TRANSFORM_INDICES[i + 1]],
-                    )
-                })
-                .collect();
+
+            for i in 0..STATE_LENGTH {
+                state_clone[i] = step(
+                    self.state[TRANSFORM_INDICES[i]],
+                    self.state[TRANSFORM_INDICES[i + 1]],
+                );
+            }
+
+            self.state.copy_from_slice(&state_clone);
         }
-        self.state.clone_from_slice(&scratchpad);
     }
 
     fn reset(&mut self) {
