@@ -1,3 +1,4 @@
+#![allow(unused_features)]
 #![feature(test)]
 #![feature(alloc)]
 #![no_std]
