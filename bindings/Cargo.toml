@@ -1,0 +1,33 @@
+[package]
+name = "iota-bindings"
+version = "0.1.0"
+authors = ["Andreas C. Osowski <andreas@osowski.de>"]
+keywords = ["no_std"]
+
+[lib]
+path = "src/lib.rs"
+test = true
+doc = true
+required-features = ["parallel"]
+
+[[bin]]
+name = "iota_bindings"
+path = "src/main.rs"
+doc = false
+test = false
+
+[features]
+default = []
+parallel = ["iota-sign/parallel", "iota-curl/parallel"]
+
+[dependencies]
+iota-trytes = { path = "../trytes" }
+cty = "*"
+
+[dependencies.iota-sign]
+path = "../sign"
+default-features = false
+
+[dependencies.iota-curl]
+path = "../curl"
+
