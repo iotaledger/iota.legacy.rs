@@ -1,23 +1,20 @@
 use trytes::*;
 use collections::String;
 
-pub enum PoWError {
-    /// Input trinary is not of `TRANSACTION_LENGTH`
-    InvalidInputSize,
-    /// Min weight magnitude exceeds `HASH_LENGT``
-    InvalidMinWeightMagnitude,
-    /// Custom implementation error
-    CustomError(String)
-}
-
-/// All implementations of the IOTA proof of work algorithm must
-/// implement this trait and conform to the test suite.
-///
-/// # Arguments
-///
-/// * `transaction` - The transaction encoded as a `Trinary`.
-///   TODO Note that this will be changed to use the proper `Transaction` model class in the future.
-/// * `mwm` - minimum weight magnitude
-pub trait PoW {
-    fn search_nonce(transaction: Trinary, mwm: u8) -> Result<Trinary, PoWError>;
+pub fn get_pow_check(min_weight: usize) -> impl Fn(&[BCTrit]) -> u32 {
+    move |&state| {
+        let index;
+        let mut nonce_probe: usize = usize::max_value();
+        for i in (HASH_LENGTH - min_weight)..HASH_LENGTH {
+            nonce_probe &= !(state[i].0 ^ state[i].1);
+            if nonce_probe == 0 {
+                break;
+            }
+        }
+        if nonce_probe != 0 {
+            nonce_probe.trailing_zeros() + 1
+        } else {
+            0
+        }
+    }
 }
