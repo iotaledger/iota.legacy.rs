@@ -5,7 +5,7 @@ use multiplex::constants::*;
 use core::cmp::min;
 use core::ops::Index;
 use core::iter::IntoIterator;
-use collections::Vec;
+use alloc::Vec;
 
 
 pub struct TrinaryDemultiplexer {

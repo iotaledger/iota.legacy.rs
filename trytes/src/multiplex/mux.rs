@@ -4,7 +4,7 @@ use multiplex::constants::*;
 
 use core::ops::AddAssign;
 use core::ops::Index;
-use collections::Vec;
+use alloc::Vec;
 
 pub struct TrinaryMultiplexer<'a> {
     trinaries: Vec<&'a Trinary>,

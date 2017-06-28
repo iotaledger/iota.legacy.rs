@@ -1,4 +1,4 @@
-use collections::Vec;
+use alloc::Vec;
 use core::iter::FromIterator;
 
 use constants::BCTrit;
@@ -51,7 +51,7 @@ pub fn bct_to_trit(t: BCTrit) -> Trit {
 mod test {
     use super::*;
     use trinary::IntoTrits;
-    use collections::*;
+    use alloc::*;
 
     #[test]
     fn test_trit_bc() {

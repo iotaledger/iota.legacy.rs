@@ -1,4 +1,4 @@
-use collections::vec::Vec;
+use alloc::vec::Vec;
 use core::iter::FromIterator;
 use core::str::FromStr;
 
@@ -62,7 +62,7 @@ impl FromStr for Trinary {
 mod tests {
     use super::*;
     use TrinaryParseError::*;
-    use collections::string::ToString;
+    use alloc::string::ToString;
 
     #[test]
     fn only_valid_chars() {

@@ -2,8 +2,10 @@
 #![feature(alloc)]
 #![feature(lang_items)]
 #![feature(link_args)]
-#![feature(core_intrinsics)]
 #![no_std]
+
+#![cfg(not(test))]
+#![feature(core_intrinsics)]
 
 extern crate alloc;
 
@@ -13,7 +15,6 @@ extern crate iota_sign;
 extern crate iota_trytes;
 extern crate iota_curl;
 
-use core::intrinsics;
 
 pub mod util;
 pub mod sign;
@@ -29,15 +30,18 @@ extern "C" {}
 // These functions are used by the compiler, but not
 // for a bare-bones hello world. These are normally
 // provided by libstd.
+#[cfg(not(test))]
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern "C" fn rust_eh_personality() {}
 
 // This function may be needed based on the compilation target.
+#[cfg(not(test))]
 #[lang = "eh_unwind_resume"]
 #[no_mangle]
 pub extern "C" fn rust_eh_unwind_resume() {}
 
+#[cfg(not(test))]
 #[lang = "panic_fmt"]
 #[no_mangle]
 pub extern "C" fn rust_begin_panic(
@@ -45,7 +49,7 @@ pub extern "C" fn rust_begin_panic(
     _file: &'static str,
     _line: u32,
 ) -> ! {
-    unsafe { intrinsics::abort() }
+    unsafe { core::intrinsics::abort() }
 }
 
 #[start]

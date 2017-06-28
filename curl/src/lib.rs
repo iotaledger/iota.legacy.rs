@@ -1,6 +1,6 @@
 #![feature(alloc)]
 #![no_std]
-extern crate alloc as collections;
+extern crate alloc;
 
 
 #[cfg(feature = "parallel")]
