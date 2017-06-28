@@ -9,6 +9,7 @@ use indices::*;
 const TRUTH_TABLE: [Trit; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
 impl Sponge for Curl<Trit> {
+    #[inline]
     fn transform(&mut self) {
         let mut state_clone: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
 

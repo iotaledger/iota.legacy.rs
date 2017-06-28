@@ -6,6 +6,7 @@ use trytes::*;
 use curl::*;
 use indices::*;
 
+#[inline(always)]
 fn step(first: BCTrit, second: BCTrit) -> BCTrit {
     let (alpha, beta) = first;
     let (delta_0, gamma) = second;
@@ -40,7 +41,6 @@ impl Sponge for Curl<BCTrit> {
         let mut state_clone: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
         for _ in 0..NUMBER_OF_ROUNDS {
-
             for i in 0..STATE_LENGTH {
                 state_clone[i] = step(
                     self.state[TRANSFORM_INDICES[i]],
