@@ -1,5 +1,6 @@
 use trytes::*;
 
+/// Trait for incrementing trinary arrays
 pub trait TrinaryIncr {
     fn incr(&mut self);
 }
@@ -34,6 +35,7 @@ impl<'a> TrinaryIncr for &'a mut [Trit] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use collections::*;
     #[test]
     fn test_bct_incr() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
@@ -50,7 +52,7 @@ mod tests {
         assert_eq!(i, tbc);
     }
     #[test]
-    fn test_smple_incr() {
+    fn test_simple_incr() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
         let i: Trinary = "I".chars().collect(); // trit: [-1,0,1]
         let mut bct: Vec<Trit> = t.trits();
