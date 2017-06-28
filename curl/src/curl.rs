@@ -1,6 +1,6 @@
 use constants::*;
 use trytes::*;
-use collections::Vec;
+use alloc::Vec;
 
 /// All implementations of `Curl` must implement this trait.
 

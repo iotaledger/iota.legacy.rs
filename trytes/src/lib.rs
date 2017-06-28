@@ -1,7 +1,7 @@
 #![no_std]
 #![feature(alloc)]
 
-extern crate alloc as collections;
+extern crate alloc;
 // constant definitions
 pub mod constants;
 pub mod mappings;

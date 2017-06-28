@@ -18,7 +18,7 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
 impl Sponge for Curl<BCTrit> {
     #[cfg(feature = "parallel")]
     fn transform(&mut self) {
-        use collections::Vec;
+        use alloc::Vec;
 
         let mut scratchpad: Vec<BCTrit> = self.state.iter().map(|&c| (c.0, c.1)).collect();
 

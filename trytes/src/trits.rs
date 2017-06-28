@@ -1,4 +1,4 @@
-use collections::Vec;
+use alloc::Vec;
 use core::iter::FromIterator;
 
 use trinary::*;
@@ -30,8 +30,8 @@ impl FromIterator<Trit> for Trinary {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use collections::*;
-    use collections::string::ToString;
+    use alloc::*;
+    use alloc::string::ToString;
 
     #[test]
     fn from_iterator_trit() {

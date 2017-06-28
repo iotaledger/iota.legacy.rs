@@ -1,6 +1,6 @@
 // This is a straight clone off https://github.com/Come-from-Beyond/ISS/blob/master/src/cfb/iss/ISS.java for testing purposes.
 // XXX DO NOT EXPECT THE METHODS OR CODE IN THIS MODULE TO PERSIST XXX
-use collections::Vec;
+use alloc::Vec;
 
 use trytes::*;
 use trytes::constants::RADIX;
