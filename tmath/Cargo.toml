@@ -1,0 +1,7 @@
+[package]
+name = "iota-tmath"
+version = "0.1.0"
+authors = ["Paul D Handy <paul.d.handy@gmail.com>"]
+
+[dependencies]
+iota-trytes = { path = "../trytes" }

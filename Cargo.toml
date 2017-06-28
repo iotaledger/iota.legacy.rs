@@ -2,6 +2,7 @@
 members = [
         "curl",
         "trytes",
+        "tmath",
         "pow",
         "sign",
         "bindings"
