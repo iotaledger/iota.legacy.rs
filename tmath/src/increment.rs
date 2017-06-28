@@ -35,7 +35,7 @@ impl<'a> TrinaryIncr for &'a mut [Trit] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use collections::*;
+    use alloc::*;
     #[test]
     fn test_bct_incr() {
         let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
