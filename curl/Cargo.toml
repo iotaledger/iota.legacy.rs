@@ -7,8 +7,6 @@ keywords = ["no_std"]
 
 [features]
 default = []
-parallel = ["rayon"]
 
 [dependencies]
 iota-trytes = { path = "../trytes" }
-rayon = {version = "*", optional = true }

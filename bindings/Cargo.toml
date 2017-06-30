@@ -8,7 +8,6 @@ keywords = ["no_std"]
 path = "src/lib.rs"
 test = true
 doc = true
-required-features = ["parallel"]
 
 [[bin]]
 name = "iota_bindings"
@@ -18,7 +17,6 @@ test = false
 
 [features]
 default = []
-parallel = ["iota-sign/parallel", "iota-curl/parallel"]
 
 [dependencies]
 iota-trytes = { path = "../trytes" }

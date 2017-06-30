@@ -1,6 +1,3 @@
-#[cfg(feature = "parallel")]
-use rayon::prelude::*;
-
 use constants::*;
 use trytes::*;
 use curl::*;

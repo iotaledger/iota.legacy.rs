@@ -7,7 +7,6 @@ keywords = ["no_std"]
 
 [features]
 default = []
-parallel = ["iota-curl/parallel"]
 
 [dependencies]
 iota-curl = { path = "../curl" }
