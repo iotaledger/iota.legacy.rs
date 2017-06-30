@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(alloc)]
+#![feature(fixed_size_array)]
 
 extern crate alloc;
 // constant definitions
