@@ -1,3 +1,4 @@
+use constants::*;
 use curl::constants::*;
 use trytes::*;
 use curl::*;
@@ -47,8 +48,8 @@ mod tests {
 
     #[test]
     pub fn run_testsuite() {
-        use tests::testsuite;
-        testsuite::run::<BCTrit>();
+        use curl::testsuite;
+        testsuite::run::<BCTrit, CpuCurl<BCTrit>>();
     }
 
 }

@@ -23,7 +23,7 @@ where
 impl<T> Curl<T> for CpuCurl<T>
 where
     T: Clone + Copy + Sized,
-    CpuCurl<T>: Sponge + Curl<T>,
+    CpuCurl<T>: Sponge,
 {
     /// Absorb a `&[Trit]` into the sponge
     fn absorb(&mut self, trits: &[T]) {

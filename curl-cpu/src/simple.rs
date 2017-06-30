@@ -1,3 +1,4 @@
+use constants::*;
 use curl::constants::*;
 use trytes::*;
 use cpucurl::*;
@@ -45,8 +46,8 @@ mod tests {
 
     #[test]
     pub fn run_testsuite() {
-        use tests::testsuite;
-        testsuite::run::<Trit>();
+        use curl::testsuite;
+        testsuite::run::<Trit, CpuCurl<Trit>>();
     }
 
 }
