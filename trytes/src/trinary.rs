@@ -27,6 +27,16 @@ impl fmt::Debug for Trinary {
     }
 }
 
+pub trait FromTrinary {
+    fn new(t: Trinary) -> Self;
+}
+
+impl FromTrinary for Trinary {
+    fn new(t: Trinary) -> Self {
+        t
+    }
+}
+
 /// Default trait for serialisation into a `Trinary`
 pub trait IntoTrinary {
     fn trinary(&self) -> Trinary;
