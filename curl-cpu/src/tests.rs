@@ -1,23 +1,25 @@
 #![allow(unused_imports)]
 
 use curl::*;
+use cpucurl::*;
 use trytes::*;
 use core::iter::FromIterator;
 
 pub mod testsuite {
     use super::*;
 
+    #[cfg(test)]
     mod inner {
         use super::*;
 
-        fn test_hash_eq<A,B>(trans: Trinary, expected: Trinary)
+        fn test_hash_eq<T>(trans: Trinary, expected: Trinary)
         where
-            A: Copy + Clone + Sized,
-            B: Default + Sponge + Curl<A>,
-            Trinary: IntoTrits<A> + FromIterator<A>,
+            T: Copy + Clone + Sized,
+            CpuCurl<T>: Sponge + Curl<T> + Default,
+            Trinary: IntoTrits<T> + FromIterator<T>,
         {
 
-            let mut curl = B::default();
+            let mut curl = CpuCurl::<T>::default();
             let trits = trans.trits();
             curl.absorb(trits.as_slice());
             let hash: Trinary = curl.squeeze(HASH_LENGTH).into_iter().collect();
@@ -25,11 +27,11 @@ pub mod testsuite {
             assert_eq!(hash, expected);
         }
 
-        pub fn hash_works2<A,B>()
+        pub fn hash_works2<T>()
         where
-            A: Copy + Clone + Sized,
-            B: Default + Sponge + Curl<A>,
-            Trinary: IntoTrits<A> + FromIterator<A>,
+            T: Copy + Clone + Sized,
+            CpuCurl<T>: Sponge + Curl<T> + Default,
+            Trinary: IntoTrits<T> + FromIterator<T>,
         {
 
             let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
@@ -85,15 +87,15 @@ pub mod testsuite {
                 .chars()
                 .collect();
 
-            test_hash_eq::<A,B>(trans, hash);
+            test_hash_eq::<T>(trans, hash);
 
         }
 
-        pub fn hash_works1<A,B>()
+        pub fn hash_works1<T>()
         where
-            A: Copy + Clone + Sized,
-            B: Default + Sponge + Curl<A>,
-            Trinary: IntoTrits<A> + FromIterator<A>,
+            T: Copy + Clone + Sized,
+            CpuCurl<T>: Sponge + Curl<T> + Default,
+            Trinary: IntoTrits<T> + FromIterator<T>,
         {
             let trans: Trinary = "9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
@@ -147,19 +149,20 @@ pub mod testsuite {
                 .chars()
                 .collect();
 
-            test_hash_eq::<A,B>(trans, ex_hash);
+            test_hash_eq::<T>(trans, ex_hash);
         }
     }
 
-    pub fn run<A, B>()
+    #[cfg(test)]
+    pub fn run<T>()
     where
-        A: Copy + Clone + Sized,
-        B: Default + Sponge + Curl<A>,
-        Trinary: IntoTrits<A> + FromIterator<A>,
+        T: Copy + Clone + Sized,
+        CpuCurl<T>: Sponge + Curl<T> + Default,
+        Trinary: IntoTrits<T> + FromIterator<T>,
     {
         // run tests
-        inner::hash_works1::<A,B>();
-        inner::hash_works2::<A,B>();
+        inner::hash_works1::<T>();
+        inner::hash_works2::<T>();
     }
 
 }

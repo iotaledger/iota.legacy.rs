@@ -1,6 +1,7 @@
 [workspace]
 members = [
         "curl",
+        "curl-cpu",
         "trytes",
         "tmath",
         "pow",

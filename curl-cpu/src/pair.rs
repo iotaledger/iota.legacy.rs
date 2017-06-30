@@ -1,6 +1,7 @@
-use constants::*;
+use curl::constants::*;
 use trytes::*;
 use curl::*;
+use cpucurl::*;
 use indices::*;
 
 #[inline(always)]
@@ -11,8 +12,8 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
     (!delta, ((alpha ^ gamma) | delta))
 }
 
-/// Tuple implementation of the `Sponge` for Curl
-impl Sponge for Curl<BCTrit> {
+/// Tuple implementation of the `Sponge` for CpuCurl
+impl Sponge for CpuCurl<BCTrit> {
     fn transform(&mut self) {
         let mut state_clone: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
@@ -33,9 +34,9 @@ impl Sponge for Curl<BCTrit> {
     }
 }
 
-impl Default for Curl<BCTrit> {
+impl Default for CpuCurl<BCTrit> {
     fn default() -> Self {
-        Curl::<BCTrit> { state: [(usize::max_value(), usize::max_value()); STATE_LENGTH] }
+        CpuCurl::<BCTrit> { state: [(usize::max_value(), usize::max_value()); STATE_LENGTH] }
     }
 }
 
