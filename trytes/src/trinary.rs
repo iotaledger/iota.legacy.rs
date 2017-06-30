@@ -2,7 +2,9 @@ use alloc::vec::Vec;
 use alloc::string::String;
 use core::array::FixedSizeArray;
 
+use core::marker;
 use core::fmt;
+use core::*;
 use constants::*;
 use util::*;
 use bct::*;
@@ -16,7 +18,7 @@ pub struct Trinary {
 
 impl fmt::Display for Trinary {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let s: String = self.chars().into_iter().collect();
+        let s : String = self.chars().into_iter().collect();
         fmt.write_str(s.as_str())
     }
 }
@@ -27,13 +29,15 @@ impl fmt::Debug for Trinary {
     }
 }
 
-pub trait FromTrinary {
-    fn new(t: Trinary) -> Self;
+pub trait FromTrinary where Self: marker::Sized {
+    type Err;
+    fn from_trinary(t: &Trinary) -> Result<Self, Self::Err>;
 }
 
 impl FromTrinary for Trinary {
-    fn new(t: Trinary) -> Self {
-        t
+    type Err = ();
+    fn from_trinary(t: &Trinary) -> Result<Self, Self::Err> {
+        Ok(t.clone())
     }
 }
 
@@ -145,7 +149,6 @@ impl Trinary {
 #[cfg(test)]
 mod test {
     use super::*;
-    use alloc::*;
     use alloc::string::ToString;
     #[test]
     fn combine_multiple_trinaries() {
@@ -153,11 +156,18 @@ mod test {
         let t2: Trinary = "DEF".chars().collect();
         let t3: Trinary = "GH9".chars().collect();
 
-        let ts = vec![t1, t2, t3];
+        let ts = [t1, t2, t3];
 
         let combined: Trinary = ts.as_slice().trinary();
 
         assert_eq!(combined.to_string(), "ABCDEFGH9")
+    }
 
+    #[test]
+    fn trinary_from_trinary() {
+        let t1 : Trinary = "AGBC".chars().collect();
+
+        assert_eq!(t1, Trinary::from_trinary(&t1).ok().unwrap());
+        
     }
 }
