@@ -1,5 +1,6 @@
 use alloc::vec::Vec;
 use alloc::string::String;
+use core::array::FixedSizeArray;
 
 use core::fmt;
 use constants::*;
@@ -37,6 +38,30 @@ impl IntoTrinary for Trinary {
     }
 }
 
+/// Construct a single trinary from a &[Trinary]
+impl<'a> IntoTrinary for &'a [Trinary] {
+    fn trinary(&self) -> Trinary {
+        self.iter().flat_map(|t| t).collect()
+    }
+}
+
+/// Construct a single trinary from a &[&Trinary]
+impl<'a> IntoTrinary for &'a [&'a Trinary] {
+    fn trinary(&self) -> Trinary {
+        self.iter().flat_map(|&t| t).collect()
+    }
+}
+
+/// Construct a single trinary from a [&Trinary; _]
+impl<'a, Array> IntoTrinary for &'a Array
+    where
+    Array: FixedSizeArray<&'a Trinary>,
+{
+    fn trinary(&self) -> Trinary {
+        self.as_slice().iter().flat_map(|&t| t).collect()
+    }
+}
+
 pub trait IntoTrits<T> {
     fn trits(&self) -> Vec<T>;
 }
@@ -45,10 +70,7 @@ impl IntoTrits<BCTrit> for Trinary {
     /// Returns a binary-coded representation of the trits of this `Trinary`.
     /// See http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml for further details.
     fn trits(&self) -> Vec<BCTrit> {
-        self.trits()
-            .into_iter()
-            .map(trit_to_bct)
-            .collect()
+        self.trits().into_iter().map(trit_to_bct).collect()
     }
 }
 
@@ -99,12 +121,33 @@ impl Trinary {
     }
 
     /// Length of this `Trinary` in trytes
-    pub fn len_chars(&self) -> usize {
+    pub fn len_trytes(&self) -> usize {
         self.length / TRITS_PER_TRYTE
     }
 
     /// Length of this `Trinary` in bytes
     pub fn len_bytes(&self) -> usize {
         self.bytes.len()
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use alloc::*;
+    use alloc::string::ToString;
+    #[test]
+    fn combine_multiple_trinaries() {
+        let t1: Trinary = "ABC".chars().collect();
+        let t2: Trinary = "DEF".chars().collect();
+        let t3: Trinary = "GH9".chars().collect();
+
+        let ts = vec![t1, t2, t3];
+
+        let combined: Trinary = ts.as_slice().trinary();
+
+        assert_eq!(combined.to_string(), "ABCDEFGH9")
+
     }
 }
