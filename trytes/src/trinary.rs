@@ -146,6 +146,26 @@ impl Trinary {
     pub fn len_bytes(&self) -> usize {
         self.bytes.len()
     }
+
+    /// Pads trinary to specified length in trinaries with specified `Trit`
+    ///
+    /// This method will return an unmodified Trinary if `length` is less or
+    /// equal to the current length.
+    pub fn pad(&self, length: usize, with: char) -> Trinary {
+        if self.len_trytes() >= length {
+            return self.clone();
+        }
+
+        let with_trits = tryte_to_trits(with);
+        let count = length - self.len_trytes();
+        let mut trits : Vec<Trit> = self.trits();
+
+        for _ in 0..count {
+            trits.extend_from_slice(with_trits);
+        }
+
+        trits.into_iter().collect()
+    }
 }
 
 
@@ -171,6 +191,12 @@ mod test {
         let t1: Trinary = "AGBC".chars().collect();
 
         assert_eq!(t1, Trinary::from_trinary(&t1).ok().unwrap());
+    }
 
+    #[test]
+    fn pad() {
+        let t1: Trinary = "AZ".chars().collect();
+
+        assert_eq!(t1.pad(5, '9').to_string(), "AZ999");
     }
 }
