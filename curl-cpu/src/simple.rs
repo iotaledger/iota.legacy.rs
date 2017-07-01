@@ -1,4 +1,3 @@
-use constants::*;
 use curl::constants::*;
 use trytes::*;
 use cpucurl::*;
