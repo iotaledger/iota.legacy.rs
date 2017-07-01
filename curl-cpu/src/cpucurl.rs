@@ -1,5 +1,4 @@
 use trytes::*;
-use curl::constants::*;
 use curl::*;
 use alloc::Vec;
 
@@ -23,9 +22,8 @@ where
 impl<T> Curl<T> for CpuCurl<T>
 where
     T: Clone + Copy + Sized,
-    CpuCurl<T>: Sponge,
+    CpuCurl<T>: Sponge + Default,
 {
-    /// Absorb a `&[Trit]` into the sponge
     fn absorb(&mut self, trits: &[T]) {
         for c in trits.chunks(HASH_LENGTH) {
             self.state[0..c.len()].clone_from_slice(c);
@@ -33,7 +31,6 @@ where
         }
     }
 
-    /// Squeeze the sponge and return a `Vec<T>` with `trit_count` trits
     fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
 

@@ -1,4 +1,3 @@
-use curl::constants::*;
 use trytes::*;
 use curl::*;
 use cpucurl::*;
@@ -44,11 +43,11 @@ impl Default for CpuCurl<BCTrit> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::curl;
 
     #[test]
     pub fn run_testsuite() {
-        use curl::testsuite;
-        testsuite::run::<BCTrit, CpuCurl<BCTrit>>();
+        curl::tests::run::<BCTrit, CpuCurl<BCTrit>>();
     }
 
 }

@@ -1,38 +1,35 @@
 #![allow(unused_imports)]
 
-use curl::*;
+use super::*;
 use trytes::*;
 use core::iter::FromIterator;
 
-pub mod testsuite {
+mod inner {
     use super::*;
 
-    mod inner {
-        use super::*;
+    fn test_hash_eq<A, B>(trans: Trinary, expected: Trinary)
+    where
+        A: Copy + Clone + Sized,
+        B: Curl<A>,
+        Trinary: IntoTrits<A> + FromIterator<A>,
+    {
 
-        fn test_hash_eq<A,B>(trans: Trinary, expected: Trinary)
-        where
-            A: Copy + Clone + Sized,
-            B: Default + Sponge + Curl<A>,
-            Trinary: IntoTrits<A> + FromIterator<A>,
-        {
+        let mut curl = B::default();
+        let trits = trans.trits();
+        curl.absorb(trits.as_slice());
+        let hash: Trinary = curl.squeeze(HASH_LENGTH).into_iter().collect();
 
-            let mut curl = B::default();
-            let trits = trans.trits();
-            curl.absorb(trits.as_slice());
-            let hash: Trinary = curl.squeeze(HASH_LENGTH).into_iter().collect();
+        assert_eq!(hash, expected);
+    }
 
-            assert_eq!(hash, expected);
-        }
+    pub fn hash_works2<A, B>()
+    where
+        A: Copy,
+        B: Curl<A>,
+        Trinary: IntoTrits<A> + FromIterator<A>,
+    {
 
-        pub fn hash_works2<A,B>()
-        where
-            A: Copy + Clone + Sized,
-            B: Default + Sponge + Curl<A>,
-            Trinary: IntoTrits<A> + FromIterator<A>,
-        {
-
-            let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+        let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
                                    RZBPKRKQAIPGOHBTHTGYXTBJLSURDSPEOJ9UKJECUKCCPVIQQHDUYKVKISCE\
                                    IEGVOQWRBAYXWGSJUTEVG9RPQLPTKYCRAJ9YNCUMDVDYDQCKRJOAPXCSUDAJ\
@@ -77,25 +74,25 @@ pub mod testsuite {
                                    HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
-                .chars()
-                .collect();
+            .chars()
+            .collect();
 
-            let hash: Trinary = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
+        let hash: Trinary = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
                                  9EFZJKFYCZKQPPBXYSGJ"
-                .chars()
-                .collect();
+            .chars()
+            .collect();
 
-            test_hash_eq::<A,B>(trans, hash);
+        test_hash_eq::<A, B>(trans, hash);
 
-        }
+    }
 
-        pub fn hash_works1<A,B>()
-        where
-            A: Copy + Clone + Sized,
-            B: Default + Sponge + Curl<A>,
-            Trinary: IntoTrits<A> + FromIterator<A>,
-        {
-            let trans: Trinary = "9999999999999999999999999999999999999999999999999999999999999\
+    pub fn hash_works1<A, B>()
+    where
+        A: Copy,
+        B: Curl<A>,
+        Trinary: IntoTrits<A> + FromIterator<A>,
+    {
+        let trans: Trinary = "9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
@@ -139,27 +136,25 @@ pub mod testsuite {
                               9999999999999999999999999999999999999999999999999999999999999\
                               999999999999999999999999999999T999999999999999999999999999999\
                               99999999999999999999999OLOB99999999999999999999999"
-                .chars()
-                .collect();
+            .chars()
+            .collect();
 
-            let ex_hash: Trinary = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
+        let ex_hash: Trinary = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
                              DANIYSMFYPVABX9999"
-                .chars()
-                .collect();
+            .chars()
+            .collect();
 
-            test_hash_eq::<A,B>(trans, ex_hash);
-        }
+        test_hash_eq::<A, B>(trans, ex_hash);
     }
+}
 
-    pub fn run<A, B>()
-    where
-        A: Copy + Clone + Sized,
-        B: Default + Sponge + Curl<A>,
-        Trinary: IntoTrits<A> + FromIterator<A>,
-    {
-        // run tests
-        inner::hash_works1::<A,B>();
-        inner::hash_works2::<A,B>();
-    }
-
+pub fn run<A, B>()
+where
+    A: Copy,
+    B: Curl<A>,
+    Trinary: IntoTrits<A> + FromIterator<A>,
+{
+    // run tests
+    inner::hash_works1::<A, B>();
+    inner::hash_works2::<A, B>();
 }

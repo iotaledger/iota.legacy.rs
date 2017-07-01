@@ -11,3 +11,4 @@ default = []
 [dependencies]
 iota-trytes = { path = "../trytes" }
 iota-curl = { path = "../curl" }
+

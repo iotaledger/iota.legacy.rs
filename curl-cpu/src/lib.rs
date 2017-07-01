@@ -12,5 +12,4 @@ pub mod pair;
 
 pub use cpucurl::CpuCurl;
 
-use trytes::BCTrit;
-pub type DefaultCurl = CpuCurl<BCTrit>;
+pub type DefaultCurl = CpuCurl<trytes::BCTrit>;

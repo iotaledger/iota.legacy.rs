@@ -1,4 +1,4 @@
-use curl::constants::*;
+use curl::*;
 pub const TRANSFORM_INDICES: [usize; STATE_LENGTH + 1] = [
     0,
     364,
