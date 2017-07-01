@@ -7,12 +7,14 @@ extern crate test;
 
 extern crate iota_trytes as trytes;
 extern crate iota_curl as curl;
+extern crate iota_curl_cpu as cpucurl;
 
 use test::Bencher;
 
 use alloc::Vec;
 use trytes::*;
 use curl::*;
+use cpucurl::*;
 
 const TRINARY: &'static str = "9999999999999999999999999999999999999999999999999999999999999\
                 9999999999999999999999999999999999999999999999999999999999999\
