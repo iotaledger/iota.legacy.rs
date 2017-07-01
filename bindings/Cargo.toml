@@ -20,12 +20,10 @@ default = []
 
 [dependencies]
 iota-trytes = { path = "../trytes" }
-cty = { git = "https://github.com/th0br0/cty.git", branch = "feature/wasm"}
+iota-curl = { path = "../curl" }
+iota-curl-cpu = { path = "../curl-cpu" }
+iota-sign = { path = "../sign" }
 
-[dependencies.iota-sign]
-path = "../sign"
-default-features = false
+cty = { git = "https://github.com/japaric/cty.git" }
 
-[dependencies.iota-curl]
-path = "../curl"
 
