@@ -14,6 +14,7 @@ extern crate cty;
 extern crate iota_sign;
 extern crate iota_trytes;
 extern crate iota_curl;
+extern crate iota_curl_cpu;
 
 #[cfg(not(test))] 
 #[lang = "eh_personality"]

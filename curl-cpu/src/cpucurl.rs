@@ -1,25 +1,16 @@
-use constants::*;
 use trytes::*;
+use curl::*;
 use alloc::Vec;
 
-/// All implementations of `Curl` must implement this trait.
-
-pub trait Sponge {
-    /// Transforms the sponge
-    fn transform(&mut self);
-    /// Resets the sponge's internal state.
-    fn reset(&mut self);
-}
-
 #[derive(Copy)]
-pub struct Curl<T>
+pub struct CpuCurl<T>
 where
     T: Clone + Copy + Sized,
 {
     pub state: [T; STATE_LENGTH],
 }
 
-impl<T> Clone for Curl<T>
+impl<T> Clone for CpuCurl<T>
 where
     T: Clone + Copy + Sized,
 {
@@ -28,21 +19,19 @@ where
     }
 }
 
-impl<T> Curl<T>
+impl<T> Curl<T> for CpuCurl<T>
 where
     T: Clone + Copy + Sized,
-    Curl<T>: Sponge,
+    CpuCurl<T>: Sponge + Default,
 {
-    /// Absorb a `&[Trit]` into the sponge
-    pub fn absorb(&mut self, trits: &[T]) {
+    fn absorb(&mut self, trits: &[T]) {
         for c in trits.chunks(HASH_LENGTH) {
             self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);
         }
     }
 
-    /// Squeeze the sponge and return a `Vec<T>` with `trit_count` trits
-    pub fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
+    fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
         let mut out: Vec<T> = Vec::with_capacity(trit_count);
 
         let hash_count = trit_count / HASH_LENGTH;

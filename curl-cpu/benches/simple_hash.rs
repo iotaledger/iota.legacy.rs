@@ -7,12 +7,14 @@ extern crate test;
 
 extern crate iota_trytes as trytes;
 extern crate iota_curl as curl;
+extern crate iota_curl_cpu as cpucurl;
 
 use test::Bencher;
 
 use alloc::Vec;
 use trytes::*;
 use curl::*;
+use cpucurl::*;
 
 const TRINARY: &'static str = "9999999999999999999999999999999999999999999999999999999999999\
                 9999999999999999999999999999999999999999999999999999999999999\
@@ -64,7 +66,7 @@ fn curl_pair(b: &mut Bencher) {
     let trans: Trinary = TRINARY.chars().collect();
 
     let trits: Vec<BCTrit> = trans.trits();
-    let mut curl = Curl::<BCTrit>::default();
+    let mut curl = CpuCurl::<BCTrit>::default();
     curl.reset();
     curl.absorb(&trits);
     curl.squeeze(243);
@@ -81,7 +83,7 @@ fn curl_simple(b: &mut Bencher) {
     let trans: Trinary = TRINARY.chars().collect();
 
     let trits: Vec<Trit> = trans.trits();
-    let mut curl = Curl::<Trit>::default();
+    let mut curl = CpuCurl::<Trit>::default();
     curl.reset();
     curl.absorb(&trits);
     curl.squeeze(243);

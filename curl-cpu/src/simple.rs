@@ -1,11 +1,11 @@
-use constants::*;
 use trytes::*;
+use cpucurl::*;
 use curl::*;
 use indices::*;
 
 const TRUTH_TABLE: [Trit; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 
-impl Sponge for Curl<Trit> {
+impl Sponge for CpuCurl<Trit> {
     #[inline]
     fn transform(&mut self) {
         let mut state_clone: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
@@ -30,10 +30,10 @@ impl Sponge for Curl<Trit> {
     }
 }
 
-impl Default for Curl<Trit> {
+impl Default for CpuCurl<Trit> {
     fn default() -> Self {
         let x: Trit = 0 as Trit;
-        Curl::<Trit> { state: [x; STATE_LENGTH] }
+        CpuCurl::<Trit> { state: [x; STATE_LENGTH] }
     }
 }
 
@@ -41,11 +41,11 @@ impl Default for Curl<Trit> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::curl;
 
     #[test]
     pub fn run_testsuite() {
-        use tests::testsuite;
-        testsuite::run::<Trit>();
+        curl::tests::run::<Trit, CpuCurl<Trit>>();
     }
 
 }
