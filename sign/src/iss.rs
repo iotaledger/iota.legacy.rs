@@ -5,6 +5,7 @@ use alloc::Vec;
 use trytes::*;
 use trytes::constants::RADIX;
 use curl::*;
+use curl_cpu::*;
 
 const TRYTE_WIDTH: usize = 3;
 const MAX_TRYTE_VALUE: i8 = 1;
@@ -17,7 +18,7 @@ const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 pub fn subseed(seed: Trinary, mut index: usize) -> Trinary
 {
     let mut trits = seed.trits();
-    let mut curl = Curl::<Trit>::default();
+    let mut curl = CpuCurl::<Trit>::default();
 
     while index > 0 {
         for i in 0..trits.len() {
@@ -91,7 +92,7 @@ pub fn address(digests: Trinary) -> Trinary
 pub fn signature(bundle: Trinary, key: Trinary) -> Trinary
 {
 
-    let mut c = Curl::<Trit>::default();
+    let mut c = CpuCurl::<Trit>::default();
 
     let mut signature = key.trits();
     let bundle_trits : Vec<Trit> = bundle.trits();
@@ -113,8 +114,8 @@ pub fn signature(bundle: Trinary, key: Trinary) -> Trinary
 
 pub fn digest_bundle_signature(bundle: Trinary, signature: Trinary) -> Trinary
 {
-    let mut digest_curl = Curl::<Trit>::default();
-    let mut signature_fragment_curl = Curl::<Trit>::default();
+    let mut digest_curl = CpuCurl::<Trit>::default();
+    let mut signature_fragment_curl = CpuCurl::<Trit>::default();
 
     let signature_trits = signature.trits();
     let bundle_trits : Vec<Trit> = bundle.trits();
