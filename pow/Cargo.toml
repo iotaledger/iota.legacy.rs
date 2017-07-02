@@ -8,4 +8,5 @@ keywords = ["no_std"]
 [dependencies]
 iota-curl = { path = "../curl" }
 iota-trytes = { path = "../trytes" }
+iota-tmath= { path = "../tmath" }
 rayon = "*"

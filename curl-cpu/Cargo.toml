@@ -9,6 +9,7 @@ keywords = ["no_std"]
 default = []
 
 [dependencies]
+iota-tmath = { path = "../tmath" }
 iota-trytes = { path = "../trytes" }
 iota-curl = { path = "../curl" }
 
