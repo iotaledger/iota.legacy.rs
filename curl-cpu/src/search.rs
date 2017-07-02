@@ -3,8 +3,7 @@ use trytes::*;
 use alloc::Vec;
 use curl::*;
 use cpucurl::*;
-//use collections::String;
-//
+use core::cmp::min;
 
 trait Offset {
     fn offset(&mut self);
@@ -21,10 +20,6 @@ impl<'a> Offset for &'a mut [BCTrit] {
         self[3].0 = 0b1111111111000000000000000000000000000111111111111111111111111111;
         self[3].1 = 0b0000000000111111111111111111111111111111111111111111111111111111;
     }
-}
-
-fn min(this: usize, that: usize) -> usize {
-    if this < that { this } else { that }
 }
 
 pub fn search_cpu<F>(input: Trinary, length: usize, group: usize, check: F) -> Option<Trinary>
