@@ -32,13 +32,13 @@ where
     fn squeeze(&mut self, count: usize) -> Vec<T>;
 }
 
-pub trait PoWImpl {
+pub trait ProofOfWork {
     /// Searches for a nonce given an `input` that gives a hash with `weight` zeros
     /// Returns the nonce
     fn search(input: Trinary, weight: u8) -> Option<Trinary>;
 }
 
-pub trait HamImpl {
+pub trait HammingNonce {
     /// Searches for a checksum given by hamming weight
     /// Returns the nonce to create checksum
     fn search(input: Trinary, length: u8, security: u8) -> Option<Trinary>;
