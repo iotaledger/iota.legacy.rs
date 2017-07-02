@@ -4,6 +4,7 @@ extern crate alloc;
 extern crate iota_trytes as trytes;
 
 use trytes::constants::HASH_LENGTH;
+use trytes::Trinary;
 
 pub mod tests;
 

@@ -7,7 +7,7 @@ pub enum PoWError {
     /// Min weight magnitude exceeds `HASH_LENGT``
     InvalidMinWeightMagnitude,
     /// Custom implementation error
-    CustomError(String)
+    CustomError(String),
 }
 
 /// All implementations of the IOTA proof of work algorithm must
