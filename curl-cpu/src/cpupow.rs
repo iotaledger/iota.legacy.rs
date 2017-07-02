@@ -1,4 +1,4 @@
-use curl::PoWImpl;
+use curl::ProofOfWork;
 use trytes::*;
 use search::search_cpu;
 
