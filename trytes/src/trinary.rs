@@ -18,7 +18,7 @@ pub struct Trinary {
 
 impl fmt::Display for Trinary {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        let s : String = self.chars().into_iter().collect();
+        let s: String = self.chars().into_iter().collect();
         fmt.write_str(s.as_str())
     }
 }
@@ -29,7 +29,10 @@ impl fmt::Debug for Trinary {
     }
 }
 
-pub trait FromTrinary where Self: marker::Sized {
+pub trait FromTrinary
+where
+    Self: marker::Sized,
+{
     type Err;
     fn from_trinary(t: &Trinary) -> Result<Self, Self::Err>;
 }
@@ -68,7 +71,7 @@ impl<'a> IntoTrinary for &'a [&'a Trinary] {
 
 /// Construct a single trinary from a [&Trinary; _]
 impl<'a, Array> IntoTrinary for &'a Array
-    where
+where
     Array: FixedSizeArray<&'a Trinary>,
 {
     fn trinary(&self) -> Trinary {
@@ -165,9 +168,9 @@ mod test {
 
     #[test]
     fn trinary_from_trinary() {
-        let t1 : Trinary = "AGBC".chars().collect();
+        let t1: Trinary = "AGBC".chars().collect();
 
         assert_eq!(t1, Trinary::from_trinary(&t1).ok().unwrap());
-        
+
     }
 }

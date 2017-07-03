@@ -2,7 +2,9 @@
 #![feature(alloc)]
 #![feature(fixed_size_array)]
 
+#[macro_use]
 extern crate alloc;
+
 // constant definitions
 pub mod constants;
 pub mod mappings;
@@ -22,6 +24,7 @@ pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;
 pub use constants::BCTrit;
 pub use constants::HASH_LENGTH;
+pub use constants::TRITS_PER_TRYTE;
 
 pub use trinary::*;
 pub use string::*;
