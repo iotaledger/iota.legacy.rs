@@ -9,7 +9,7 @@ extern crate iota_curl as curl;
 mod indices;
 mod search;
 pub mod cpucurl;
-pub mod cpupow;
+pub mod pow;
 pub mod simple;
 pub mod pair;
 
