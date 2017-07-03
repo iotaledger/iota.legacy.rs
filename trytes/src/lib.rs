@@ -12,6 +12,7 @@ pub mod util;
 
 // trinary type
 pub mod trinary;
+pub mod num;
 
 // trinary traits
 pub mod string;
