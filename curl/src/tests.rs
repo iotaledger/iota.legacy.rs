@@ -147,9 +147,12 @@ mod inner {
         test_hash_eq::<A, B>(trans, ex_hash);
     }
 
-    pub fn test_pow<A>()
+    pub fn test_pow<A, B, C>()
     where
         A: ProofOfWork,
+        B: Copy,
+        C: Curl<B>,
+        Trinary: IntoTrits<B> + FromIterator<B>,
     {
         let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
@@ -198,7 +201,10 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
             .chars()
             .collect();
-        A::search(trans, 9);
+        let weight = 9u8;
+        let nonce: Trinary = A::search(trans, weight).expect("Some PoW Failure.");
+
+        assert_eq!(nonce.trits().len(), 243);
     }
 }
 
@@ -213,9 +219,12 @@ where
     inner::hash_works2::<A, B>();
 }
 
-pub fn run_search<A>()
+pub fn run_search<A, B, C>()
 where
     A: ProofOfWork,
+    B: Copy,
+    C: Curl<B>,
+    Trinary: IntoTrits<B> + FromIterator<B>,
 {
-    inner::test_pow::<A>();
+    inner::test_pow::<A, B, C>();
 }
