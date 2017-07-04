@@ -2,10 +2,12 @@ use trytes::*;
 
 /// Trait for incrementing trinary arrays
 pub trait TrinaryIncr {
+    #[inline]
     fn incr(&mut self) -> usize;
 }
 
 impl<'a> TrinaryIncr for &'a mut [BCTrit] {
+    #[inline]
     fn incr(&mut self) -> usize {
         for i in 0..self.len() {
             let (low, hi) = self[i];
@@ -15,11 +17,13 @@ impl<'a> TrinaryIncr for &'a mut [BCTrit] {
                 return self.len();
             }
         }
+
         self.len() + 1
     }
 }
 
 impl<'a> TrinaryIncr for &'a mut [Trit] {
+    #[inline]
     fn incr(&mut self) -> usize {
         for i in 0..self.len() {
             self[i] += 1;

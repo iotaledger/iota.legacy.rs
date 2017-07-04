@@ -10,12 +10,14 @@ impl ProofOfWork for CpuPoW {
             let mut probe = usize::max_value();
             let wt: usize = weight as usize;
             let start = t.len() - wt;
-            for i in (start)..t.len() {
+
+            for i in start..t.len(){
                 probe &= !(t[i].0 ^ t[i].1);
                 if probe == 0 {
                     return None;
                 }
             }
+
             Some(probe.trailing_zeros() as usize)
         })
     }

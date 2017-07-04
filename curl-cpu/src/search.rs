@@ -10,6 +10,7 @@ trait Offset {
 }
 
 impl<'a> Offset for &'a mut [BCTrit] {
+    #[inline(always)]
     fn offset(&mut self) {
         self[0].0 = 0b1101101101101101101101101101101101101101101101101101101101101101;
         self[0].1 = 0b1011011011011011011011011011011011011011011011011011011011011011;
@@ -22,33 +23,38 @@ impl<'a> Offset for &'a mut [BCTrit] {
     }
 }
 
+#[inline]
 pub fn search_cpu<F>(input: Trinary, length: usize, group: usize, check: F) -> Option<Trinary>
 where
     F: Fn(&[BCTrit]) -> Option<usize>,
 {
     let mut curl = CpuCurl::<BCTrit>::default();
+
     let bct: Vec<BCTrit> = input.trits();
-    curl.absorb(&bct); // should end before last absorb
-    let mut end = min(length, HASH_LENGTH);
+
+    curl.absorb(&bct[0..(bct.len() - HASH_LENGTH)]);
+
     (&mut curl.state[0..4]).offset();
+
+    let mut size = min(length, HASH_LENGTH);
     for _ in 0..group {
-        (&mut curl.state[(end / 3)..(end * 2 / 3)]).incr();
-    }
-    let mut index: Option<usize>;
-    loop {
-        end = min(
-            end * 2 / 3 + (&mut curl.state[(end * 2 / 3)..end]).incr(),
-            HASH_LENGTH,
-        );
-        let mut curl_copy = curl.clone();
-        curl_copy.transform();
-        index = check(&curl_copy.state[0..end]);
-        if index.is_some() {
-            break;
-        }
+        (&mut curl.state[size / 3..size* (2 / 3)]).incr();
     }
 
-    let mux = TrinaryDemultiplexer::new(curl.squeeze(end).as_slice());
+    let mut index: Option<usize> = None;
+    let mut cpy = curl.clone();
+    while index.is_none() {
+        size = min (
+            size * 2/3 + (&mut curl.state[(size * 2/3)..size]).incr(),
+            HASH_LENGTH
+        );
+
+        cpy.state.clone_from_slice(&curl.state);
+        cpy.transform();
+
+        index = check(&cpy.state[0..size]);
+    }
+    let mux = TrinaryDemultiplexer::new(cpy.squeeze(size).as_slice());
 
     Some(mux[index.unwrap()].clone())
 }
