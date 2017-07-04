@@ -2,33 +2,39 @@ use trytes::*;
 
 /// Trait for incrementing trinary arrays
 pub trait TrinaryIncr {
-    fn incr(&mut self);
+    #[inline]
+    fn incr(&mut self) -> usize;
 }
 
 impl<'a> TrinaryIncr for &'a mut [BCTrit] {
-    fn incr(&mut self) {
+    #[inline]
+    fn incr(&mut self) -> usize {
         for i in 0..self.len() {
             let (low, hi) = self[i];
             self[i].0 = hi ^ low;
             self[i].1 = low;
             if hi & !low == 0 {
-                break;
+                return self.len();
             }
         }
+
+        self.len() + 1
     }
 }
 
 impl<'a> TrinaryIncr for &'a mut [Trit] {
-    fn incr(&mut self) {
+    #[inline]
+    fn incr(&mut self) -> usize {
         for i in 0..self.len() {
             self[i] += 1;
 
             if self[i] > 1 {
                 self[i] = -1;
             } else {
-                break;
+                return self.len();
             }
         }
+        self.len() + 1
     }
 }
 
