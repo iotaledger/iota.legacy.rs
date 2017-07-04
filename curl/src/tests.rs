@@ -202,9 +202,24 @@ mod inner {
             .chars()
             .collect();
         let weight = 9u8;
+        let trans_copy: Trinary = trans.clone();
         let nonce: Trinary = A::search(trans, weight).expect("Some PoW Failure.");
-
         assert_eq!(nonce.trits().len(), 243);
+
+        let final_t: Trinary = trans_copy.trits()[..(trans_copy.len_trits() - HASH_LENGTH)]
+            .into_iter()
+            .cloned()
+            .chain(nonce.trits().into_iter())
+            .collect();
+
+        let mut curl = C::default();
+        curl.absorb(final_t.trits().as_slice());
+        let hash_end: Trinary = curl.squeeze(HASH_LENGTH)[(HASH_LENGTH - weight as usize)..]
+            .into_iter()
+            .cloned()
+            .collect();
+        let expect: Trinary = "999".chars().collect();
+        assert_eq!(hash_end, expect);
     }
 }
 
