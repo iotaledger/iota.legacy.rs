@@ -25,7 +25,6 @@ impl ProofOfWork for CpuPoW {
 mod tests {
     use super::*;
     use super::super::curl;
-    use simple::*;
     use cpucurl::*;
 
     #[test]
