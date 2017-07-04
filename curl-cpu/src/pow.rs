@@ -8,7 +8,9 @@ impl ProofOfWork for CpuPoW {
     fn search(input: Trinary, weight: u8) -> Option<Trinary> {
         search_cpu(input, HASH_LENGTH, 0, |t: &[BCTrit]| {
             let mut probe = usize::max_value();
-            for i in (weight as usize)..t.len() {
+            let wt: usize = weight as usize;
+            let start = t.len() - wt;
+            for i in (start)..t.len() {
                 probe &= !(t[i].0 ^ t[i].1);
                 if probe == 0 {
                     return None;
@@ -23,10 +25,12 @@ impl ProofOfWork for CpuPoW {
 mod tests {
     use super::*;
     use super::super::curl;
+    use simple::*;
+    use cpucurl::*;
 
     #[test]
     pub fn run_testsuite() {
-        curl::tests::run_search::<CpuPoW>();
+        curl::tests::run_search::<CpuPoW, Trit, CpuCurl<Trit>>();
     }
 
 }

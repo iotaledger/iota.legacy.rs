@@ -36,7 +36,10 @@ where
     }
     let mut index: Option<usize>;
     loop {
-        end = min((&mut curl.state[(end * 2 / 3)..end]).incr(), HASH_LENGTH);
+        end = min(
+            end * 2 / 3 + (&mut curl.state[(end * 2 / 3)..end]).incr(),
+            HASH_LENGTH,
+        );
         let mut curl_copy = curl.clone();
         curl_copy.transform();
         index = check(&curl_copy.state[0..end]);
