@@ -1,12 +1,14 @@
 use curl::ProofOfWork;
 use trytes::*;
 use search::search_cpu;
+use search::prepare_search;
 
 pub struct CpuPoW;
 
 impl ProofOfWork for CpuPoW {
     fn search(input: Trinary, weight: u8) -> Option<Trinary> {
-        search_cpu(input, HASH_LENGTH, 0, |t: &[BCTrit]| {
+        let state = prepare_search(input.trits().as_slice());
+        search_cpu(state.as_slice(), HASH_LENGTH, 0, |t: &[BCTrit]| {
             let mut probe = usize::max_value();
             let wt: usize = weight as usize;
             let start = t.len() - wt;

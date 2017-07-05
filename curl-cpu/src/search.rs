@@ -22,33 +22,40 @@ impl<'a> Offset for &'a mut [BCTrit] {
     }
 }
 
-pub fn search_cpu<F>(input: Trinary, length: usize, group: usize, check: F) -> Option<Trinary>
+pub fn prepare_search(input: &[BCTrit]) -> Vec<BCTrit> {
+    let mut curl = CpuCurl::<BCTrit>::default();
+    let size = if input.len() % HASH_LENGTH == 0 {
+        input.len() - HASH_LENGTH
+    } else {
+        HASH_LENGTH * (input.len() / HASH_LENGTH)
+    };
+    curl.absorb(&input[..size]);
+    (&mut curl.state[0..4]).offset();
+    curl.state.into_iter().cloned().collect()
+}
+
+pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
 where
     F: Fn(&[BCTrit]) -> Option<usize>,
 {
     let mut curl = CpuCurl::<BCTrit>::default();
-    let bct: Vec<BCTrit> = input.trits();
-    curl.absorb(&bct); // should end before last absorb
-    let mut end = min(length, HASH_LENGTH);
-    (&mut curl.state[0..4]).offset();
+    curl.state.clone_from_slice(input);
+    let mut size = min(length, HASH_LENGTH);
     for _ in 0..group {
-        (&mut curl.state[(end / 3)..(end * 2 / 3)]).incr();
+        (&mut curl.state[(size / 3)..(size * 2 / 3)]).incr();
     }
-    let mut index: Option<usize>;
-    loop {
-        end = min(
-            end * 2 / 3 + (&mut curl.state[(end * 2 / 3)..end]).incr(),
+    let mut index: Option<usize> = None;
+    while index.is_none() {
+        size = min(
+            size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
             HASH_LENGTH,
         );
-        let mut curl_copy = curl.clone();
-        curl_copy.transform();
-        index = check(&curl_copy.state[0..end]);
-        if index.is_some() {
-            break;
-        }
+        let mut cpy = curl.clone();
+        cpy.transform();
+        index = check(&cpy.state[0..size]);
     }
 
-    let mux = TrinaryDemultiplexer::new(curl.squeeze(end).as_slice());
+    let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
 
     Some(mux[index.unwrap()].clone())
 }
