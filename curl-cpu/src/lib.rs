@@ -1,6 +1,5 @@
 #![feature(alloc)]
 #![no_std]
-//#![feature(const_fn)]
 extern crate alloc;
 #[cfg(feature = "parallel")]
 extern crate std;

@@ -203,7 +203,6 @@ mod inner {
         let min_weight = 11u8;
         let trits: Vec<Trit> = trans.trits();
         let nonce: Trinary = A::search(trits.as_slice(), min_weight).expect("Some PoW Failure.");
-        //assert_eq!(nonce.trits().len(), 243);
 
         let final_t: Trinary = trits[..(trans.len_trits() - HASH_LENGTH)]
             .into_iter()
