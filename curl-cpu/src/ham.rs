@@ -1,4 +1,3 @@
-use hamming::weight;
 use curl::*;
 use cpucurl::CpuCurl;
 use search::Offset;
@@ -7,33 +6,7 @@ use search::*;
 use alloc::*;
 use core::mem;
 
-//const word_length: usize = 64; //mem::size_of::<usize>() * 8;
-#[inline(always)]
-fn id(idx: usize) -> usize {
-    1 << idx
-}
-
 pub struct CpuHam;
-fn transpose(bctrits: &[BCTrit]) -> Vec<(Vec<u8>, Vec<u8>)> {
-    let word_length = mem::size_of::<usize>() * 8;
-    let byte_length = bctrits.len() / 8 + bctrits.len() % 8;
-    (0..word_length)
-        .into_iter()
-        .map(|i| {
-            let mut low = vec![0u8; byte_length];
-            let mut hi = vec![0u8; byte_length];
-            for j in 0..bctrits.len() {
-                if bctrits[j].0 & id(i) != 0 {
-                    low[j / 8] |= 1 << (j % 8);
-                }
-                if bctrits[j].1 & id(i) != 0 {
-                    hi[j / 8] |= 1 << (j % 8);
-                }
-            }
-            (low, hi)
-        })
-        .collect()
-}
 
 fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
     let mut curl = CpuCurl::<Trit>::default();
@@ -50,16 +23,32 @@ impl HammingNonce for CpuHam {
     fn search(input: &[Trit], length: u8, security: u8) -> Option<Trinary> {
         let state = prepare_search(input);
         search_cpu(state.as_slice(), length as usize, 0, move |t: &[BCTrit]| {
-            let tp = transpose(t);
-            // TODO: for security == 1, first 81 trits must sum to zero
-            // for security == 2, first 81 trits must not sum to zero,
-            // and first 162 trits must sum to zero
-            // for security == 3, first 81 trits must not sum to zero,
-            // first 162 trits must not sum to zero,
-            // but all trits must sum to zero
-            for i in 0..tp.len() {
-                if weight(tp[i].0.as_slice()) == weight(tp[i].1.as_slice()) {
-                    return Some(i);
+            let mux = TrinaryDemultiplexer::new(t);
+            for i in 0..(mem::size_of::<usize>() * 8) {
+                let trits: Vec<Trit> = mux[i].trits();
+                match security {
+                    1 => {
+                        if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) == 0 {
+                            return Some(i);
+                        }
+                    }
+                    2 => {
+                        if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) != 0 {
+                            if trits[..(2 * t.len() / 3)].iter().fold(0, |acc, x| acc + x) == 0 {
+                                return Some(i);
+                            }
+                        }
+                    }
+                    3 => {
+                        if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) != 0 {
+                            if trits[..(2 * t.len() / 3)].iter().fold(0, |acc, x| acc + x) != 0 {
+                                if trits.iter().fold(0, |acc, x| acc + x) == 0 {
+                                    return Some(i);
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
             None

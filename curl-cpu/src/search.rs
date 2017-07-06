@@ -1,5 +1,4 @@
 use trytes::*;
-use alloc::Vec;
 use cpucurl::*;
 use core::cmp::min;
 use curl::{Curl, Sponge};

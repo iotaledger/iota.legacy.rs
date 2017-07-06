@@ -237,20 +237,23 @@ mod inner {
             .chars()
             .collect();
         let length = 27u8;
-        let security = 3u8;
         let len_len = 12;
-        let trits = trytes.trits();
-        let nonce: Trinary =
-            A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
+        for security in 1u8..4u8 {
+            let trits = trytes.trits();
+            let nonce: Trinary =
+                A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
 
-        let len_trits = num::int2trits(trits.len() as isize, len_len);
+            let len_trits = num::int2trits(trits.len() as isize, len_len);
 
-        let mut curl = C::default();
-        curl.absorb(len_trits.as_slice());
-        curl.absorb(trytes.trits().as_slice());
-        curl.absorb(nonce.trits().as_slice());
-        let hash_end: Trit = curl.squeeze(HASH_LENGTH).iter().fold(0, |acc, x| acc + x);
-        assert_eq!(hash_end, 0);
+            let mut curl = C::default();
+            curl.absorb(len_trits.as_slice());
+            curl.absorb(trytes.trits().as_slice());
+            curl.absorb(nonce.trits().as_slice());
+            let hash_end: Trit = curl.squeeze(security as usize * HASH_LENGTH / 3)
+                .iter()
+                .fold(0, |acc, x| acc + x);
+            assert_eq!(hash_end, 0);
+        }
     }
 }
 

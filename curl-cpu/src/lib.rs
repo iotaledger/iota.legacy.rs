@@ -8,7 +8,6 @@ extern crate std;
 extern crate iota_trytes as trytes;
 extern crate iota_tmath as tmath;
 extern crate iota_curl as curl;
-extern crate hamming;
 
 mod indices;
 mod search;
