@@ -2,6 +2,7 @@ use trytes::*;
 
 /// Trait for incrementing trinary arrays
 pub trait TrinaryIncr {
+    /// Take a trinary array, increment it, and return the last index visited.
     fn incr(&mut self) -> usize;
 }
 
