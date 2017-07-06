@@ -8,7 +8,7 @@ pub struct CpuPoW;
 impl ProofOfWork for CpuPoW {
     fn search(input: Trinary, weight: u8) -> Option<Trinary> {
         let state = prepare_search(input.trits().as_slice());
-        search_cpu(state.as_slice(), HASH_LENGTH, 0, |t: &[BCTrit]| {
+        search_cpu(state.as_slice(), HASH_LENGTH, 0, move |t: &[BCTrit]| {
             let mut probe = usize::max_value();
             let wt: usize = weight as usize;
             let start = t.len() - wt;
