@@ -1,8 +1,8 @@
 use trytes::*;
 use alloc::Vec;
-use curl::*;
 use cpucurl::*;
 use core::cmp::min;
+use curl::{Curl, Sponge};
 
 pub trait Offset {
     fn offset(&mut self);
@@ -61,7 +61,6 @@ mod cpu_search {
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
     use core::marker::*;
-    //use alloc::Vec;
     pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
     where
         F: Fn(&[BCTrit]) -> Option<usize> + 'static + Send + Sync,

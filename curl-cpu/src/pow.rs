@@ -1,5 +1,5 @@
-use curl::*;
-use cpucurl::*;
+use curl::{ProofOfWork, Curl};
+use cpucurl::CpuCurl;
 use trytes::*;
 use search::*;
 use alloc::Vec;
