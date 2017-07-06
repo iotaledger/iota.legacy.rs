@@ -51,6 +51,12 @@ impl HammingNonce for CpuHam {
         let state = prepare_search(input);
         search_cpu(state.as_slice(), length as usize, 0, move |t: &[BCTrit]| {
             let tp = transpose(t);
+            // TODO: for security == 1, first 81 trits must sum to zero
+            // for security == 2, first 81 trits must not sum to zero,
+            // and first 162 trits must sum to zero
+            // for security == 3, first 81 trits must not sum to zero,
+            // first 162 trits must not sum to zero,
+            // but all trits must sum to zero
             for i in 0..tp.len() {
                 if weight(tp[i].0.as_slice()) == weight(tp[i].1.as_slice()) {
                     return Some(i);

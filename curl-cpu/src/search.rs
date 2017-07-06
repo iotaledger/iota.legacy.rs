@@ -68,6 +68,7 @@ mod cpu_search {
         let running = Arc::new(AtomicBool::new(true));
         let check_arc = Arc::new(check);
         let (tx, rx) = channel();
+        // TODO: replace with calculated number of threads
         let handles: Vec<thread::JoinHandle<_>> = (0..8)
             .into_iter()
             .map(|i| {
