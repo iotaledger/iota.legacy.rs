@@ -243,3 +243,13 @@ where
 {
     inner::test_pow::<A, B, C>();
 }
+
+pub fn run_ham_search<A, B, C>()
+where
+    A: HammingNonce,
+    B: Copy,
+    C: Curl<B>,
+    Trinary: IntoTrits<B> + FromIterator<B>,
+{
+    //inner::test_pow::<A, B, C>();
+}

@@ -1,11 +1,10 @@
-
 use trytes::*;
 use alloc::Vec;
 use curl::*;
 use cpucurl::*;
 use core::cmp::min;
 
-trait Offset {
+pub trait Offset {
     fn offset(&mut self);
 }
 
@@ -20,18 +19,6 @@ impl<'a> Offset for &'a mut [BCTrit] {
         self[3].0 = 0b1111111111000000000000000000000000000111111111111111111111111111;
         self[3].1 = 0b0000000000111111111111111111111111111111111111111111111111111111;
     }
-}
-
-pub fn prepare_search(input: &[BCTrit]) -> Vec<BCTrit> {
-    let mut curl = CpuCurl::<BCTrit>::default();
-    let size = if input.len() % HASH_LENGTH == 0 {
-        input.len() - HASH_LENGTH
-    } else {
-        HASH_LENGTH * (input.len() / HASH_LENGTH)
-    };
-    curl.absorb(&input[..size]);
-    (&mut curl.state[0..4]).offset();
-    curl.state.into_iter().cloned().collect()
 }
 
 #[cfg(not(feature = "parallel"))]
@@ -56,7 +43,7 @@ mod cpu_search {
             );
             let mut cpy = curl.clone();
             cpy.transform();
-            index = check(&cpy.state[0..size]);
+            index = check(&cpy.state[..HASH_LENGTH]);
         }
 
         let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
@@ -104,7 +91,7 @@ mod cpu_search {
                         );
                         let mut cpy = curl.clone();
                         cpy.transform();
-                        index = check_clone(&cpy.state[0..size]);
+                        index = check_clone(&cpy.state[..HASH_LENGTH]);
                     }
                     if running_clone.load(Ordering::SeqCst) && index.is_some() {
                         running_clone.store(false, Ordering::SeqCst);

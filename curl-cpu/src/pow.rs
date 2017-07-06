@@ -1,9 +1,23 @@
-use curl::ProofOfWork;
+use curl::*;
+use cpucurl::*;
 use trytes::*;
-use search::search_cpu;
-use search::prepare_search;
+use search::*;
+use alloc::Vec;
 
 pub struct CpuPoW;
+
+fn prepare_search(input: &[BCTrit]) -> Vec<BCTrit> {
+    let mut curl = CpuCurl::<BCTrit>::default();
+    let size = if input.len() % HASH_LENGTH == 0 {
+        input.len() - HASH_LENGTH
+    } else {
+        HASH_LENGTH * (input.len() / HASH_LENGTH)
+    };
+    curl.absorb(&input[..size]);
+    (&mut curl.state[0..4]).offset();
+    curl.state.into_iter().cloned().collect()
+}
+
 
 impl ProofOfWork for CpuPoW {
     fn search(input: Trinary, weight: u8) -> Option<Trinary> {

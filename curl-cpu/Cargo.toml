@@ -13,4 +13,4 @@ parallel = []
 iota-tmath = { path = "../tmath" }
 iota-trytes = { path = "../trytes" }
 iota-curl = { path = "../curl" }
-
+hamming = "*"
