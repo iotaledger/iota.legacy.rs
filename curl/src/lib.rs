@@ -5,6 +5,7 @@ extern crate iota_trytes as trytes;
 
 use trytes::constants::HASH_LENGTH;
 use trytes::Trinary;
+use trytes::Trit;
 
 pub mod tests;
 
@@ -35,11 +36,11 @@ where
 pub trait ProofOfWork {
     /// Searches for a nonce given an `input` that gives a hash with `weight` zeros
     /// Returns the nonce
-    fn search(input: Trinary, weight: u8) -> Option<Trinary>;
+    fn search(input: &[Trit], weight: u8) -> Option<Trinary>;
 }
 
 pub trait HammingNonce {
     /// Searches for a checksum given by hamming weight
     /// Returns the nonce to create checksum
-    fn search(input: Trinary, length: u8, security: u8) -> Option<Trinary>;
+    fn search(input: &[Trit], length: u8, security: u8) -> Option<Trinary>;
 }

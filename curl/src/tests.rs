@@ -6,6 +6,7 @@ use core::iter::FromIterator;
 
 mod inner {
     use super::*;
+    use trytes::*;
 
     fn test_hash_eq<A, B>(trans: Trinary, expected: Trinary)
     where
@@ -147,12 +148,10 @@ mod inner {
         test_hash_eq::<A, B>(trans, ex_hash);
     }
 
-    pub fn test_pow<A, B, C>()
+    pub fn test_pow<A, C>()
     where
         A: ProofOfWork,
-        B: Copy,
-        C: Curl<B>,
-        Trinary: IntoTrits<B> + FromIterator<B>,
+        C: Curl<Trit>,
     {
         let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
@@ -201,12 +200,12 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
             .chars()
             .collect();
-        let weight = 9u8;
-        let trans_copy: Trinary = trans.clone();
-        let nonce: Trinary = A::search(trans, weight).expect("Some PoW Failure.");
-        assert_eq!(nonce.trits().len(), 243);
+        let min_weight = 11u8;
+        let trits: Vec<Trit> = trans.trits();
+        let nonce: Trinary = A::search(trits.as_slice(), min_weight).expect("Some PoW Failure.");
+        //assert_eq!(nonce.trits().len(), 243);
 
-        let final_t: Trinary = trans_copy.trits()[..(trans_copy.len_trits() - HASH_LENGTH)]
+        let final_t: Trinary = trits[..(trans.len_trits() - HASH_LENGTH)]
             .into_iter()
             .cloned()
             .chain(nonce.trits().into_iter())
@@ -214,12 +213,44 @@ mod inner {
 
         let mut curl = C::default();
         curl.absorb(final_t.trits().as_slice());
-        let hash_end: Trinary = curl.squeeze(HASH_LENGTH)[(HASH_LENGTH - weight as usize)..]
+        let weight: usize = curl.squeeze(HASH_LENGTH)[(HASH_LENGTH - min_weight as usize)..]
             .into_iter()
-            .cloned()
+            .rev()
+            .take_while(|&&t| t == 0)
+            .count();
+        assert_eq!(weight, min_weight as usize);
+    }
+    pub fn test_ham<A, C>()
+    where
+        A: HammingNonce,
+        C: Curl<Trit>,
+    {
+        let trytes: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+                                   GBDXROXGH9MTNFSLWJZRAPOKKRGXAAQBFPYPAAXLSTMNSNDTTJQSDQORNJS9\
+                                   BBGQ9KQJZYPAQ9JYQZJ9B9KQDAXUACZWRUNGMBOQLQZUHFNCKVQGORRZGAHE\
+                                   S9PWJUKZWUJSBMNZFILBNBQQKLXITCTQDDBV9UDAOQOUPWMXTXWFWVMCXIXL\
+                                   RMRWMAYYQJPCEAAOFEOGZQMEDAGYGCTKUJBS9AGEXJAFHWWDZRYEN9DN9HVC\
+                                   MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
+                                   HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
+                                   BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
+            .chars()
             .collect();
-        let expect: Trinary = "999".chars().collect();
-        assert_eq!(hash_end, expect);
+        let length = 27u8;
+        let security = 3u8;
+        let len_len = 12;
+        let trits = trytes.trits();
+        let nonce: Trinary =
+            A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
+
+        let len_trits = num::int2trits(trits.len() as isize, len_len);
+
+        let mut curl = C::default();
+        curl.absorb(len_trits.as_slice());
+        curl.absorb(trytes.trits().as_slice());
+        curl.absorb(nonce.trits().as_slice());
+        let hash_end: Trit = curl.squeeze(HASH_LENGTH).iter().fold(0, |acc, x| acc + x);
+        assert_eq!(hash_end, 0);
     }
 }
 
@@ -234,22 +265,18 @@ where
     inner::hash_works2::<A, B>();
 }
 
-pub fn run_search<A, B, C>()
+pub fn run_search<A, C>()
 where
     A: ProofOfWork,
-    B: Copy,
-    C: Curl<B>,
-    Trinary: IntoTrits<B> + FromIterator<B>,
+    C: Curl<Trit>,
 {
-    inner::test_pow::<A, B, C>();
+    inner::test_pow::<A, C>();
 }
 
-pub fn run_ham_search<A, B, C>()
+pub fn run_ham_search<A, C>()
 where
     A: HammingNonce,
-    B: Copy,
-    C: Curl<B>,
-    Trinary: IntoTrits<B> + FromIterator<B>,
+    C: Curl<Trit>,
 {
-    //inner::test_pow::<A, B, C>();
+    inner::test_ham::<A, C>();
 }
