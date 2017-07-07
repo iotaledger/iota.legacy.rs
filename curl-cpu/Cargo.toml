@@ -7,8 +7,9 @@ keywords = ["no_std"]
 
 [features]
 default = []
+parallel = []
 
 [dependencies]
+iota-tmath = { path = "../tmath" }
 iota-trytes = { path = "../trytes" }
 iota-curl = { path = "../curl" }
-

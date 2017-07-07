@@ -6,6 +6,7 @@ use core::iter::FromIterator;
 
 mod inner {
     use super::*;
+    use trytes::*;
 
     fn test_hash_eq<A, B>(trans: Trinary, expected: Trinary)
     where
@@ -146,6 +147,113 @@ mod inner {
 
         test_hash_eq::<A, B>(trans, ex_hash);
     }
+
+    pub fn test_pow<A, C>()
+    where
+        A: ProofOfWork,
+        C: Curl<Trit>,
+    {
+        let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+                                   WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
+                                   RZBPKRKQAIPGOHBTHTGYXTBJLSURDSPEOJ9UKJECUKCCPVIQQHDUYKVKISCE\
+                                   IEGVOQWRBAYXWGSJUTEVG9RPQLPTKYCRAJ9YNCUMDVDYDQCKRJOAPXCSUDAJ\
+                                   GETALJINHEVNAARIPONBWXUOQUFGNOCUSSLYWKOZMZUKLNITZIFXFWQAYVJC\
+                                   VMDTRSHORGNSTKX9Z9DLWNHZSMNOYTU9AUCGYBVIITEPEKIXBCOFCMQPBGXY\
+                                   JKSHPXNUKFTXIJVYRFILAVXEWTUICZCYYPCEHNTK9SLGVL9RLAMYTAEPONCB\
+                                   HDXSEQZOXO9XCFUCPPMKEBR9IEJGQOPPILHFXHMIULJYXZJASQEGCQDVYFOM\
+                                   9ETXAGVMSCHHQLFPATWOSMZIDL9AHMSDCE9UENACG9OVFAEIPPQYBCLXDMXX\
+                                   A9UBJFQQBCYKETPNKHNOUKCSSYLWZDLKUARXNVKKKHNRBVSTVKQCZL9RY9BD\
+                                   TDTPUTFUBGRMSTOTXLWUHDMSGYRDSZLIPGQXIDMNCNBOAOI9WFUCXSRLJFIV\
+                                   TIPIAZUK9EDUJJ9B9YCJEZQQELLHVCWDNRH9FUXDGZRGOVXGOKORTCQQA9JX\
+                                   NROLETYCNLRMBGXBL9DQKMOAZCBJGWLNJLGRSTYBKLGFVRUF9QOPZVQFGMDJ\
+                                   A9TBVGFJDBAHEVOLW9GNU9NICLCQJBOAJBAHHBZJGOFUCQMBGYQLCWNKSZPP\
+                                   BQMSJTJLM9GXOZHTNDLGIRCSIJAZTENQVQDHFSOQM9WVNWQQJNOPZMEISSCL\
+                                   OADMRNWALBBSLSWNCTOSNHNLWZBVCFIOGFPCPRKQSRGKFXGTWUSCPZSKQNLQ\
+                                   JGKDLOXSBJMEHQPDZGSENUKWAHRNONDTBLHNAKGLOMCFYRCGMDOVANPFHMQR\
+                                   FCZIQHCGVORJJNYMTORDKPJPLA9LWAKAWXLIFEVLKHRKCDG9QPQCPGVKIVBE\
+                                   NQJTJGZKFTNZHIMQISVBNLHAYSSVJKTIELGTETKPVRQXNAPWOBGQGFRMMK9U\
+                                   QDWJHSQMYQQTCBMVQKUVGJEAGTEQDN9TCRRAZHDPSPIYVNKPGJSJZASZQBM9\
+                                   WXEDWGAOQPPZFLAMZLEZGXPYSOJRWL9ZH9NOJTUKXNTCRRDO9GKULXBAVDRI\
+                                   ZBOKJYVJUSHIX9F9O9ACYCAHUKBIEPVZWVJAJGSDQNZNWLIWVSKFJUMOYDMV\
+                                   UFLUXT9CEQEVRFBJVPCTJQCORM9JHLYFSMUVMFDXZFNCUFZZIKREIUIHUSHR\
+                                   PPOUKGFKWX9COXBAZMQBBFRFIBGEAVKBWKNTBMLPHLOUYOXPIQIZQWGOVUWQ\
+                                   ABTJT9ZZPNBABQFYRCQLXDHDEX9PULVTCQLWPTJLRSVZQEEYVBVY9KCNEZXQ\
+                                   LEGADSTJBYOXEVGVTUFKNCNWMEDKDUMTKCMRPGKDCCBDHDVVSMPOPUBZOMZT\
+                                   XJSQNVVGXNPPBVSBL9WWXWQNMHRMQFEQYKWNCSW9URI9FYPT9UZMAFMMGUKF\
+                                   YTWPCQKVJ9DIHRJFMXRZUGI9TMTFUQHGXNBITDSORZORQIAMKY9VRYKLEHNR\
+                                   NFSEFBHF9KXIQAEZEJNQOENJVMWLMHI9GNZPXYUIFAJIVCLAGKUZIKTJKGNQ\
+                                   VTXJORWIQDHUPBBPPYOUPFAABBVMMYATXERQHPECDVYGWDGXFJKOMOBXKRZD\
+                                   9MCQ9LGDGGGMYGUAFGMQTUHZOAPLKPNPCIKUNEMQIZOCM9COAOMZSJ9GVWZB\
+                                   ZYXMCNALENZ9PRYMHENPWGKX9ULUIGJUJRKFJPBTTHCRZQKEAHT9DC9GSWQE\
+                                   GDTZFHACZMLFYDVOWZADBNMEM9XXEOMHCNJMDSUAJRQTBUWKJF9RZHK9ACGU\
+                                   NI9URFIHLXBXCEODONPXBSCWP9WNAEYNALKQHGULUQGAFL9LB9NBLLCACLQF\
+                                   GQMXRHGBTMI9YKAJKVELRWWKJAPKMSYMJTDYMZ9PJEEYIRXRMMFLRSFSHIXU\
+                                   L9NEJABLRUGHJFL9RASMSKOI9VCFRZ9GWTMODUUESIJBHWWHZYCLDENBFSJQ\
+                                   PIOYC9MBGOOXSWEMLVU9L9WJXKZKVDBDMFSVHHISSSNILUMWULMVMESQUIHD\
+                                   GBDXROXGH9MTNFSLWJZRAPOKKRGXAAQBFPYPAAXLSTMNSNDTTJQSDQORNJS9\
+                                   BBGQ9KQJZYPAQ9JYQZJ9B9KQDAXUACZWRUNGMBOQLQZUHFNCKVQGORRZGAHE\
+                                   S9PWJUKZWUJSBMNZFILBNBQQKLXITCTQDDBV9UDAOQOUPWMXTXWFWVMCXIXL\
+                                   RMRWMAYYQJPCEAAOFEOGZQMEDAGYGCTKUJBS9AGEXJAFHWWDZRYEN9DN9HVC\
+                                   MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
+                                   HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
+                                   BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
+            .chars()
+            .collect();
+        let min_weight = 11u8;
+        let trits: Vec<Trit> = trans.trits();
+        let nonce: Trinary = A::search(trits.as_slice(), min_weight).expect("Some PoW Failure.");
+
+        let final_t: Trinary = trits[..(trans.len_trits() - HASH_LENGTH)]
+            .into_iter()
+            .cloned()
+            .chain(nonce.trits().into_iter())
+            .collect();
+
+        let mut curl = C::default();
+        curl.absorb(final_t.trits().as_slice());
+        let weight: usize = curl.squeeze(HASH_LENGTH)[(HASH_LENGTH - min_weight as usize)..]
+            .into_iter()
+            .rev()
+            .take_while(|&&t| t == 0)
+            .count();
+        assert_eq!(weight, min_weight as usize);
+    }
+    pub fn test_ham<A, C>()
+    where
+        A: HammingNonce,
+        C: Curl<Trit>,
+    {
+        let trytes: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+                                   GBDXROXGH9MTNFSLWJZRAPOKKRGXAAQBFPYPAAXLSTMNSNDTTJQSDQORNJS9\
+                                   BBGQ9KQJZYPAQ9JYQZJ9B9KQDAXUACZWRUNGMBOQLQZUHFNCKVQGORRZGAHE\
+                                   S9PWJUKZWUJSBMNZFILBNBQQKLXITCTQDDBV9UDAOQOUPWMXTXWFWVMCXIXL\
+                                   RMRWMAYYQJPCEAAOFEOGZQMEDAGYGCTKUJBS9AGEXJAFHWWDZRYEN9DN9HVC\
+                                   MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
+                                   HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
+                                   BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
+            .chars()
+            .collect();
+        let length = 27u8;
+        let len_len = 12;
+        for security in 1u8..4u8 {
+            let trits = trytes.trits();
+            let nonce: Trinary =
+                A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
+
+            let len_trits = num::int2trits(trits.len() as isize, len_len);
+
+            let mut curl = C::default();
+            curl.absorb(len_trits.as_slice());
+            curl.absorb(trytes.trits().as_slice());
+            curl.absorb(nonce.trits().as_slice());
+            let hash_end: Trit = curl.squeeze(security as usize * HASH_LENGTH / 3)
+                .iter()
+                .fold(0, |acc, x| acc + x);
+            assert_eq!(hash_end, 0);
+        }
+    }
 }
 
 pub fn run<A, B>()
@@ -157,4 +265,20 @@ where
     // run tests
     inner::hash_works1::<A, B>();
     inner::hash_works2::<A, B>();
+}
+
+pub fn run_search<A, C>()
+where
+    A: ProofOfWork,
+    C: Curl<Trit>,
+{
+    inner::test_pow::<A, C>();
+}
+
+pub fn run_ham_search<A, C>()
+where
+    A: HammingNonce,
+    C: Curl<Trit>,
+{
+    inner::test_ham::<A, C>();
 }

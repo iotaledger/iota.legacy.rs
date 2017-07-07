@@ -158,7 +158,7 @@ impl Trinary {
 
         let with_trits = tryte_to_trits(with);
         let count = length - self.len_trytes();
-        let mut trits : Vec<Trit> = self.trits();
+        let mut trits: Vec<Trit> = self.trits();
 
         for _ in 0..count {
             trits.extend_from_slice(with_trits);
