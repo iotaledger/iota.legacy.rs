@@ -3,9 +3,9 @@
 use alloc::Vec;
 
 use trytes::*;
+use tmath::*;
 use trytes::constants::RADIX;
 use curl::*;
-use curl_cpu::*;
 
 const TRYTE_WIDTH: usize = 3;
 const MAX_TRYTE_VALUE: i8 = 1;
@@ -15,59 +15,53 @@ const DIGEST_LENGTH: usize = HASH_LENGTH;
 const ADDRESS_LENGTH: usize = HASH_LENGTH;
 const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 
-pub fn subseed(seed: Trinary, mut index: usize) -> Trinary
+pub fn subseed<C>(seed: &[Trit], index: usize) -> Trinary
+where
+    C: Curl<Trit>,
 {
-    let mut trits = seed.trits();
-    let mut curl = CpuCurl::<Trit>::default();
+    let mut trits: Vec<Trit> = seed.clone().to_vec();
+    let mut curl = C::default();
 
-    while index > 0 {
-        for i in 0..trits.len() {
-            trits[i] += 1;
-
-            if trits[i] > 1 {
-                trits[i] = -1;
-            } else {
-                break;
-            }
-        }
-
-        index -= 1;
+    for _ in 0..index {
+        trits.as_mut_slice().incr();
     }
 
-    curl.absorb(&trits);
+    curl.absorb(trits.as_slice());
     curl.squeeze(trits.len()).into_iter().collect()
 }
 
-pub fn key(subseed: Trinary) -> Trinary
+pub fn key<T, C>(subseed: &[T]) -> Vec<T>
+where
+    T: Copy,
+    C: Curl<T>,
 {
-    let mut c = DefaultCurl::default();
-    let trits = subseed.trits();
-    c.absorb(&trits);
+    let mut c = C::default();
+    c.absorb(subseed);
     let mut key = c.squeeze(KEY_LENGTH);
 
-    for div_offset in 0..(KEY_LENGTH/HASH_LENGTH){
+    for div_offset in 0..(KEY_LENGTH / HASH_LENGTH) {
         let offset = div_offset * HASH_LENGTH;
         c.reset();
-        c.absorb(&key[offset..offset+HASH_LENGTH]);
+        c.absorb(&key[offset..offset + HASH_LENGTH]);
 
         let squeezed = c.squeeze(HASH_LENGTH);
-        key[offset..offset+squeezed.len()].clone_from_slice(squeezed.as_slice());
+        key[offset..offset + squeezed.len()].clone_from_slice(squeezed.as_slice());
     }
-
-    key.into_iter().collect()
+    key
 }
 
-pub fn digest_key(key: Trinary) -> Trinary
+pub fn digest_key<T, C>(key: &[T]) -> Vec<T>
+where
+    T: Copy + Clone + Sized,
+    C: Curl<T>,
 {
-    let mut digest_curl = DefaultCurl::default();
-    let mut key_fragment_curl = DefaultCurl::default();
-    let trits : Vec<BCTrit> = key.trits();
+    let mut digest_curl = C::default();
+    let mut key_fragment_curl = C::default();
 
     for i in 0..(KEY_LENGTH / HASH_LENGTH) {
-        let mut buffer: Vec<BCTrit> = trits[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
-            .iter()
-            .cloned()
-            .collect();
+        //let mut buffer: &[T] = (&key[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]).clone();
+        let mut buffer: Vec<T> = Vec::with_capacity(HASH_LENGTH);
+        buffer.extend((&key[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]).clone());
 
         for _ in 0..(MAX_TRYTE_VALUE - MIN_TRYTE_VALUE) {
             key_fragment_curl.reset();
@@ -78,24 +72,28 @@ pub fn digest_key(key: Trinary) -> Trinary
         digest_curl.absorb(&buffer);
     }
 
-    digest_curl.squeeze(DIGEST_LENGTH).into_iter().collect()
+    digest_curl.squeeze(DIGEST_LENGTH)
 }
 
-pub fn address(digests: Trinary) -> Trinary
+pub fn address<T, C>(digests: &[T]) -> Vec<T>
+where
+    T: Copy,
+    C: Curl<T>,
 {
-    let mut c = DefaultCurl::default();
-    let trits = digests.trits();
-    c.absorb(&trits);
-    c.squeeze(ADDRESS_LENGTH).into_iter().collect()
+    let mut c = C::default();
+    c.absorb(digests);
+    c.squeeze(ADDRESS_LENGTH)
 }
 
-pub fn signature(bundle: Trinary, key: Trinary) -> Trinary
+pub fn signature<C>(bundle: Trinary, key: Trinary) -> Trinary
+where
+    C: Curl<Trit>,
 {
 
-    let mut c = CpuCurl::<Trit>::default();
+    let mut c = C::default();
 
     let mut signature = key.trits();
-    let bundle_trits : Vec<Trit> = bundle.trits();
+    let bundle_trits: Vec<Trit> = bundle.trits();
 
     for i in 0..(SIGNATURE_LENGTH / HASH_LENGTH) {
         let hashing_chain_length = MAX_TRYTE_VALUE -
@@ -112,13 +110,15 @@ pub fn signature(bundle: Trinary, key: Trinary) -> Trinary
     signature.into_iter().collect()
 }
 
-pub fn digest_bundle_signature(bundle: Trinary, signature: Trinary) -> Trinary
+pub fn digest_bundle_signature<C>(bundle: Trinary, signature: Trinary) -> Trinary
+where
+    C: Curl<Trit>,
 {
-    let mut digest_curl = CpuCurl::<Trit>::default();
-    let mut signature_fragment_curl = CpuCurl::<Trit>::default();
+    let mut digest_curl = C::default();
+    let mut signature_fragment_curl = C::default();
 
     let signature_trits = signature.trits();
-    let bundle_trits : Vec<Trit> = bundle.trits();
+    let bundle_trits: Vec<Trit> = bundle.trits();
 
     for i in 0..(SIGNATURE_LENGTH / HASH_LENGTH) {
         let hashing_chain_length = MAX_TRYTE_VALUE -
@@ -131,7 +131,11 @@ pub fn digest_bundle_signature(bundle: Trinary, signature: Trinary) -> Trinary
             .collect();
         for _ in hashing_chain_length..0 {
             signature_fragment_curl.reset();
-            signature_fragment_curl.absorb(&signature_trits[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
+            signature_fragment_curl.absorb(
+                &signature_trits[i * HASH_LENGTH..
+                                     (i + 1) *
+                                         HASH_LENGTH],
+            );
             buffer.clone_from_slice(signature_fragment_curl.squeeze(HASH_LENGTH).as_slice());
         }
 
@@ -145,17 +149,19 @@ pub fn digest_bundle_signature(bundle: Trinary, signature: Trinary) -> Trinary
 #[cfg(test)]
 mod test {
     use super::*;
+    use curl_cpu::*;
 
     #[test]
     fn test_nothing_crashes() {
         let seed: Trinary = "WJRVZJOSSMRCGCJYFN9SSETWFLRCPWSCOEPPT9KNHWUTTW9BTELBWDPMHDRN9NTFGWESKAKZCFHGBJJQZ"
             .chars()
             .collect();
-        let subseed = subseed(seed, 0);
-        let key = key(subseed);
-        let key_digest = digest_key(key);
-        let address = address(key_digest);
+        let subseed = subseed::<CpuCurl<Trit>>(&seed.trits(), 0);
+        let key = key::<Trit, CpuCurl<Trit>>(&subseed.trits());
+        let key_digest = digest_key::<Trit, CpuCurl<Trit>>(&key);
+        let address: Vec<Trit> = address::<Trit, CpuCurl<Trit>>(&key_digest);
+        let addr_trinary: Trinary = address.into_iter().collect();
 
-        address.len_trits();
+        addr_trinary.len_trits();
     }
 }
