@@ -1,0 +1,6 @@
+[package]
+name = "merkle"
+version = "0.1.0"
+authors = ["Paul D Handy <paul.d.handy@gmail.com>"]
+
+[dependencies]
