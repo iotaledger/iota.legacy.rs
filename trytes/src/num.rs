@@ -13,7 +13,18 @@ pub fn trits2int(trits: &[Trit]) -> isize {
     ret
 }
 
-pub fn int2trits(v: isize, size: u8) -> Vec<Trit> {
+//pub fn int2trits(v: isize, size: u8) -> Vec<Trit> {
+pub fn int2trits(v: isize) -> Vec<Trit> {
+    let size: usize = {
+        let mut num = 0;
+        let v_abs = v.wrapping_abs();
+        while {
+            num += 1;
+            v_abs > 3isize.pow(num)
+        }
+        {}
+        num as usize
+    };
     let mut ret: Vec<Trit> = Vec::with_capacity(size as usize);
     let negative = v < 0;
 
@@ -51,7 +62,8 @@ mod test {
     fn test_int2trits_1() {
 
         let trits: Vec<Trit> = vec![0, 1, -1, 1, 1, -1, -1, 1, 1, 0, 0, 1, 0, 1, 1];
-        let conv = int2trits(6562317, 15);
+        //let conv = int2trits(6562317, 15);
+        let conv = int2trits(6562317);
 
         assert_eq!(trits, conv);
     }
@@ -59,7 +71,8 @@ mod test {
     #[test]
     fn test_int2trits_2() {
         let trits: Vec<Trit> = vec![-1, 1, 0, 1, -1, -1, -1];
-        let conv = int2trits(-1024, 7);
+        //let conv = int2trits(-1024, 7);
+        let conv = int2trits(-1024);
 
         assert_eq!(trits, conv);
     }

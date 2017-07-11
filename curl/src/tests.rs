@@ -242,7 +242,7 @@ mod inner {
             let nonce: Trinary =
                 A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
 
-            let len_trits = num::int2trits(trits.len() as isize, len_len);
+            let len_trits = num::int2trits(trits.len() as isize);
 
             let mut curl = C::default();
             curl.absorb(len_trits.as_slice());

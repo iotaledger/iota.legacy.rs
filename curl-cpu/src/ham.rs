@@ -9,7 +9,7 @@ pub struct CpuHam;
 
 fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
     let mut curl = CpuCurl::<Trit>::default();
-    let length_trits: Vec<Trit> = num::int2trits(input.len() as isize, 12);
+    let length_trits: Vec<Trit> = num::int2trits(input.len() as isize);
     curl.absorb(length_trits.as_slice());
     curl.absorb(input);
     let trinary: Trinary = curl.state.iter().cloned().collect();
