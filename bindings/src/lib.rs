@@ -13,18 +13,20 @@ extern crate cty;
 
 extern crate iota_sign;
 extern crate iota_trytes;
-extern crate iota_curl;
 extern crate iota_curl_cpu;
+extern crate iota_curl;
 
-#[cfg(not(test))] 
+#[cfg(not(test))]
 #[lang = "eh_personality"]
 extern "C" fn eh_personality() {}
 
-#[cfg(not(test))] 
+#[cfg(not(test))]
 #[lang = "panic_fmt"]
 fn panic_fmt() -> ! {
     use core::intrinsics;
-    unsafe {intrinsics::abort(); }
+    unsafe {
+        intrinsics::abort();
+    }
 }
 
 pub mod util;

@@ -3,11 +3,7 @@ use core::iter::FromIterator;
 
 use constants::BCTrit;
 use constants::Trit;
-use trinary::Trinary;
-
-pub trait Offset {
-    fn offset(&mut self);
-}
+use trinary::{Trinary, Offset};
 
 impl<'a> Offset for &'a mut [BCTrit] {
     fn offset(&mut self) {

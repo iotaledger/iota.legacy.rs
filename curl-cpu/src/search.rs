@@ -1,12 +1,12 @@
 use trytes::*;
 use cpucurl::*;
 use core::cmp::min;
-use curl::{Curl, Sponge};
 
 #[cfg(not(feature = "parallel"))]
 mod cpu_search {
     use super::*;
     use tmath::*;
+    use curl::{Curl, Sponge};
     pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
@@ -38,6 +38,7 @@ mod cpu_search {
 mod cpu_search {
     use super::*;
     use tmath::*;
+    use curl::{Curl, Sponge};
     use std::thread;
     use std::sync::mpsc::channel;
     use std::sync::atomic::{AtomicBool, Ordering};

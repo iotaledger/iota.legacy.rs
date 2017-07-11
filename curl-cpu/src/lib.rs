@@ -19,3 +19,5 @@ pub mod pair;
 pub use cpucurl::CpuCurl;
 
 pub type DefaultCurl = CpuCurl<trytes::BCTrit>;
+pub type SimpleCurl = CpuCurl<trytes::BCTrit>;
+pub use ham::CpuHam;
