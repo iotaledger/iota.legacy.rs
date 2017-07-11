@@ -1,7 +1,6 @@
 use curl::*;
 use cpucurl::CpuCurl;
 use trytes::*;
-use trytes::bct::Offset;
 use search::*;
 use alloc::*;
 use core::mem;

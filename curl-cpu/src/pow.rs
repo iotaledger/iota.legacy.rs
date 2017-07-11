@@ -1,5 +1,4 @@
 use curl::{ProofOfWork, Curl};
-use trytes::bct::Offset;
 use cpucurl::CpuCurl;
 use trytes::*;
 use search::*;

@@ -16,6 +16,14 @@ pub struct Trinary {
     length: usize,
 }
 
+pub trait Offset {
+    fn offset(&mut self);
+}
+
+impl<'a> Offset for &'a mut [Trit] {
+    fn offset(&mut self) {}
+}
+
 impl fmt::Display for Trinary {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         let s: String = self.chars().into_iter().collect();

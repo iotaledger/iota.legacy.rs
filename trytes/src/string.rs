@@ -105,7 +105,7 @@ mod tests {
     #[test]
     fn fromtostr_test3() {
         let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQI";
-        let trinary : Trinary = trytes.chars().collect();
+        let trinary: Trinary = trytes.chars().collect();
         assert_eq!(trinary.to_string(), trytes);
     }
 }

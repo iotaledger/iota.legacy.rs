@@ -48,13 +48,13 @@ impl<'a> Iterator for TrinaryIterator<'a> {
 mod test {
     use core::str::FromStr;
     use alloc::Vec;
-    
+
     use super::*;
     #[test]
     fn test_iter() {
         let trinary = Trinary::from_str("ABCDASDQWEDASDAKJFASD9").unwrap();
-        let trits_ex : Vec<Trit> = trinary.trits();
-        let trits_iter : Vec<Trit> = (&trinary).into_iter().collect();
+        let trits_ex: Vec<Trit> = trinary.trits();
+        let trits_iter: Vec<Trit> = (&trinary).into_iter().collect();
 
         assert_eq!(trits_ex, trits_iter);
     }

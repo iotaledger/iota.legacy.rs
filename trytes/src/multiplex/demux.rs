@@ -161,7 +161,7 @@ mod test {
         let ex = multi.extract();
         let demux = TrinaryDemultiplexer::new(&ex);
 
-        for (a,b) in multi.iter().zip(demux.iter()) {
+        for (a, b) in multi.iter().zip(demux.iter()) {
             assert_eq!(a, b);
         }
     }
