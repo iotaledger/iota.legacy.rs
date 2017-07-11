@@ -41,26 +41,18 @@ mod tests {
     use curl_cpu::*;
     use alloc::Vec;
     use alloc::*;
+    use alloc::string::ToString;
     #[test]
-    fn it_does_not_panic() {
+    fn it_can_unmask() {
         let payload: Trinary = "AMESSAGEFORYOU9".chars().collect();
         let channel_key: Trinary = "MYBIGCHANNELKEY".chars().collect();
         let auth_id: Trinary = "MYMERKLEROOTHASH".chars().collect();
         let index: Trinary = "AEOWJID999999".chars().collect();
-        let cipher = mask::<CpuCurl<Trit>>(
-            &payload.trits(),
-            &vec![channel_key.trits(), auth_id.trits(), index.trits()],
-        );
-    }
-    #[test]
-    fn it_does_not_panic_2() {
-        let payload: Trinary = "AMESSAGEFORYOU9".chars().collect();
-        let channel_key: Trinary = "MYBIGCHANNELKEY".chars().collect();
-        let auth_id: Trinary = "MYMERKLEROOTHASH".chars().collect();
-        let index: Trinary = "AEOWJID999999".chars().collect();
-        let cipher = unmask::<CpuCurl<Trit>>(
-            &payload.trits(),
-            &vec![channel_key.trits(), auth_id.trits(), index.trits()],
-        );
+        let keys = vec![channel_key.trits(), auth_id.trits(), index.trits()];
+        let cipher = mask::<CpuCurl<Trit>>(&payload.trits(), &keys);
+        let plain: Trinary = unmask::<CpuCurl<Trit>>(&cipher.clone(), &keys)
+            .into_iter()
+            .collect();
+        assert_eq!(plain.to_string(), payload.to_string());
     }
 }

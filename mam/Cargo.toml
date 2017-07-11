@@ -2,5 +2,14 @@
 name = "iota-mam"
 version = "0.1.0"
 authors = ["Paul D Handy <paul.d.handy@gmail.com>"]
+keywords = ["no_std"]
 
 [dependencies]
+iota-tmath = { path = "../tmath" }
+iota-trytes = { path = "../trytes" }
+iota-merkle = { path = "../merkle" }
+iota-curl = { path = "../curl" }
+iota-curl-cpu = { path = "../curl-cpu", optional = true }
+
+[features]
+default = [ "iota-curl-cpu" ]
