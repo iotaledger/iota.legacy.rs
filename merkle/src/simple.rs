@@ -57,7 +57,7 @@ pub fn siblings(addrs: &[Vec<Trit>], index: usize) -> Vec<Vec<Trit>> {
     out
 }
 
-fn root(address: &[Trit], hashes: &[Vec<Trit>], index: usize) -> Vec<Trit> {
+pub fn root(address: &[Trit], hashes: &[Vec<Trit>], index: usize) -> Vec<Trit> {
     let mut curl = CpuCurl::<Trit>::default();
     let mut i = 1;
     let mut output: Vec<Trit> = Vec::with_capacity(address.len());

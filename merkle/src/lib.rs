@@ -11,8 +11,8 @@ extern crate iota_sign as sign;
 #[cfg(feature = "default")]
 extern crate iota_curl_cpu as curl_cpu;
 #[cfg(feature = "default")]
-pub mod simple;
+mod simple;
 
 //pub mod merkle;
-//pub use merkle::*;
+pub use simple::*;
 //pub mod createmerkletree;
