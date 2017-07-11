@@ -27,6 +27,7 @@ pub use constants::BCTrit;
 pub use constants::HASH_LENGTH;
 pub use constants::TRITS_PER_TRYTE;
 
+pub use bct::*;
 pub use trinary::*;
 pub use string::*;
 pub use trits::*;

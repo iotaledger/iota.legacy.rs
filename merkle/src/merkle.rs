@@ -35,11 +35,94 @@ impl Merkle {
             addresses.push(vec![(0, 0); HASH_LENGTH]);
         }
 
-        let mut hashes: Vec<Trinary> = compute_sibling_hashes(&addresses, count, index);
-        let root: Trinary = key.clone().into_iter().collect();
+        let (root, hashes) = (|a: &[Vec<BCTrit>], c: usize, i: usize| {
+            let usize_size = mem::size_of::<usize>() * 8;
+            let mut hashes: Vec<Trinary> =
+                Vec::with_capacity(usize_size - c.leading_zeros() as usize);
+            let mut merkle_curl = CpuCurl::<BCTrit>::default();
+            let mut remaining: Vec<Vec<BCTrit>> = Vec::with_capacity(a.len());
+            remaining.extend_from_slice(a);
+            let mut hash_index: usize = if i & 1 == 0 { i + 1 } else { i - 1 };
+            let mut end = c;
+            while end != 1 {
+            /// Get the specified hash needed to generate merkle root with `key`
+            {
+                let mux = TrinaryDemultiplexer::new(&remaining[hash_index / usize_size]);
+                hashes.insert(0, mux[hash_index % usize_size].clone());
+            }
+            hash_index = if hash_index & 1 == 0 {
+                hash_index >> 1 + 1
+            } else {
+                hash_index >> 1 - 1
+            };
+            let half = end >> 1;
+            end = if half != 1 { half + end % 1 } else { half };
+            remaining = (match end {
+                             1 => {
+                                 let half = usize_size - end >> 1;
+                                 let mask = usize::max_value() >> half;
+                                 let mut combined: Vec<BCTrit> =
+                                     Vec::with_capacity(remaining[0].len() * 2);
+                                 let first: Vec<BCTrit> = remaining[0]
+                                     .iter()
+                                     .map(|a| (a.0 & mask, a.1 & mask))
+                                     .collect();
+                                 let second: Vec<BCTrit> = remaining[0]
+                                     .iter()
+                                     .map(|a| ((a.0 & !mask) >> half, (a.1 & !mask) >> half))
+                                     .collect();
+                                 combined.extend(first);
+                                 combined.extend(second);
+                                 vec![combined]
+                             }
+                             _ => {
+                                 let half = usize_size >> 1;
+                                 let mask = usize::max_value() >> half;
+                                 (0..end)
+                                     .take_while(|x| x & 1 == 0)
+                                     .map(|j| {
+                    let mut combined: Vec<BCTrit> = Vec::with_capacity(remaining[j].len() * 2);
+                    let first: Vec<BCTrit> = remaining[j]
+                        .iter()
+                        .zip(remaining[j + 1].iter())
+                        .map(|(a, b)| {
+                            (
+                                (a.0 & mask) | ((b.0 & mask) << half),
+                                (a.1 & mask) | ((b.1 & mask) << half),
+                            )
+                        })
+                        .collect();
+                    let second: Vec<BCTrit> = remaining[j]
+                        .iter()
+                        .zip(remaining[j + 1].iter())
+                        .map(|(a, b)| {
+                            (
+                                ((b.0 & !mask) | ((a.0 & !mask) >> half)),
+                                ((b.1 & !mask) | ((a.1 & !mask) >> half)),
+                            )
+                        })
+                        .collect();
+                    combined.extend(first);
+                    combined.extend(second);
+                    combined
+                })
+                                     .collect()
+                             }
+                         }).iter()
+                .map(|t| {
+                    merkle_curl.absorb(&t);
+                    let out = merkle_curl.squeeze(HASH_LENGTH);
+                    merkle_curl.reset();
+                    out
+                })
+                .collect();
+        }
+            let mux = TrinaryDemultiplexer::new(&remaining[0]);
+            (mux[0].clone(), hashes)
+        })(&addresses, count, index);
         Merkle { root, key, hashes }
     }
-    fn root(address: Trinary, hashes: Vec<Trinary>, index: usize) -> Trinary {
+    fn root(address: Trinary, hashes: &[Trinary], index: usize) -> Trinary {
         let mut curl = CpuCurl::<Trit>::default();
         let mut i = 1;
         let mut output = address.trits();
@@ -62,93 +145,13 @@ impl Merkle {
     }
 }
 
-fn compute_sibling_hashes(addresses: &[Vec<BCTrit>], count: usize, index: usize) -> Vec<Trinary> {
-    let usize_size = mem::size_of::<usize>() * 8;
-    let mut hashes: Vec<Trinary> = Vec::with_capacity(usize_size - count.leading_zeros() as usize);
-    let mut end = count;
-    let mut merkle_curl = CpuCurl::<BCTrit>::default();
-    let mut remaining: Vec<Vec<BCTrit>> = Vec::with_capacity(addresses.len());
-    remaining.extend_from_slice(addresses);
-    let mut hash_index: usize = if index & 1 == 0 { index + 1 } else { index - 1 };
-    while end != 1 {
-        let mux = TrinaryDemultiplexer::new(&remaining[hash_index / usize_size]);
-        hashes.insert(0, mux[hash_index % usize_size].clone());
-        hash_index = if hash_index & 1 == 0 {
-            hash_index >> 1 + 1
-        } else {
-            hash_index >> 1 - 1
-        };
-        let half = end >> 1;
-        end = if half != 1 { half + end % 1 } else { half };
-        remaining = reduce(&remaining, end)
-            .iter()
-            .map(|t| {
-                merkle_curl.absorb(&t);
-                let out = merkle_curl.squeeze(HASH_LENGTH);
-                merkle_curl.reset();
-                out
-            })
-            .collect();
-    }
-    hashes
-}
-
-fn reduce(hashes: &[Vec<BCTrit>], end: usize) -> Vec<Vec<BCTrit>> {
-    let size = hashes.len();
-    let usize_size = mem::size_of::<usize>() * 8;
-    match size {
-        1 => {
-            let half = usize_size - end >> 1;
-            let mask = usize::max_value() >> half;
-            let mut combined: Vec<BCTrit> = Vec::with_capacity(hashes[0].len() * 2);
-            let first: Vec<BCTrit> = hashes[0].iter().map(|a| (a.0 & mask, a.1 & mask)).collect();
-            let second: Vec<BCTrit> = hashes[0]
-                .iter()
-                .map(|a| ((a.0 & !mask) >> half, (a.1 & !mask) >> half))
-                .collect();
-            combined.extend(first);
-            combined.extend(second);
-            vec![combined]
-        }
-        _ => {
-            let half = usize_size >> 1;
-            let mask = usize::max_value() >> half;
-            (0..size)
-                .take_while(|x| x & 1 == 0)
-                .map(|i| {
-                    let mut combined: Vec<BCTrit> = Vec::with_capacity(hashes[i].len() * 2);
-                    let first: Vec<BCTrit> = hashes[i]
-                        .iter()
-                        .zip(hashes[i + 1].iter())
-                        .map(|(a, b)| {
-                            (
-                                (a.0 & mask) | ((b.0 & mask) << half),
-                                (a.1 & mask) | ((b.1 & mask) << half),
-                            )
-                        })
-                        .collect();
-                    let second: Vec<BCTrit> = hashes[i]
-                        .iter()
-                        .zip(hashes[i + 1].iter())
-                        .map(|(a, b)| {
-                            (
-                                ((b.0 & !mask) | ((a.0 & !mask) >> half)),
-                                ((b.1 & !mask) | ((a.1 & !mask) >> half)),
-                            )
-                        })
-                        .collect();
-                    combined.extend(first);
-                    combined.extend(second);
-                    combined
-                })
-                .collect()
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use trytes::*;
+    use curl_cpu::*;
+    use sign::iss;
+    use alloc::string::ToString;
     #[test]
     fn it_does_not_panic() {
         let seed: Trinary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ9\
@@ -157,9 +160,15 @@ mod tests {
             .chars()
             .collect();
         let start = 1;
-        let count = 67;
-        let index = 65;
+        let count = 68;
+        let index = 0;
         let security = 1;
-        Merkle::new(seed, start, count, index, security);
+        let merkle = Merkle::new(seed, start, count, index, security);
+        let address: Trinary = iss::address::<Trit, CpuCurl<Trit>>(
+            &iss::digest_key::<Trit, CpuCurl<Trit>>(&merkle.key),
+        ).into_iter()
+            .collect();
+        let root = Merkle::root(address, &merkle.hashes, index);
+        assert_eq!(root.to_string(), merkle.root.to_string());
     }
 }

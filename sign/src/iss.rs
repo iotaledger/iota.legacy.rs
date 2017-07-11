@@ -15,23 +15,7 @@ const DIGEST_LENGTH: usize = HASH_LENGTH;
 const ADDRESS_LENGTH: usize = HASH_LENGTH;
 const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 
-pub fn subseeds<C>(seed: &[BCTrit], index: usize) -> Vec<BCTrit>
-where
-    C: Curl<BCTrit>,
-{
-    let mut trits: Vec<BCTrit> = seed.clone().to_vec();
-    let mut curl = C::default();
-
-    for _ in 0..index {
-        trits.as_mut_slice().incr();
-    }
-    (&mut trits[0..4]).offset();
-
-    curl.absorb(trits.as_slice());
-    curl.squeeze(trits.len()).into_iter().collect()
-}
-
-pub fn subseed<C>(seed: &[Trit], index: usize) -> Trinary
+pub fn subseed<C>(seed: &[Trit], index: usize) -> Vec<Trit>
 where
     C: Curl<Trit>,
 {
@@ -173,21 +157,11 @@ mod test {
             .chars()
             .collect();
         let subseed = subseed::<CpuCurl<Trit>>(&seed.trits(), 0);
-        let key = key::<Trit, CpuCurl<Trit>>(&subseed.trits());
+        let key = key::<Trit, CpuCurl<Trit>>(&subseed);
         let key_digest = digest_key::<Trit, CpuCurl<Trit>>(&key);
         let address: Vec<Trit> = address::<Trit, CpuCurl<Trit>>(&key_digest);
         let addr_trinary: Trinary = address.into_iter().collect();
 
         addr_trinary.len_trits();
-    }
-    #[test]
-    fn test_nothing_crashes_multi() {
-        let seed: Trinary = "WJRVZJOSSMRCGCJYFN9SSETWFLRCPWSCOEPPT9KNHWUTTW9BTELBWDPMHDRN9NTFGWESKAKZCFHGBJJQZ"
-            .chars()
-            .collect();
-        let subseed = subseeds::<CpuCurl<BCTrit>>(&seed.trits(), 0);
-        let key = key::<BCTrit, CpuCurl<BCTrit>>(&subseed);
-        let key_digest = digest_key::<BCTrit, CpuCurl<BCTrit>>(&key);
-        let address: Vec<BCTrit> = address::<BCTrit, CpuCurl<BCTrit>>(&key_digest);
     }
 }

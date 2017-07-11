@@ -129,7 +129,7 @@ impl<'a> TrinaryMultiplexer<'a> {
 mod test {
     use super::*;
     use core::str::FromStr;
-    
+
     // demux is already testing the other functionality
 
     #[test]
