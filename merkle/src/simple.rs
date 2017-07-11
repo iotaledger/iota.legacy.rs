@@ -11,14 +11,13 @@ pub fn keys(seed: Trinary, start: usize, count: usize) -> Vec<Vec<Trit>> {
     for _ in 0..start {
         trits.as_mut_slice().incr();
     }
-    (0..count)
-        .into_iter()
-        .map(|_| {
-            let subseed = iss::subseed::<CpuCurl<Trit>>(&trits, 0);
-            trits.as_mut_slice().incr();
-            iss::key::<Trit, CpuCurl<Trit>>(&subseed)
-        })
-        .collect()
+    let mut out: Vec<Vec<Trit>> = Vec::with_capacity(count);
+    for _ in 0..count {
+        let subseed = iss::subseed::<CpuCurl<Trit>>(&trits, 0);
+        trits.as_mut_slice().incr();
+        out.push(iss::key::<Trit, CpuCurl<Trit>>(&subseed));
+    }
+    out
 }
 
 pub fn siblings(addrs: &[Vec<Trit>], index: usize) -> Vec<Vec<Trit>> {
@@ -45,9 +44,10 @@ pub fn siblings(addrs: &[Vec<Trit>], index: usize) -> Vec<Vec<Trit>> {
         hashes = {
             let mut combined: Vec<Vec<Trit>> = Vec::with_capacity(length / 2);
             length /= 2;
-            for i in 0..length {
-                curl.absorb(&hashes[i << 1]);
-                curl.absorb(&hashes[(i << 1) + 1]);
+            for hash_chunks in hashes.chunks(2) {
+                for hash in hash_chunks {
+                    curl.absorb(hash);
+                }
                 combined.push(curl.squeeze(HASH_LENGTH));
                 curl.reset();
             }
