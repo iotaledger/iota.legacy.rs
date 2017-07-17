@@ -1,5 +1,4 @@
 use alloc::vec::Vec;
-use core::array::FixedSizeArray;
 use core::result::Result;
 
 use trytes::*;
@@ -10,39 +9,26 @@ pub const CHECKSUM_LEN: usize = 9;
 const CHECKSUM_TRITS: usize = CHECKSUM_LEN * TRITS_PER_TRYTE;
 
 pub trait Checksum {
-    fn checksum(&self) -> Trinary;
-    fn with_checksum(&self) -> Trinary;
+    fn checksum(&self) -> Vec<Trit>;
+    fn with_checksum(&self) -> Vec<Trit>;
 }
 
 impl<T> Checksum for T
 where
-    T: IntoTrinary,
+    T: IntoTrits<Trit>,
 {
-    fn checksum(&self) -> Trinary {
+    fn checksum(&self) -> Vec<Trit> {
         let mut curl = CpuCurl::<Trit>::default();
-        let trits: Vec<Trit> = self.trinary().trits();
+        let trits: Vec<Trit> = self.trits();
         curl.absorb(&trits);
-        let hashed: Trinary = curl.squeeze(CHECKSUM_TRITS).into_iter().collect();
-        hashed
+        curl.squeeze(CHECKSUM_TRITS)
     }
 
-    fn with_checksum(&self) -> Trinary {
-        [self.trinary(), self.checksum()].as_slice().trinary()
-    }
-}
+    fn with_checksum(&self) -> Vec<Trit> {
+        let mut this = self.trits();
+        this.append(&mut self.checksum());
 
-impl Checksum for [Trit] {
-    fn checksum(&self) -> Trinary {
-        let mut curl = CpuCurl::<Trit>::default();
-        curl.absorb(&self);
-        let hashed: Trinary = curl.squeeze(CHECKSUM_TRITS).into_iter().collect();
-        hashed
-    }
-
-    fn with_checksum(&self) -> Trinary {
-        [self.iter().cloned().collect(), self.checksum()]
-            .as_slice()
-            .trinary()
+        this
     }
 }
 
@@ -56,22 +42,22 @@ pub enum ChecksumValidationError {
 
 trait FromTrinaryWithChecksum<T>
 where
-    T: FromTrinary,
+    T: FromTrits<Trit>,
 {
-    /// Verifies a Checksum. If it's valid it'll call `T::from_trinary` with the input trinary without the final checksum.
-    fn from_trinary_with_checksum(
-        trinary: &Trinary,
+    /// Verifies a Checksum. If it's valid it'll call `T::from_trits` with the input trinary without the final checksum.
+    fn from_trits_with_checksum(
+        trinary: &IntoTrits<Trit>,
     ) -> Result<Result<T, T::Err>, ChecksumValidationError>;
 }
 
 impl<T> FromTrinaryWithChecksum<T> for T
 where
-    T: FromTrinary,
+    T: FromTrits<Trit>,
 {
-    fn from_trinary_with_checksum(
-        trinary: &Trinary,
+    fn from_trits_with_checksum(
+        trinary: &IntoTrits<Trit>,
     ) -> Result<Result<T, T::Err>, ChecksumValidationError> {
-        if trinary.len_trytes() <= CHECKSUM_LEN {
+        if trinary.len_trits() <= CHECKSUM_LEN {
             return Err(ChecksumValidationError::InvalidLength);
         }
 
@@ -79,21 +65,21 @@ where
         let (base, provided_checksum) = trits.split_at(trits.len() - CHECKSUM_TRITS);
 
         // Validate that input checksum matches computed checksum
-        let base_checksum: Vec<Trit> = base.checksum().trits();
+        let base_checksum: Vec<Trit> = base.checksum();
         if base_checksum != provided_checksum {
             return Err(ChecksumValidationError::InvalidChecksum);
         }
 
         // Checksums are valid.
-        Ok(Self::from_trinary(&base.iter().cloned().collect()))
+        Ok(Self::from_trits(&base))
     }
 }
 
 trait ToTrinaryWithChecksum<T>
 where
-    T: IntoTrinary,
+    T: IntoTrits<Trit>,
 {
-    fn to_trinary_with_checksum(&self) -> Trinary;
+    fn to_trinary_with_checksum(&self) -> Vec<Trit>;
 }
 
 #[cfg(test)]
@@ -101,25 +87,25 @@ mod test {
     use super::*;
 
     #[derive(Debug)]
-    struct MyModel(Trinary);
+    struct MyModel(Vec<Trit>);
 
     #[derive(Debug, PartialEq, Eq)]
     enum FromTrinaryError {
         SomeError,
     }
 
-    impl FromTrinary for MyModel {
+    impl FromTrits<Trit> for MyModel {
         type Err = FromTrinaryError;
-        fn from_trinary(_: &Trinary) -> Result<Self, Self::Err> {
+        fn from_trits(_: &[Trit]) -> Result<Self, Self::Err> {
             Err(FromTrinaryError::SomeError)
         }
     }
 
     #[test]
     fn my_model_from() {
-        let t: Trinary = "ABC".chars().collect();
-        let res = MyModel::from_trinary(&t);
-        let res_checksum = MyModel::from_trinary_with_checksum(&t);
+        let t: Vec<Trit> = "ABC".trits();
+        let res = MyModel::from_trits(&t);
+        let res_checksum = MyModel::from_trits_with_checksum(&t);
 
         assert_eq!(res.unwrap_err(), FromTrinaryError::SomeError);
         assert_eq!(
@@ -130,13 +116,11 @@ mod test {
 
     #[test]
     fn checksum_test_1() {
-        let c: Trinary = "FOXM9MUBX".chars().collect();
-        let t: Trinary = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA"
-            .chars()
-            .collect();
-        let combined = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVAFOXM9MUBX"
-            .chars()
-            .collect();
+        let c: Vec<Trit> = "FOXM9MUBX".trits();
+        let t: Vec<Trit> = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA"
+            .trits();
+        let combined: Vec<Trit> = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVAFOXM9MUBX"
+            .trits();
 
         assert_eq!(t.checksum(), c);
         assert_eq!(t.with_checksum(), combined);
@@ -144,49 +128,44 @@ mod test {
 
     #[test]
     fn checksum_test_2() {
-        let c: Trinary = "9QTIWOWTY".chars().collect();
-        let t: Trinary = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL"
-            .chars()
-            .collect();
-        let combined = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
-            .chars()
-            .collect();
+        let c: Vec<Trit> = "9QTIWOWTY".trits();
+        let t: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL"
+            .trits();
+        let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
+            .trits();
 
         assert_eq!(t.checksum(), c);
         assert_eq!(t.with_checksum(), combined);
     }
 
     #[test]
-    fn from_trinary_with_checksum_valid() {
-        let combined = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
-            .chars()
-            .collect();
-        let ex: Trinary = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL"
-            .chars()
-            .collect();
+    fn from_trits_with_checksum_valid() {
+        let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
+            .trits();
+        let ex: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL"
+            .trits();
 
-        let result = Trinary::from_trinary_with_checksum(&combined);
+        let result = Vec::<Trit>::from_trits_with_checksum(&combined);
         let inner = result.unwrap();
 
         assert_eq!(ex, inner.unwrap());
     }
 
     #[test]
-    fn from_trinary_with_checksum_invalid() {
-        let combined = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTX"
-            .chars()
-            .collect();
+    fn from_trits_with_checksum_invalid() {
+        let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTX"
+            .trits();
 
-        let result = Trinary::from_trinary_with_checksum(&combined);
+        let result = Vec::<Trit>::from_trits_with_checksum(&combined);
 
         assert_eq!(result, Err(ChecksumValidationError::InvalidChecksum));
     }
 
     #[test]
-    fn from_trinary_with_checksum_length() {
-        let combined = "KTX".chars().collect();
+    fn from_trits_with_checksum_length() {
+        let combined: Vec<Trit> = "KTX".trits();
 
-        let result = Trinary::from_trinary_with_checksum(&combined);
+        let result = Vec::<Trit>::from_trits_with_checksum(&combined);
 
         assert_eq!(result, Err(ChecksumValidationError::InvalidLength));
     }

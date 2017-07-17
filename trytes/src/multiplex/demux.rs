@@ -97,7 +97,7 @@ where
 
         }
 
-        out.into_iter().map(|v| T::from_trits(&v)).collect()
+        out.into_iter().map(|v| T::from_trits(&v).ok().unwrap()).collect()
     }
 }
 

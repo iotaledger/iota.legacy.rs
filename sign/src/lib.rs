@@ -1,5 +1,4 @@
 #![no_std]
-#![feature(fixed_size_array)]
 #![feature(alloc)]
 
 extern crate alloc;

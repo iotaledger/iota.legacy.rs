@@ -15,7 +15,7 @@ const DIGEST_LENGTH: usize = HASH_LENGTH;
 const ADDRESS_LENGTH: usize = HASH_LENGTH;
 const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 
-pub fn subseed(seed: Trinary, mut index: usize) -> Trinary
+pub fn subseed(seed: &IntoTrits<Trit>, mut index: usize) -> Vec<Trit> 
 {
     let mut trits = seed.trits();
     let mut curl = CpuCurl::<Trit>::default();
@@ -38,7 +38,7 @@ pub fn subseed(seed: Trinary, mut index: usize) -> Trinary
     curl.squeeze(trits.len()).into_iter().collect()
 }
 
-pub fn key(subseed: Trinary) -> Trinary
+pub fn key(subseed: &IntoTrits<BCTrit>) -> Vec<BCTrit> 
 {
     let mut c = DefaultCurl::default();
     let trits = subseed.trits();
@@ -57,7 +57,7 @@ pub fn key(subseed: Trinary) -> Trinary
     key.into_iter().collect()
 }
 
-pub fn digest_key(key: Trinary) -> Trinary
+pub fn digest_key(key: &IntoTrits<BCTrit>) -> Vec<BCTrit>
 {
     let mut digest_curl = DefaultCurl::default();
     let mut key_fragment_curl = DefaultCurl::default();
@@ -81,7 +81,7 @@ pub fn digest_key(key: Trinary) -> Trinary
     digest_curl.squeeze(DIGEST_LENGTH).into_iter().collect()
 }
 
-pub fn address(digests: Trinary) -> Trinary
+pub fn address(digests: &IntoTrits<BCTrit>) -> Vec<BCTrit>
 {
     let mut c = DefaultCurl::default();
     let trits = digests.trits();
@@ -89,7 +89,7 @@ pub fn address(digests: Trinary) -> Trinary
     c.squeeze(ADDRESS_LENGTH).into_iter().collect()
 }
 
-pub fn signature(bundle: Trinary, key: Trinary) -> Trinary
+pub fn signature(bundle: &IntoTrits<Trit>, key: &IntoTrits<Trit>) -> Vec<Trit> 
 {
 
     let mut c = CpuCurl::<Trit>::default();
@@ -112,7 +112,7 @@ pub fn signature(bundle: Trinary, key: Trinary) -> Trinary
     signature.into_iter().collect()
 }
 
-pub fn digest_bundle_signature(bundle: Trinary, signature: Trinary) -> Trinary
+pub fn digest_bundle_signature(bundle: &IntoTrits<Trit>, signature: &IntoTrits<Trit>) -> Vec<Trit>
 {
     let mut digest_curl = CpuCurl::<Trit>::default();
     let mut signature_fragment_curl = CpuCurl::<Trit>::default();
@@ -148,14 +148,12 @@ mod test {
 
     #[test]
     fn test_nothing_crashes() {
-        let seed: Trinary = "WJRVZJOSSMRCGCJYFN9SSETWFLRCPWSCOEPPT9KNHWUTTW9BTELBWDPMHDRN9NTFGWESKAKZCFHGBJJQZ"
-            .chars()
-            .collect();
-        let subseed = subseed(seed, 0);
-        let key = key(subseed);
-        let key_digest = digest_key(key);
-        let address = address(key_digest);
+        let seed: Vec<Trit >= "WJRVZJOSSMRCGCJYFN9SSETWFLRCPWSCOEPPT9KNHWUTTW9BTELBWDPMHDRN9NTFGWESKAKZCFHGBJJQZ".trits();
+        let subseed = subseed(&seed, 0);
+        let key = key(&subseed);
+        let key_digest = digest_key(&key);
+        let address = address(&key_digest);
 
-        address.len_trits();
+        IntoTrits::<BCTrit>::len_trits(&address);
     }
 }
