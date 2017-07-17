@@ -1,13 +1,14 @@
 use trytes::*;
 use cpucurl::*;
 use core::cmp::min;
-use curl::{Curl, Sponge};
+use alloc::Vec;
 
 #[cfg(not(feature = "parallel"))]
 mod cpu_search {
     use super::*;
+    use curl::{Curl, Sponge};
     use tmath::*;
-    pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
+    pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Vec<Trit>>
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
     {
@@ -28,7 +29,7 @@ mod cpu_search {
             index = check(&cpy.state[..HASH_LENGTH]);
         }
 
-        let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
+        let mux = TrinaryDemultiplexer::<Vec<Trit>>::new(curl.squeeze(size).as_slice());
 
         Some(mux[index.unwrap()].clone())
     }

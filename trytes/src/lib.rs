@@ -16,6 +16,7 @@ pub mod num;
 pub mod types;
 pub mod string;
 pub mod bct;
+pub mod offset;
 
 pub mod multiplex;
 

@@ -63,9 +63,7 @@ const TRINARY: &'static str = "9999999999999999999999999999999999999999999999999
 
 #[bench]
 fn curl_pair(b: &mut Bencher) {
-    let trans: Trinary = TRINARY.chars().collect();
-
-    let trits: Vec<BCTrit> = trans.trits();
+    let trits: Vec<BCTrit> = TRINARY.trits();
     let mut curl = CpuCurl::<BCTrit>::default();
     curl.reset();
     curl.absorb(&trits);
@@ -80,9 +78,7 @@ fn curl_pair(b: &mut Bencher) {
 
 #[bench]
 fn curl_simple(b: &mut Bencher) {
-    let trans: Trinary = TRINARY.chars().collect();
-
-    let trits: Vec<Trit> = trans.trits();
+    let trits: Vec<Trit> = TRINARY.trits();
     let mut curl = CpuCurl::<Trit>::default();
     curl.reset();
     curl.absorb(&trits);
