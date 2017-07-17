@@ -1,25 +1,28 @@
 #![no_std]
 #![feature(alloc)]
-#![feature(fixed_size_array)]
 
+#[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
 
-// constant definitions
+// Various constants
 pub mod constants;
-pub mod mappings;
-pub mod util;
+mod mappings;
 
-// trinary type
-pub mod trinary;
+// Helper methods
+pub mod util;
 pub mod num;
 
-// trinary traits
+pub mod types;
 pub mod string;
-pub mod trits;
-pub mod iter;
 pub mod bct;
+
 pub mod multiplex;
+
+pub use types::*;
+pub use multiplex::*;
+pub use bct::*;
+pub use string::*;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;
@@ -27,8 +30,4 @@ pub use constants::BCTrit;
 pub use constants::HASH_LENGTH;
 pub use constants::TRITS_PER_TRYTE;
 
-pub use trinary::*;
-pub use string::*;
-pub use trits::*;
-pub use iter::*;
-pub use multiplex::*;
+

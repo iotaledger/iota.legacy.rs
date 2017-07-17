@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use constants::*;
 
 /// Hardcoded mappings from `u8` to 5 `Trit`s

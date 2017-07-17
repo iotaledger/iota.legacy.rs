@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 /// Type alias for `Trit`
 pub type Trit = i8;
 /// Binary coded trit, see http://homepage.divms.uiowa.edu/~jones/ternary/bct.shtml

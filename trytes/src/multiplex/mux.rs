@@ -1,24 +1,16 @@
-use trinary::*;
+use types::*;
 use constants::*;
 use multiplex::constants::*;
 
 use core::ops::AddAssign;
-use core::ops::Index;
 use alloc::Vec;
 
 pub struct TrinaryMultiplexer<'a> {
-    trinaries: Vec<&'a Trinary>,
+    trinaries: Vec<&'a IntoTrits<Trit>>,
 }
 
-impl<'a> Index<usize> for TrinaryMultiplexer<'a> {
-    type Output = Trinary;
-    fn index(&self, idx: usize) -> &Self::Output {
-        self.trinaries[idx]
-    }
-}
-
-impl<'a> AddAssign<&'a Trinary> for TrinaryMultiplexer<'a> {
-    fn add_assign(&mut self, trinary: &'a Trinary) {
+impl<'a> AddAssign<&'a IntoTrits<Trit>> for TrinaryMultiplexer<'a> {
+    fn add_assign(&mut self, trinary: &'a IntoTrits<Trit>) {
         self.add(trinary);
     }
 }
@@ -35,7 +27,7 @@ pub struct TrinaryMultiplexerIter<'a> {
 }
 
 impl<'a> Iterator for TrinaryMultiplexerIter<'a> {
-    type Item = &'a Trinary;
+    type Item = &'a IntoTrits<Trit>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos >= self.mux.trinaries.len() {
             None
@@ -56,7 +48,7 @@ impl<'a> TrinaryMultiplexer<'a> {
 
     /// Adds a `Trinary` to the multiplexer.
     /// This will `assert!` that `len() != max_len()`
-    pub fn add(&mut self, t: &'a Trinary) -> usize {
+    pub fn add(&mut self, t: &'a IntoTrits<Trit>) -> usize {
         assert!(
             self.trinaries.len() < Self::max_len(),
             "Maximum supported number of trinaries already being multiplexed."
@@ -69,6 +61,10 @@ impl<'a> TrinaryMultiplexer<'a> {
 
         self.trinaries.push(t);
         self.trinaries.len()
+    }
+
+    pub fn get(&self, idx: usize) -> &'a IntoTrits<Trit> {
+        self.trinaries[idx]
     }
 
     pub fn iter(&self) -> TrinaryMultiplexerIter {
@@ -92,7 +88,7 @@ impl<'a> TrinaryMultiplexer<'a> {
     }
 
     /// Internal method for the multiplexing logic.
-    fn disjoint_to_multiplexed(ts: &[&Trinary]) -> Vec<BCTrit> {
+    fn disjoint_to_multiplexed(ts: &[&IntoTrits<Trit>]) -> Vec<BCTrit> {
         let trit_count = ts[0].len_trits();
         let trinary_count = ts.len();
 
@@ -128,16 +124,16 @@ impl<'a> TrinaryMultiplexer<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use core::str::FromStr;
     
     // demux is already testing the other functionality
 
     #[test]
     #[should_panic]
     fn mux_should_assert_same_trit_size() {
+        let t1: Vec<Trit> = "ABCD".trits();
+        let t2: Vec<Trit> = "A".trits();
 
-        let t1 = Trinary::from_str("ABCD").ok().unwrap();
-        let t2 = Trinary::from_str("A").ok().unwrap();
+        let s = IntoTrits::<Trit>::len_trits(&t1);
 
         let mut mux = TrinaryMultiplexer::default();
 

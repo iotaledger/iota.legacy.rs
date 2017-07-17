@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use constants::*;
 use mappings::*;
 
@@ -42,7 +44,6 @@ pub fn trits_to_char(trits: &[Trit]) -> char {
 
 #[cfg(test)]
 mod test {
-    use trinary::*;
     use super::*;
     #[test]
     fn test_char_to_trit() {
@@ -56,13 +57,4 @@ mod test {
     }
 
 
-    #[test]
-    fn bytes_to_trits() {
-        let bytes: [u8; 6] = [20, 25, -14_i8 as u8, -2_i8 as u8, 83, 1];
-        let exp : Trinary = "TJHLYYRAD".chars().collect();
-        let trinary = Trinary::new(bytes.iter().cloned().collect(), 27);
-
-        assert_eq!(exp, trinary);
-
-    }
 }
