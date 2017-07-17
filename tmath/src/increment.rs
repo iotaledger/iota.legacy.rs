@@ -41,8 +41,8 @@ mod tests {
     use alloc::*;
     #[test]
     fn test_bct_incr() {
-        let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
-        let i: Trinary = "I".chars().collect(); // trit: [-1,0,1]
+        let t = "H";
+        let i = "I";
         let mut bct: Vec<BCTrit> = t.trits();
 
         bct.as_mut_slice().incr();
@@ -51,18 +51,18 @@ mod tests {
         let low = usize::min_value();
         assert_eq!(bct, vec![(high, high), (high, high), (low, high)]);
 
-        let tbc: Trinary = bct.iter().cloned().collect();
-        assert_eq!(i, tbc);
+        let it : Vec<Trit> = i.trits();
+        assert_eq!(it, bct.trits());
     }
     #[test]
     fn test_simple_incr() {
-        let t: Trinary = "H".chars().collect(); // trit: [-1,0,1]
-        let i: Trinary = "I".chars().collect(); // trit: [-1,0,1]
+        let t = "H";
+        let i = "I";
         let mut bct: Vec<Trit> = t.trits();
+        let it : Vec<Trit> = i.trits();
 
         bct.as_mut_slice().incr();
 
-        let tbc: Trinary = bct.iter().cloned().collect();
-        assert_eq!(i, tbc);
+        assert_eq!(it, bct);
     }
 }
