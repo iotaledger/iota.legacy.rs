@@ -10,7 +10,7 @@ use curl::*;
 const TRYTE_WIDTH: usize = 3;
 const MAX_TRYTE_VALUE: i8 = 1;
 const MIN_TRYTE_VALUE: i8 = -1;
-const KEY_LENGTH: usize = ((HASH_LENGTH / 3) / RADIX as usize) * HASH_LENGTH;
+pub const KEY_LENGTH: usize = ((HASH_LENGTH / 3) / RADIX as usize) * HASH_LENGTH;
 const DIGEST_LENGTH: usize = HASH_LENGTH;
 const ADDRESS_LENGTH: usize = HASH_LENGTH;
 const SIGNATURE_LENGTH: usize = KEY_LENGTH;
@@ -85,20 +85,20 @@ where
     c.squeeze(ADDRESS_LENGTH)
 }
 
-pub fn signature<C>(bundle: Trinary, key: Trinary) -> Trinary
+pub fn signature<C>(bundle: &[Trit], key: &[Trit]) -> Vec<Trit>
 where
     C: Curl<Trit>,
 {
 
     let mut c = C::default();
 
-    let mut signature = key.trits();
-    let bundle_trits: Vec<Trit> = bundle.trits();
+    let mut signature: Vec<Trit> = Vec::with_capacity(key.len());
+    signature.extend_from_slice(key);
 
     for i in 0..(SIGNATURE_LENGTH / HASH_LENGTH) {
         let hashing_chain_length = MAX_TRYTE_VALUE -
-            (bundle_trits[i * TRYTE_WIDTH] + bundle_trits[i * TRYTE_WIDTH + 1] * 3 +
-                 bundle_trits[i * TRYTE_WIDTH + 2] * 9);
+            (bundle[i * TRYTE_WIDTH] + bundle[i * TRYTE_WIDTH + 1] * 3 +
+                 bundle[i * TRYTE_WIDTH + 2] * 9);
         for _ in hashing_chain_length..0 {
             c.reset();
             c.absorb(&signature[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
@@ -107,23 +107,65 @@ where
         }
     }
 
-    signature.into_iter().collect()
+    signature
 }
 
-pub fn digest_bundle_signature<C>(bundle: Trinary, signature: Trinary) -> Trinary
+pub fn checksum_security(hash: &[Trit]) -> usize {
+    /*
+    match hash[..(HASH_LENGTH / 3)].iter().fold(0, |acc, &i| acc + i) {
+        0 => 1,
+        _ => {
+            match hash[..(2 * HASH_LENGTH / 3)].iter().fold(
+                0,
+                |acc, &i| acc + i,
+            ) {
+                0 => 2,
+                _ => {
+                    match hash.iter().fold(0, |acc, i| acc + i) {
+                        0 => 3,
+                        _ => 0,
+                    }
+                }
+            }
+        }
+    }
+    */
+    let mut sum = 0;
+    for i in hash[..(HASH_LENGTH / 3)].iter() {
+        sum += *i;
+    }
+    if sum == 0 {
+        1
+    } else {
+        sum = 0;
+        for i in hash[..(2 * HASH_LENGTH / 3)].iter() {
+            sum += *i;
+        }
+        if sum == 0 {
+            2
+        } else {
+            sum = 0;
+            for i in hash {
+                sum += *i;
+            }
+            if sum == 0 { 3 } else { 0 }
+        }
+    }
+}
+
+pub fn digest_bundle_signature<C>(bundle: &[Trit], signature: &[Trit]) -> Vec<Trit>
 where
     C: Curl<Trit>,
 {
     let mut digest_curl = C::default();
     let mut signature_fragment_curl = C::default();
 
-    let signature_trits = signature.trits();
-    let bundle_trits: Vec<Trit> = bundle.trits();
+    let signature_trits = signature;
 
     for i in 0..(SIGNATURE_LENGTH / HASH_LENGTH) {
         let hashing_chain_length = MAX_TRYTE_VALUE -
-            (bundle_trits[i * TRYTE_WIDTH] + bundle_trits[i * TRYTE_WIDTH + 1] * 3 +
-                 bundle_trits[i * TRYTE_WIDTH + 2] * 9);
+            (bundle[i * TRYTE_WIDTH] + bundle[i * TRYTE_WIDTH + 1] * 3 +
+                 bundle[i * TRYTE_WIDTH + 2] * 9);
 
         let mut buffer: Vec<Trit> = signature_trits[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
             .iter()
@@ -142,7 +184,7 @@ where
         digest_curl.absorb(&buffer);
     }
 
-    digest_curl.squeeze(DIGEST_LENGTH).into_iter().collect()
+    digest_curl.squeeze(DIGEST_LENGTH)
 }
 
 

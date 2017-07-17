@@ -1,13 +1,19 @@
 use trytes::*;
 use cpucurl::*;
 use core::cmp::min;
+use alloc::Vec;
 
 #[cfg(not(feature = "parallel"))]
 mod cpu_search {
     use super::*;
     use tmath::*;
     use curl::{Curl, Sponge};
-    pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
+    pub fn search_cpu<F>(
+        input: &[BCTrit],
+        length: usize,
+        group: usize,
+        check: F,
+    ) -> Option<Vec<Trit>>
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
     {
@@ -20,7 +26,9 @@ mod cpu_search {
         let mut index: Option<usize> = None;
         while index.is_none() {
             size = min(
-                size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                num::round_third(
+                    size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                ),
                 HASH_LENGTH,
             );
             let mut cpy = curl.clone();
@@ -30,7 +38,7 @@ mod cpu_search {
 
         let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
 
-        Some(mux[index.unwrap()].clone())
+        Some(mux[index.unwrap()].clone().trits())
     }
 }
 
@@ -44,7 +52,12 @@ mod cpu_search {
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
     use core::marker::*;
-    pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
+    pub fn search_cpu<F>(
+        input: &[BCTrit],
+        length: usize,
+        group: usize,
+        check: F,
+    ) -> Option<Vec<Trit>>
     where
         F: Fn(&[BCTrit]) -> Option<usize> + 'static + Send + Sync,
     {
@@ -67,7 +80,9 @@ mod cpu_search {
                     let mut index: Option<usize> = None;
                     while index.is_none() && running.load(Ordering::SeqCst) {
                         size = min(
-                            size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                            num::round_third(
+                                size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                            ),
                             HASH_LENGTH,
                         );
                         let mut cpy = curl.clone();
@@ -77,7 +92,9 @@ mod cpu_search {
                     if running.load(Ordering::SeqCst) && index.is_some() {
                         running.store(false, Ordering::SeqCst);
                         let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
-                        child_tx.send(Some(mux[index.unwrap()].clone())).unwrap();
+                        child_tx
+                            .send(Some(mux[index.unwrap()].clone().trits()))
+                            .unwrap();
                     }
                 })
             })

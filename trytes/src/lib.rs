@@ -20,6 +20,7 @@ pub mod trits;
 pub mod iter;
 pub mod bct;
 pub mod multiplex;
+pub mod pascal;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;

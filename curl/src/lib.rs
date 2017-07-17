@@ -36,7 +36,7 @@ where
 pub trait ProofOfWork {
     /// Searches for a nonce given an `input` that gives a hash with `weight` zeros
     /// Returns the nonce
-    fn search(input: &[Trit], weight: u8) -> Option<Trinary>;
+    fn search(input: &[Trit], weight: u8) -> Option<Vec<Trit>>;
 }
 
 pub trait HammingNonce {
@@ -47,5 +47,5 @@ pub trait HammingNonce {
     /// If security is 2, then the first 81 trits will not sum to 0, but the first 162 trits will.
     /// If security is 3, then neither the first 81 nor the first 162 trits will sum to zero, but
     /// the entire hash will sum to zero
-    fn search(input: &[Trit], length: u8, security: u8) -> Option<Trinary>;
+    fn search(input: &[Trit], length: u8, security: u8) -> Option<Vec<Trit>>;
 }

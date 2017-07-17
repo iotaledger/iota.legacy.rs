@@ -45,10 +45,9 @@ mod tests {
     #[test]
     fn it_can_unmask() {
         let payload: Trinary = "AMESSAGEFORYOU9".chars().collect();
-        let channel_key: Trinary = "MYBIGCHANNELKEY".chars().collect();
         let auth_id: Trinary = "MYMERKLEROOTHASH".chars().collect();
         let index: Trinary = "AEOWJID999999".chars().collect();
-        let keys = vec![channel_key.trits(), auth_id.trits(), index.trits()];
+        let keys = vec![auth_id.trits(), index.trits()];
         let cipher = mask::<CpuCurl<Trit>>(&payload.trits(), &keys);
         let plain: Trinary = unmask::<CpuCurl<Trit>>(&cipher.clone(), &keys)
             .into_iter()

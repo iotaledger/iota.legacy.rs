@@ -14,15 +14,15 @@ fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
         HASH_LENGTH * (input.len() / HASH_LENGTH)
     };
     curl.absorb(&input[..size]);
-    let trinary: Trinary = curl.state.iter().cloned().collect();
-    let mut state: Vec<BCTrit> = trinary.trits();
+    //let trinary: Trinary = curl.state.iter().cloned().collect();
+    let mut state: Vec<BCTrit> = curl.state.iter().map(|&t| trit_to_bct(t)).collect(); // trinary.trits();
     (&mut state[0..4]).offset();
     state
 }
 
 
 impl ProofOfWork for CpuPoW {
-    fn search(input: &[Trit], weight: u8) -> Option<Trinary> {
+    fn search(input: &[Trit], weight: u8) -> Option<Vec<Trit>> {
         let state = prepare_search(input);
         search_cpu(state.as_slice(), HASH_LENGTH, 0, move |t: &[BCTrit]| {
             let mut probe = usize::max_value();

@@ -9,7 +9,7 @@ pub struct CpuHam;
 
 fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
     let mut curl = CpuCurl::<Trit>::default();
-    let length_trits: Vec<Trit> = num::int2trits(input.len() as isize);
+    let length_trits: Vec<Trit> = pascal::encode(input.len());
     curl.absorb(length_trits.as_slice());
     curl.absorb(input);
     let trinary: Trinary = curl.state.iter().cloned().collect();
@@ -19,7 +19,7 @@ fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
 }
 
 impl HammingNonce for CpuHam {
-    fn search(input: &[Trit], length: u8, security: u8) -> Option<Trinary> {
+    fn search(input: &[Trit], length: u8, security: u8) -> Option<Vec<Trit>> {
         let state = prepare_search(input);
         search_cpu(state.as_slice(), length as usize, 0, move |t: &[BCTrit]| {
             let mux = TrinaryDemultiplexer::new(t);

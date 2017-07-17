@@ -202,7 +202,10 @@ mod inner {
             .collect();
         let min_weight = 11u8;
         let trits: Vec<Trit> = trans.trits();
-        let nonce: Trinary = A::search(trits.as_slice(), min_weight).expect("Some PoW Failure.");
+        let nonce: Trinary = A::search(trits.as_slice(), min_weight)
+            .expect("Some PoW Failure.")
+            .into_iter()
+            .collect();
 
         let final_t: Trinary = trits[..(trans.len_trits() - HASH_LENGTH)]
             .into_iter()
@@ -235,23 +238,44 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
             .chars()
             .collect();
-        let length = 27u8;
-        let len_len = 12;
         for security in 1u8..4u8 {
             let trits = trytes.trits();
-            let nonce: Trinary =
-                A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
+            let nonce: Trinary = A::search(trits.as_slice(), 3, security)
+                .expect("Some Search Failure.")
+                .into_iter()
+                .collect();
 
-            let len_trits = num::int2trits(trits.len() as isize);
+            let len_trits = pascal::encode(trits.len());
 
             let mut curl = C::default();
             curl.absorb(len_trits.as_slice());
             curl.absorb(trytes.trits().as_slice());
             curl.absorb(nonce.trits().as_slice());
-            let hash_end: Trit = curl.squeeze(security as usize * HASH_LENGTH / 3)
-                .iter()
-                .fold(0, |acc, x| acc + x);
-            assert_eq!(hash_end, 0);
+            let hash = curl.squeeze(security as usize * HASH_LENGTH / 3);
+            let hash_security = {
+                let mut sum = 0;
+                for i in hash[..(HASH_LENGTH / 3)].iter() {
+                    sum += *i;
+                }
+                if sum == 0 {
+                    1
+                } else {
+                    sum = 0;
+                    for i in hash[..(2 * HASH_LENGTH / 3)].iter() {
+                        sum += *i;
+                    }
+                    if sum == 0 {
+                        2
+                    } else {
+                        sum = 0;
+                        for i in hash {
+                            sum += i;
+                        }
+                        if sum == 0 { 3 } else { 0 }
+                    }
+                }
+            };
+            assert_eq!(hash_security, security);
         }
     }
 }

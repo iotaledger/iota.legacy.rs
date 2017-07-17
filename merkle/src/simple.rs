@@ -6,8 +6,8 @@ use sign::iss;
 use core::mem;
 use alloc::*;
 
-pub fn keys(seed: Trinary, start: usize, count: usize) -> Vec<Vec<Trit>> {
-    let mut trits = seed.trits();
+pub fn keys(seed: &[Trit], start: usize, count: usize) -> Vec<Vec<Trit>> {
+    let mut trits: Vec<Trit> = seed.to_vec();
     for _ in 0..start {
         trits.as_mut_slice().incr();
     }
@@ -83,12 +83,14 @@ mod tests {
     use alloc::string::ToString;
     #[test]
     fn it_does_not_panic() {
-        let seed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ9\
+        let seed: Trinary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ9\
                              ABCDEFGHIJKLMNOPQRSTUVWXYZ9\
-                             ABCDEFGHIJKLMNOPQRSTUVWXYZ9";
+                             ABCDEFGHIJKLMNOPQRSTUVWXYZ9"
+            .chars()
+            .collect();
         let start = 1;
         let count = 9;
-        let keys = keys(seed.chars().collect(), start, count);
+        let keys = keys(&seed.trits(), start, count);
         let addresses: Vec<Vec<Trit>> = keys.iter()
             .map(|k| {
                 iss::address::<Trit, CpuCurl<Trit>>(&iss::digest_key::<Trit, CpuCurl<Trit>>(&k))
