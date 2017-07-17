@@ -4,7 +4,7 @@ extern crate alloc;
 extern crate iota_trytes as trytes;
 
 use trytes::constants::HASH_LENGTH;
-use trytes::Trinary;
+use trytes::IntoTrits;
 use trytes::Trit;
 
 pub mod tests;
@@ -33,13 +33,13 @@ where
     fn squeeze(&mut self, count: usize) -> Vec<T>;
 }
 
-pub trait ProofOfWork {
+pub trait ProofOfWork<T> {
     /// Searches for a nonce given an `input` that gives a hash with `weight` zeros
     /// Returns the nonce
-    fn search(input: &[Trit], weight: u8) -> Option<Trinary>;
+    fn search(input: &IntoTrits<T>, weight: u8) -> Option<Vec<Trit>>;
 }
 
-pub trait HammingNonce {
+pub trait HammingNonce<T> {
     /// Searches for a checksum given by hamming weight
     /// Returns the nonce to create checksum
     /// It will start with a number of trits given by `length`, but may grow
@@ -47,5 +47,5 @@ pub trait HammingNonce {
     /// If security is 2, then the first 81 trits will not sum to 0, but the first 162 trits will.
     /// If security is 3, then neither the first 81 nor the first 162 trits will sum to zero, but
     /// the entire hash will sum to zero
-    fn search(input: &[Trit], length: u8, security: u8) -> Option<Trinary>;
+    fn search(input: &IntoTrits<T>, length: u8, security: u8) -> Option<Vec<Trit>>;
 }

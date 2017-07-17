@@ -3,34 +3,35 @@
 use super::*;
 use trytes::*;
 use core::iter::FromIterator;
+use core::fmt;
 
 mod inner {
     use super::*;
     use trytes::*;
 
-    fn test_hash_eq<A, B>(trans: Trinary, expected: Trinary)
+    fn test_hash_eq<A, B>(trans: &IntoTrits<A>, expected: &IntoTrits<A>)
     where
         A: Copy + Clone + Sized,
+        Vec<A>: fmt::Debug + PartialEq,
         B: Curl<A>,
-        Trinary: IntoTrits<A> + FromIterator<A>,
     {
 
         let mut curl = B::default();
         let trits = trans.trits();
         curl.absorb(trits.as_slice());
-        let hash: Trinary = curl.squeeze(HASH_LENGTH).into_iter().collect();
+        let hash: Vec<A> = curl.squeeze(HASH_LENGTH);
 
-        assert_eq!(hash, expected);
+        assert_eq!(hash, expected.trits());
     }
 
     pub fn hash_works2<A, B>()
     where
-        A: Copy,
+        A: Copy + PartialEq + fmt::Debug,
         B: Curl<A>,
-        Trinary: IntoTrits<A> + FromIterator<A>,
+        &'static str: IntoTrits<A>,
     {
 
-        let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+        let trans = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
                                    RZBPKRKQAIPGOHBTHTGYXTBJLSURDSPEOJ9UKJECUKCCPVIQQHDUYKVKISCE\
                                    IEGVOQWRBAYXWGSJUTEVG9RPQLPTKYCRAJ9YNCUMDVDYDQCKRJOAPXCSUDAJ\
@@ -74,26 +75,21 @@ mod inner {
                                    MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
                                    HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
-                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
-            .chars()
-            .collect();
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
-        let hash: Trinary = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
-                                 9EFZJKFYCZKQPPBXYSGJ"
-            .chars()
-            .collect();
+        let hash = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
+                                 9EFZJKFYCZKQPPBXYSGJ";
 
-        test_hash_eq::<A, B>(trans, hash);
-
+        test_hash_eq::<A, B>(&trans, &hash);
     }
 
     pub fn hash_works1<A, B>()
     where
-        A: Copy,
+        A: Copy + PartialEq + fmt::Debug,
         B: Curl<A>,
-        Trinary: IntoTrits<A> + FromIterator<A>,
+        &'static str: IntoTrits<A>,
     {
-        let trans: Trinary = "9999999999999999999999999999999999999999999999999999999999999\
+        let trans = "9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
@@ -136,24 +132,20 @@ mod inner {
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               999999999999999999999999999999T999999999999999999999999999999\
-                              99999999999999999999999OLOB99999999999999999999999"
-            .chars()
-            .collect();
+                              99999999999999999999999OLOB99999999999999999999999";
 
-        let ex_hash: Trinary = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
-                             DANIYSMFYPVABX9999"
-            .chars()
-            .collect();
+        let ex_hash = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
+                             DANIYSMFYPVABX9999";
 
-        test_hash_eq::<A, B>(trans, ex_hash);
+        test_hash_eq::<A, B>(&trans, &ex_hash);
     }
 
     pub fn test_pow<A, C>()
     where
-        A: ProofOfWork,
+        A: ProofOfWork<Trit>,
         C: Curl<Trit>,
     {
-        let trans: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+        let trans = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
                                    RZBPKRKQAIPGOHBTHTGYXTBJLSURDSPEOJ9UKJECUKCCPVIQQHDUYKVKISCE\
                                    IEGVOQWRBAYXWGSJUTEVG9RPQLPTKYCRAJ9YNCUMDVDYDQCKRJOAPXCSUDAJ\
@@ -197,21 +189,20 @@ mod inner {
                                    MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
                                    HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
-                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
-            .chars()
-            .collect();
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
+
         let min_weight = 11u8;
         let trits: Vec<Trit> = trans.trits();
-        let nonce: Trinary = A::search(trits.as_slice(), min_weight).expect("Some PoW Failure.");
+        let nonce = A::search(&trits, min_weight).expect("Some PoW Failure.");
 
-        let final_t: Trinary = trits[..(trans.len_trits() - HASH_LENGTH)]
+        let final_t : Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
             .into_iter()
             .cloned()
             .chain(nonce.trits().into_iter())
             .collect();
 
         let mut curl = C::default();
-        curl.absorb(final_t.trits().as_slice());
+        curl.absorb(&final_t);
         let weight: usize = curl.squeeze(HASH_LENGTH)[(HASH_LENGTH - min_weight as usize)..]
             .into_iter()
             .rev()
@@ -221,10 +212,10 @@ mod inner {
     }
     pub fn test_ham<A, C>()
     where
-        A: HammingNonce,
+        A: HammingNonce<Trit>,
         C: Curl<Trit>,
     {
-        let trytes: Trinary = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+        let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    GBDXROXGH9MTNFSLWJZRAPOKKRGXAAQBFPYPAAXLSTMNSNDTTJQSDQORNJS9\
                                    BBGQ9KQJZYPAQ9JYQZJ9B9KQDAXUACZWRUNGMBOQLQZUHFNCKVQGORRZGAHE\
                                    S9PWJUKZWUJSBMNZFILBNBQQKLXITCTQDDBV9UDAOQOUPWMXTXWFWVMCXIXL\
@@ -232,15 +223,12 @@ mod inner {
                                    MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
                                    HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
-                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
-            .chars()
-            .collect();
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
         let length = 27u8;
         let len_len = 12;
         for security in 1u8..4u8 {
-            let trits = trytes.trits();
-            let nonce: Trinary =
-                A::search(trits.as_slice(), length, security).expect("Some Search Failure.");
+            let trits : Vec<Trit> = trytes.trits();
+            let nonce = A::search(&trits, length, security).expect("Some Search Failure.");
 
             let len_trits = num::int2trits(trits.len() as isize, len_len);
 
@@ -258,9 +246,9 @@ mod inner {
 
 pub fn run<A, B>()
 where
-    A: Copy,
+    A: Copy + PartialEq + fmt::Debug,
     B: Curl<A>,
-    Trinary: IntoTrits<A> + FromIterator<A>,
+    &'static str: IntoTrits<A>,
 {
     // run tests
     inner::hash_works1::<A, B>();
@@ -269,7 +257,7 @@ where
 
 pub fn run_search<A, C>()
 where
-    A: ProofOfWork,
+    A: ProofOfWork<Trit>,
     C: Curl<Trit>,
 {
     inner::test_pow::<A, C>();
@@ -277,7 +265,7 @@ where
 
 pub fn run_ham_search<A, C>()
 where
-    A: HammingNonce,
+    A: HammingNonce<Trit>,
     C: Curl<Trit>,
 {
     inner::test_ham::<A, C>();

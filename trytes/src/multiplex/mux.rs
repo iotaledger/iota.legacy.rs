@@ -133,8 +133,6 @@ mod test {
         let t1: Vec<Trit> = "ABCD".trits();
         let t2: Vec<Trit> = "A".trits();
 
-        let s = IntoTrits::<Trit>::len_trits(&t1);
-
         let mut mux = TrinaryMultiplexer::default();
 
         mux += &t1;
