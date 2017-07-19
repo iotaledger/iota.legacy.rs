@@ -8,7 +8,7 @@ const TRUTH_TABLE: [Trit; 11] = [1, 0, -1, 2, 1, -1, 0, 2, -1, 1, 0];
 impl Sponge for CpuCurl<Trit> {
     #[inline]
     fn transform(&mut self) {
-        let mut state_clone: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
+        let mut local_state: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
 
         for _ in 0..NUMBER_OF_ROUNDS {
             for state_index in 0..STATE_LENGTH {
@@ -18,10 +18,10 @@ impl Sponge for CpuCurl<Trit> {
                     )
                     .wrapping_add(5);
 
-                state_clone[state_index] = TRUTH_TABLE[idx];
+                local_state[state_index] = TRUTH_TABLE[idx];
             }
 
-            self.state.copy_from_slice(&state_clone);
+            self.state = local_state;
         }
     }
 

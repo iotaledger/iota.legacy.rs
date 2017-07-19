@@ -32,7 +32,7 @@ where
     }
 
     fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
-        let mut out: Vec<T> = Vec::with_capacity(trit_count);
+        let mut out: Vec<T> = Vec::new();
 
         let hash_count = trit_count / HASH_LENGTH;
 
@@ -44,5 +44,9 @@ where
         out.extend_from_slice(&self.state[0..(trit_count - hash_count * HASH_LENGTH)]);
 
         out
+    }
+
+    fn rate(&self) -> &[T] {
+        &self.state[0..HASH_LENGTH]
     }
 }

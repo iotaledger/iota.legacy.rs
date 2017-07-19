@@ -46,7 +46,7 @@ where
         c.reset();
         c.absorb(&key[offset..offset + HASH_LENGTH]);
 
-        key[offset..offset + HASH_LENGTH].clone_from_slice(c.squeeze(HASH_LENGTH).as_slice());
+        key[offset..offset + HASH_LENGTH].clone_from_slice(c.rate());
     }
     key
 }
@@ -60,17 +60,15 @@ where
     let mut digest_curl = C::default();
     let mut key_fragment_curl = C::default();
     let trits: Vec<T> = key.trits();
+    let mut buffer: [T; HASH_LENGTH] = [trits[0]; HASH_LENGTH];
 
     for i in 0..(key.len_trits() / HASH_LENGTH) {
-        let mut buffer: Vec<T> = trits[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
-            .iter()
-            .cloned()
-            .collect();
+        buffer.clone_from_slice(&trits[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
 
         for _ in 0..(MAX_TRYTE_VALUE - MIN_TRYTE_VALUE) {
             key_fragment_curl.reset();
-            key_fragment_curl.absorb(buffer.as_slice());
-            buffer.clone_from_slice(key_fragment_curl.squeeze(HASH_LENGTH).as_slice());
+            key_fragment_curl.absorb(&buffer);
+            buffer.clone_from_slice(key_fragment_curl.rate());
         }
 
         digest_curl.absorb(&buffer);
@@ -111,7 +109,7 @@ where
             c.reset();
             c.absorb(&signature[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
             signature[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
-                .clone_from_slice(c.squeeze(HASH_LENGTH).as_slice());
+                .clone_from_slice(c.rate());
         }
     }
 
@@ -127,24 +125,24 @@ where
 {
     assert_eq!(DIGEST_LENGTH, bundle.len_trits());
     let bundle_trits: Vec<Trit> = bundle.trits();
+    let signature_trits: Vec<Trit> = signature.trits();
     let length = SIGNATURE_LENGTH * checksum_security(bundle);
     assert_eq!(length, signature.len_trits());
 
     let mut digest_curl = C::default();
     let mut signature_fragment_curl = C::default();
 
+    let mut buffer: [Trit; HASH_LENGTH] = [0; HASH_LENGTH];
+
     for i in 0..(length / HASH_LENGTH) {
-        let mut buffer: Vec<Trit> = signature.trits()[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
-            .iter()
-            .cloned()
-            .collect();
+        buffer.clone_from_slice(&signature_trits[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
         for _ in 0..
             (bundle_trits[i * TRYTE_WIDTH] + bundle_trits[i * TRYTE_WIDTH + 1] * 3 +
                  bundle_trits[i * TRYTE_WIDTH + 2] * 9) - MIN_TRYTE_VALUE
         {
             signature_fragment_curl.reset();
             signature_fragment_curl.absorb(&buffer);
-            buffer.clone_from_slice(signature_fragment_curl.squeeze(HASH_LENGTH).as_slice());
+            buffer.clone_from_slice(signature_fragment_curl.rate());
         }
         digest_curl.absorb(&buffer);
     }

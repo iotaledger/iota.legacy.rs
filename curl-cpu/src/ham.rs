@@ -24,11 +24,11 @@ fn prepare_search(input: &IntoTrits<Trit>) -> Vec<BCTrit> {
 
 impl HammingNonce<Trit> for CpuHam {
     fn search(input: &IntoTrits<Trit>, length: u8, security: u8) -> Option<Vec<Trit>> {
-        let state = prepare_search(&input.trits());
+        let state = prepare_search(input);
         search_cpu(state.as_slice(), length as usize, 0, move |t: &[BCTrit]| {
-            let mux = TrinaryDemultiplexer::<Vec<Trit>>::new(t);
-            for i in 0..(mem::size_of::<usize>() * 8) {
-                let trits: Vec<Trit> = mux[i].trits();
+            let mux = TrinaryDemultiplexer::new(t);
+            for i in 0..mux.len() {
+                let ref trits = mux[i];
                 match security {
                     1 => {
                         if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) == 0 {

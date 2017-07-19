@@ -24,7 +24,7 @@ impl Sponge for CpuCurl<BCTrit> {
                 );
             }
 
-            self.state.copy_from_slice(&state_clone);
+            self.state = state_clone;
         }
     }
 

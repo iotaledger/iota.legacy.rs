@@ -31,7 +31,7 @@ mod cpu_search {
             index = check(&cpy.state[..HASH_LENGTH]);
         }
 
-        let mux = TrinaryDemultiplexer::<Vec<Trit>>::new(curl.squeeze(size).as_slice());
+        let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
 
         Some(mux[index.unwrap()].clone())
     }
