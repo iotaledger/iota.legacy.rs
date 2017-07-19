@@ -44,7 +44,7 @@ pub fn decode(input: &IntoTrits<Trit>) -> (usize, usize) {
         .zip(encoders.iter())
         .flat_map(|(trytes, e)| {
             let mut i = 0;
-            let mut encoder = *e + TRITS_PER_TRYTE as isize;
+            let encoder = *e + TRITS_PER_TRYTE as isize;
             let mut trytes_out: Vec<Trit> = Vec::with_capacity(trytes.len());
             for tryte in trytes.chunks(TRITS_PER_TRYTE) {
                 trytes_out.extend(if ((encoder >> i) & 1isize) != 0isize {
