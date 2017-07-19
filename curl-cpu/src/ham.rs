@@ -8,11 +8,15 @@ use core::mem;
 
 pub struct CpuHam;
 
-fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
+fn prepare_search(input: &IntoTrits<Trit>) -> Vec<BCTrit> {
     let mut curl = CpuCurl::<Trit>::default();
-    let length_trits: Vec<Trit> = num::int2trits(input.len() as isize, 12);
+    let trits: Vec<Trit> = input.trits();
+    let length_trits: Vec<Trit> = {
+        let l = (trits.len() / TRITS_PER_TRYTE) as isize;
+        num::int2trits(l, num::min_trits(l))
+    };
     curl.absorb(length_trits.as_slice());
-    curl.absorb(input);
+    curl.absorb(trits.as_slice());
     let mut state: Vec<BCTrit> = curl.state.to_vec().trits();
     (&mut state[0..4]).offset();
     state

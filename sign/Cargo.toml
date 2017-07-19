@@ -12,3 +12,4 @@ default = []
 iota-curl = { path = "../curl" }
 iota-curl-cpu = { path = "../curl-cpu" }
 iota-trytes = { path = "../trytes" }
+iota-tmath = { path = "../tmath" }
