@@ -21,7 +21,9 @@ mod cpu_search {
         let mut index: Option<usize> = None;
         while index.is_none() {
             size = min(
-                size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                num::round_third(
+                    size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                ),
                 HASH_LENGTH,
             );
             let mut cpy = curl.clone();
@@ -39,6 +41,7 @@ mod cpu_search {
 mod cpu_search {
     use super::*;
     use tmath::*;
+    use curl::{Curl, Sponge};
     use std::thread;
     use std::sync::mpsc::channel;
     use std::sync::atomic::{AtomicBool, Ordering};
@@ -67,7 +70,9 @@ mod cpu_search {
                     let mut index: Option<usize> = None;
                     while index.is_none() && running.load(Ordering::SeqCst) {
                         size = min(
-                            size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                            num::round_third(
+                                size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
+                            ),
                             HASH_LENGTH,
                         );
                         let mut cpy = curl.clone();

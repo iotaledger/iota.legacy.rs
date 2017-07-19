@@ -124,7 +124,7 @@ impl<'a> TrinaryMultiplexer<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    
+
     // demux is already testing the other functionality
 
     #[test]

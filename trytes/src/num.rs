@@ -38,6 +38,28 @@ pub fn int2trits(v: isize, size: u8) -> Vec<Trit> {
     ret
 }
 
+/// Given an integer `input`, it rounds up to the nearest multiple of `TRITS_PER_TRYTE`
+pub fn round_third(input: usize) -> usize {
+    let rem = input % TRITS_PER_TRYTE;
+    if rem == 0 {
+        input
+    } else {
+        input + TRITS_PER_TRYTE - rem
+    }
+}
+
+/// given an integer `i`, returns the minimum number of trits required to convert to balanced
+/// ternary
+pub fn min_trits(i: isize) -> u8 {
+    let mut num = 0;
+    let v_abs = i.wrapping_abs();
+    while {
+        num += 1;
+        v_abs > (RADIX as isize).pow(num)
+    }
+    {}
+    num as u8
+}
 
 #[cfg(test)]
 mod test {

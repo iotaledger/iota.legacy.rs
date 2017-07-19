@@ -195,7 +195,7 @@ mod inner {
         let trits: Vec<Trit> = trans.trits();
         let nonce = A::search(&trits, min_weight).expect("Some PoW Failure.");
 
-        let final_t : Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
+        let final_t: Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
             .into_iter()
             .cloned()
             .chain(nonce.trits().into_iter())
@@ -224,22 +224,45 @@ mod inner {
                                    HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
-        let length = 27u8;
-        let len_len = 12;
-        for security in 1u8..4u8 {
-            let trits : Vec<Trit> = trytes.trits();
-            let nonce = A::search(&trits, length, security).expect("Some Search Failure.");
 
-            let len_trits = num::int2trits(trits.len() as isize, len_len);
+        for security in 1u8..4u8 {
+            let trits: Vec<Trit> = trytes.trits();
+            let nonce = A::search(&trits, 3, security).expect("Some Search Failure.");
+
+            let len_trits = {
+                let l = (trits.len() / TRITS_PER_TRYTE) as isize;
+                num::int2trits(l, num::min_trits(l))
+            };
 
             let mut curl = C::default();
             curl.absorb(len_trits.as_slice());
             curl.absorb(trytes.trits().as_slice());
             curl.absorb(nonce.trits().as_slice());
-            let hash_end: Trit = curl.squeeze(security as usize * HASH_LENGTH / 3)
-                .iter()
-                .fold(0, |acc, x| acc + x);
-            assert_eq!(hash_end, 0);
+            let hash = curl.squeeze(security as usize * HASH_LENGTH / 3);
+            let hash_security = {
+                let mut sum = 0;
+                for i in hash[..(HASH_LENGTH / 3)].iter() {
+                    sum += *i;
+                }
+                if sum == 0 {
+                    1
+                } else {
+                    sum = 0;
+                    for i in hash[..(2 * HASH_LENGTH / 3)].iter() {
+                        sum += *i;
+                    }
+                    if sum == 0 {
+                        2
+                    } else {
+                        sum = 0;
+                        for i in hash {
+                            sum += i;
+                        }
+                        if sum == 0 { 3 } else { 0 }
+                    }
+                }
+            };
+            assert_eq!(hash_security, security);
         }
     }
 }
