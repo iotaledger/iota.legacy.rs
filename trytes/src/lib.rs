@@ -30,5 +30,3 @@ pub use constants::Trit;
 pub use constants::BCTrit;
 pub use constants::HASH_LENGTH;
 pub use constants::TRITS_PER_TRYTE;
-
-
