@@ -171,29 +171,6 @@ pub fn checksum_security(hash: &IntoTrits<Trit>) -> usize {
             }
         }
     }
-    /*
-    let mut sum = 0;
-    for i in trits[..(HASH_LENGTH / 3)].iter() {
-        sum += *i;
-    }
-    if sum == 0 {
-        1
-    } else {
-        sum = 0;
-        for i in trits[..(2 * HASH_LENGTH / 3)].iter() {
-            sum += *i;
-        }
-        if sum == 0 {
-            2
-        } else {
-            sum = 0;
-            for i in trits {
-                sum += *i;
-            }
-            if sum == 0 { 3 } else { 0 }
-        }
-    }
-    */
 }
 
 #[cfg(test)]
