@@ -3,9 +3,10 @@ use core::fmt::Debug;
 use alloc::string::ToString;
 
 use trytes::*;
-
 use hash::*;
 use tag::*;
+
+use super::nonce::NonceView;
 pub trait Transaction {
     fn signature_or_message(&self) -> &[Trit];
     fn address(&self) -> HashView;
@@ -17,7 +18,7 @@ pub trait Transaction {
     fn bundle(&self) -> HashView;
     fn trunk(&self) -> HashView;
     fn branch(&self) -> HashView;
-    fn nonce(&self) -> HashView;
+    fn nonce(&self) -> NonceView;
 
     fn fmt_tx(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("(")

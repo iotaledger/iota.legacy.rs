@@ -6,6 +6,7 @@ use trytes::*;
 use hash::*;
 use tag::*;
 use super::types::*;
+use super::nonce::*;
 
 pub const TRANSACTION_LEN_TRITS: usize = 2673 * TRITS_PER_TRYTE;
 
@@ -44,7 +45,7 @@ pub struct TransactionBuilder {
     bundle: Hash,
     trunk: Hash,
     branch: Hash,
-    nonce: Hash,
+    nonce: Nonce,
 }
 
 #[derive(Clone, Eq, PartialEq)]
@@ -71,7 +72,7 @@ impl<'a> TransactionView<'a> {
             bundle: self.bundle().to_hash(),
             trunk: self.trunk().to_hash(),
             branch: self.branch().to_hash(),
-            nonce: self.nonce().to_hash(),
+            nonce: self.nonce().to_nonce(),
         }
     }
 }
@@ -117,8 +118,8 @@ impl<'a> Transaction for TransactionView<'a> {
         HashView::from_trits(&self.0[BRANCH_OFFSET..NONCE_OFFSET]).unwrap()
     }
 
-    fn nonce(&self) -> HashView {
-        HashView::from_trits(&self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS]).unwrap()
+    fn nonce(&self) -> NonceView {
+        NonceView::from_trits(&self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS]).unwrap()
     }
 }
 
@@ -163,7 +164,7 @@ impl Transaction for TransactionBuilder {
         self.branch.view()
     }
 
-    fn nonce(&self) -> HashView {
+    fn nonce(&self) -> NonceView {
         self.nonce.view()
     }
 }
@@ -223,7 +224,7 @@ impl Default for TransactionBuilder {
             bundle: Hash::default(),
             trunk: Hash::default(),
             branch: Hash::default(),
-            nonce: Hash::default(),
+            nonce: Nonce::default(),
         }
     }
 }
@@ -295,8 +296,8 @@ impl TransactionBuilder {
         self
     }
 
-    pub fn set_nonce(&mut self, hash: &Hash) -> &mut Self {
-        self.nonce = hash.clone();
+    pub fn set_nonce(&mut self, nonce: &Nonce) -> &mut Self {
+        self.nonce = nonce.clone();
         self
     }
 }
