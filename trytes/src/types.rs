@@ -93,4 +93,3 @@ impl FromTrits<Trit> for Vec<Trit> {
         Ok(trits.iter().cloned().collect())
     }
 }
-

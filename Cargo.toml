@@ -2,8 +2,6 @@
 members = [
         "curl",
         "curl-cpu",
-        "mam",
-        "merkle",
         "trytes",
         "tmath",
         "sign",

@@ -24,11 +24,9 @@ pub use types::*;
 pub use multiplex::*;
 pub use bct::*;
 pub use string::*;
-pub mod pascal;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;
 pub use constants::BCTrit;
 pub use constants::HASH_LENGTH;
 pub use constants::TRITS_PER_TRYTE;
-
