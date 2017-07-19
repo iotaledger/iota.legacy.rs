@@ -1,6 +1,7 @@
 #[allow(dead_code)]
 use alloc::Vec;
 
+use core::fmt;
 use trytes::*;
 use hash::*;
 use tag::*;
@@ -44,7 +45,7 @@ pub enum TransactionParseError {
     InvalidLength,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct TransactionBuilder {
     signature_or_message: Vec<Trit>,
     extra_data_digest: Hash,
@@ -67,7 +68,7 @@ pub struct TransactionBuilder {
     nonce: Nonce,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct TransactionView<'a>(&'a [Trit]);
 
 impl<'a> TransactionView<'a> {
@@ -298,6 +299,18 @@ impl Default for TransactionBuilder {
             attached_at_ub: usize::max_value(),
             nonce: Nonce::default(),
         }
+    }
+}
+
+impl<'a> fmt::Debug for TransactionView<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("TransactionView").and_then(|_| self.fmt_tx(f))
+    }
+}
+
+impl fmt::Debug for Transaction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("Transaction").and_then(|_| self.fmt_tx(f))
     }
 }
 
