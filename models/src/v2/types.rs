@@ -1,5 +1,5 @@
 use trytes::*;
-use super::hash::HashView;
+use hash::HashView;
 use super::nonce::NonceView;
 
 pub trait Transaction {

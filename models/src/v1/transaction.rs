@@ -2,7 +2,7 @@
 use alloc::Vec;
 
 use trytes::*;
-use super::hash::*;
+use hash::*;
 use super::types::*;
 
 pub const TRANSACTION_LEN_TRITS: usize = 2672 * TRITS_PER_TRYTE;

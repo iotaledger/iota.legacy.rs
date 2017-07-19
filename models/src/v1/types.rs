@@ -1,5 +1,5 @@
 use trytes::*;
-use super::hash::HashView;
+use hash::HashView;
 
 pub trait Transaction {
     fn signature_or_message(&self) -> &[Trit];
