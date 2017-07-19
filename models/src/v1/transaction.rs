@@ -1,25 +1,28 @@
 #[allow(dead_code)]
 use alloc::Vec;
+use core::fmt;
 
 use trytes::*;
 use hash::*;
+use tag::*;
 use super::types::*;
 
-pub const TRANSACTION_LEN_TRITS: usize = 2672 * TRITS_PER_TRYTE;
+pub const TRANSACTION_LEN_TRITS: usize = 2673 * TRITS_PER_TRYTE;
 
 const MESSAGE_TRITS: usize = 6561;
 const TIMESTAMP_TRITS: usize = 27;
 const CURRENT_INDEX_TRITS: usize = 27;
 const LAST_INDEX_TRITS: usize = 27;
 const VALUE_TRITS: usize = 81;
+const TAG_TRITS: usize = 81;
 
 const ADDRESS_OFFSET: usize = MESSAGE_TRITS;
 const VALUE_OFFSET: usize = ADDRESS_OFFSET + HASH_LEN_TRITS;
-const TAG_OFFSET: usize = VALUE_OFFSET + HASH_LEN_TRITS;
-const TIMESTAMP_OFFSET: usize = TAG_OFFSET + TIMESTAMP_TRITS;
-const CURRENT_INDEX_OFFSET: usize = TIMESTAMP_OFFSET + CURRENT_INDEX_TRITS;
-const LAST_INDEX_OFFSET: usize = CURRENT_INDEX_OFFSET + LAST_INDEX_TRITS;
-const BUNDLE_OFFSET: usize = LAST_INDEX_OFFSET + HASH_LEN_TRITS;
+const TAG_OFFSET: usize = VALUE_OFFSET + VALUE_TRITS;
+const TIMESTAMP_OFFSET: usize = TAG_OFFSET + TAG_TRITS;
+const CURRENT_INDEX_OFFSET: usize = TIMESTAMP_OFFSET + TIMESTAMP_TRITS;
+const LAST_INDEX_OFFSET: usize = CURRENT_INDEX_OFFSET + CURRENT_INDEX_TRITS;
+const BUNDLE_OFFSET: usize = LAST_INDEX_OFFSET + LAST_INDEX_TRITS;
 const TRUNK_OFFSET: usize = BUNDLE_OFFSET + HASH_LEN_TRITS;
 const BRANCH_OFFSET: usize = TRUNK_OFFSET + HASH_LEN_TRITS;
 const NONCE_OFFSET: usize = BRANCH_OFFSET + HASH_LEN_TRITS;
@@ -34,7 +37,7 @@ pub struct TransactionBuilder {
     signature_or_message: Vec<Trit>,
     address: Hash,
     value: isize,
-    tag: Hash,
+    tag: Tag,
     timestamp: usize,
     current_index: usize,
     last_index: usize,
@@ -44,7 +47,7 @@ pub struct TransactionBuilder {
     nonce: Hash,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct TransactionView<'a>(&'a [Trit]);
 
 impl<'a> TransactionView<'a> {
@@ -61,7 +64,7 @@ impl<'a> TransactionView<'a> {
             signature_or_message: self.signature_or_message().to_vec(),
             address: self.address().to_hash(),
             value: self.value(),
-            tag: self.tag().to_hash(),
+            tag: self.tag().to_tag(),
             timestamp: self.timestamp(),
             current_index: self.current_index(),
             last_index: self.last_index(),
@@ -86,8 +89,8 @@ impl<'a> Transaction for TransactionView<'a> {
         num::trits2int(&self.0[VALUE_OFFSET..TAG_OFFSET])
     }
 
-    fn tag(&self) -> HashView {
-        HashView::from_trits(&self.0[TAG_OFFSET..TIMESTAMP_OFFSET]).unwrap()
+    fn tag(&self) -> TagView {
+        TagView::from_trits(&self.0[TAG_OFFSET..TIMESTAMP_OFFSET]).unwrap()
     }
 
     fn timestamp(&self) -> usize {
@@ -107,15 +110,15 @@ impl<'a> Transaction for TransactionView<'a> {
     }
 
     fn trunk(&self) -> HashView {
-        HashView::from_trits(&self.0[TRUNK_OFFSET..BUNDLE_OFFSET]).unwrap()
+        HashView::from_trits(&self.0[TRUNK_OFFSET..BRANCH_OFFSET]).unwrap()
     }
 
     fn branch(&self) -> HashView {
-        HashView::from_trits(&self.0[BUNDLE_OFFSET..BRANCH_OFFSET]).unwrap()
+        HashView::from_trits(&self.0[BRANCH_OFFSET..NONCE_OFFSET]).unwrap()
     }
 
     fn nonce(&self) -> HashView {
-        HashView::from_trits(&self.0[BRANCH_OFFSET..NONCE_OFFSET]).unwrap()
+        HashView::from_trits(&self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS]).unwrap()
     }
 }
 
@@ -132,7 +135,7 @@ impl Transaction for TransactionBuilder {
         self.value
     }
 
-    fn tag(&self) -> HashView {
+    fn tag(&self) -> TagView {
         self.tag.view()
     }
 
@@ -213,7 +216,7 @@ impl Default for TransactionBuilder {
             signature_or_message: Vec::new(),
             address: Hash::default(),
             value: 0,
-            tag: Hash::default(),
+            tag: Tag::default(),
             timestamp: 0,
             current_index: 0,
             last_index: 0,
@@ -222,6 +225,18 @@ impl Default for TransactionBuilder {
             branch: Hash::default(),
             nonce: Hash::default(),
         }
+    }
+}
+
+impl<'a> fmt::Debug for TransactionView<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("TransactionView").and_then(|_| self.fmt_tx(f))
+    }
+}
+
+impl fmt::Debug for Transaction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("Transaction").and_then(|_| self.fmt_tx(f))
     }
 }
 
@@ -245,7 +260,7 @@ impl TransactionBuilder {
         self
     }
 
-    pub fn set_tag(&mut self, hash: &Hash) -> &mut Self {
+    pub fn set_tag(&mut self, hash: &Tag) -> &mut Self {
         self.tag = hash.clone();
         self
     }
@@ -286,7 +301,6 @@ impl TransactionBuilder {
     }
 }
 
-/*
 #[cfg(test)]
 mod test {
     use super::*;
@@ -294,7 +308,7 @@ mod test {
     #[test]
     fn tx1() {
 
-        const TX1: Trinary = "KGYTQSLYKIFRXCADXJFRC9PQSFDGVPX9HTIYZMMT9LDALXZK9CUPBRWLCIQC\
+        const TX1: &'static str = "KGYTQSLYKIFRXCADXJFRC9PQSFDGVPX9HTIYZMMT9LDALXZK9CUPBRWLCIQC\
 DRKOQPHDTDCOJZYYVCVQHOG9TVMGNRGHYZVO9FFMXKMEOAMJIJDEFJXFYPPE\
 NPRHGTWYRDJBSGSHRURJRSTHHHVMQJVXJTCNEKJXEXUFDAJBNEIDMVCPHQBJ\
 AOQLPDOBDCLBVYPLPPVOYXYLRJMRVVPYXGGYCZMEHVJDSSMPRYKYOYG9TQXH\
@@ -338,11 +352,9 @@ WJZWXR9O9JHLQ9OUBQJXGKPTPEMYGVHKPDUEMBXJEUDPYJJAEQRBD9RRSIKB\
 PS9LLPOUMWCTOUBKIEIANOZBDIXWWIMLFLZXPGKQWTLWVS99999YMJFFS9UB\
 ZUM9FGQNBGTNBWNBTXQPMWCHNFNIJFSUIKCUFLF9BAWAWZZDYDSUC9MFVTWI\
 SQGEUKP99999LPSI9VRPPHM9DRNWWZRVZWJGNIIRKYGKRHQNBNXNDIXPKDBX\
-NVIFBFTPMCQZWTPDHUCGPC9FOXRVRYPCH"
-            .chars()
-            .collect();
+NVIFBFTPMCQZWTPDHUCGPC9FOXRVRYPCH";
 
+        let tx1 = TX1.trits();
+        let txview = TransactionView(tx1.as_slice());
     }
 }
-
-*/

@@ -2,11 +2,12 @@
 use alloc::Vec;
 
 use trytes::*;
-use super::nonce::*;
 use hash::*;
+use tag::*;
+use super::nonce::*;
 use super::types::*;
 
-const TRANSACTION_LEN_TRITS: usize = 2672 * TRITS_PER_TRYTE; // = 8019
+const TRANSACTION_LEN_TRITS: usize = 2673 * TRITS_PER_TRYTE; // = 8019
 
 const MESSAGE_TRITS: usize = 6561;
 const EXTRA_DATA_DIGEST_TRITS: usize = 243;
@@ -18,7 +19,7 @@ const ISSUED_AT_UB_TRITS: usize = 27;
 const BUNDLE_NONCE_TRITS: usize = NONCE_LEN_TRITS;
 const TRUNK_TRITS: usize = HASH_LEN_TRITS;
 const BRANCH_TRITS: usize = HASH_LEN_TRITS;
-const TAG_TRITS: usize = 81;
+const TAG_TRITS: usize = TAG_LEN_TRITS;
 const ATTACHED_AT_TRITS: usize = 27;
 const ATTACHED_AT_LB_TRITS: usize = 27;
 const ATTACHED_AT_UB_TRITS: usize = 27;
@@ -57,7 +58,7 @@ pub struct TransactionBuilder {
     bundle_nonce: Nonce,
     trunk: Hash,
     branch: Hash,
-    tag: Nonce,
+    tag: Tag,
 
     attached_at: usize,
     attached_at_lb: usize,
@@ -90,7 +91,7 @@ impl<'a> TransactionView<'a> {
             bundle_nonce: self.bundle_nonce().to_nonce(),
             trunk: self.trunk().to_hash(),
             branch: self.branch().to_hash(),
-            tag: self.tag().to_nonce(),
+            tag: self.tag().to_tag(),
             attached_at: self.attached_at(),
             attached_at_lb: self.attached_at_lb(),
             attached_at_ub: self.attached_at_ub(),
@@ -140,8 +141,8 @@ impl<'a> Transaction for TransactionView<'a> {
         HashView::from_trits(&self.0[BRANCH_OFFSET..TAG_OFFSET]).unwrap()
     }
 
-    fn tag(&self) -> NonceView {
-        NonceView::from_trits(&self.0[TAG_OFFSET..ATTACHED_AT_OFFSET]).unwrap()
+    fn tag(&self) -> TagView {
+        TagView::from_trits(&self.0[TAG_OFFSET..ATTACHED_AT_OFFSET]).unwrap()
     }
 
     fn attached_at(&self) -> usize {
@@ -200,7 +201,7 @@ impl Transaction for TransactionBuilder {
         self.branch.view()
     }
 
-    fn tag(&self) -> NonceView {
+    fn tag(&self) -> TagView {
         self.tag.view()
     }
 
@@ -291,7 +292,7 @@ impl Default for TransactionBuilder {
             bundle_nonce: Nonce::default(),
             trunk: Hash::default(),
             branch: Hash::default(),
-            tag: Nonce::default(),
+            tag: Tag::default(),
             attached_at: 0,
             attached_at_lb: 0,
             attached_at_ub: usize::max_value(),
@@ -355,8 +356,8 @@ impl TransactionBuilder {
         self
     }
 
-    pub fn set_tag(&mut self, nonce: &Nonce) -> &mut Self {
-        self.tag = nonce.clone();
+    pub fn set_tag(&mut self, tag: &Tag) -> &mut Self {
+        self.tag = tag.clone();
         self
     }
 

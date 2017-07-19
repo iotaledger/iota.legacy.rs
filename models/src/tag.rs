@@ -2,20 +2,20 @@ use trytes::*;
 use alloc::Vec;
 use core::fmt;
 
-pub const NONCE_LEN_TRITS: usize = 81;
+pub const TAG_LEN_TRITS: usize = 81;
 
 #[derive(Clone, Eq, PartialEq)]
-pub struct Nonce(Vec<Trit>);
+pub struct Tag(Vec<Trit>);
 
 #[derive(Clone, Eq, PartialEq)]
-pub struct NonceView<'a>(&'a [Trit]);
+pub struct TagView<'a>(&'a [Trit]);
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum NonceParseError {
+pub enum TagParseError {
     InvalidLength,
 }
 
-impl IntoTrits<Trit> for Nonce {
+impl IntoTrits<Trit> for Tag {
     fn len_trits(&self) -> usize {
         self.0.len()
     }
@@ -24,64 +24,64 @@ impl IntoTrits<Trit> for Nonce {
     }
 }
 
-impl FromTrits<Trit> for Nonce {
-    type Err = NonceParseError;
+impl FromTrits<Trit> for Tag {
+    type Err = TagParseError;
     fn from_trits(base: &[Trit]) -> Result<Self, Self::Err> {
-        NonceView::from_trits(base).map(|v| v.to_nonce())
+        TagView::from_trits(base).map(|v| v.to_tag())
     }
 }
 
-impl Nonce {
-    pub fn view(&self) -> NonceView {
-        NonceView(self.0.as_slice())
+impl Tag {
+    pub fn view(&self) -> TagView {
+        TagView(self.0.as_slice())
     }
 }
 
-impl Default for Nonce {
+impl Default for Tag {
     fn default() -> Self {
         use core::iter;
-        Nonce(iter::repeat(0).take(NONCE_LEN_TRITS).collect())
+        Tag(iter::repeat(0).take(TAG_LEN_TRITS).collect())
     }
 }
-impl<'a> fmt::Display for NonceView<'a> {
+impl<'a> fmt::Display for TagView<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = trits_to_string(self.0).unwrap();
         f.write_str(&s)
     }
 }
 
-impl fmt::Display for Nonce {
+impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.view().fmt(f)
     }
 }
 
-impl fmt::Debug for Nonce {
+impl fmt::Debug for Tag {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("Nonce(")
+        f.write_str("Tag(")
             .and_then(|_| fmt::Display::fmt(self, f))
             .and_then(|_| f.write_str(")"))
     }
 }
 
-impl<'a> fmt::Debug for NonceView<'a> {
+impl<'a> fmt::Debug for TagView<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("NonceView(")
+        f.write_str("TagView(")
             .and_then(|_| fmt::Display::fmt(self, f))
             .and_then(|_| f.write_str(")"))
     }
 }
 
 
-impl<'a> NonceView<'a> {
-    pub fn from_trits(base: &'a [Trit]) -> Result<Self, NonceParseError> {
-        if base.len() != NONCE_LEN_TRITS {
-            return Err(NonceParseError::InvalidLength);
+impl<'a> TagView<'a> {
+    pub fn from_trits(base: &'a [Trit]) -> Result<Self, TagParseError> {
+        if base.len() != TAG_LEN_TRITS {
+            return Err(TagParseError::InvalidLength);
         }
-        Ok(NonceView(base))
+        Ok(TagView(base))
     }
 
-    pub fn to_nonce(&self) -> Nonce {
-        Nonce(self.0.to_vec())
+    pub fn to_tag(&self) -> Tag {
+        Tag(self.0.to_vec())
     }
 }

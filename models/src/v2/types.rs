@@ -1,5 +1,6 @@
 use trytes::*;
 use hash::HashView;
+use tag::TagView;
 use super::nonce::NonceView;
 
 pub trait Transaction {
@@ -13,7 +14,7 @@ pub trait Transaction {
     fn bundle_nonce(&self) -> NonceView;
     fn trunk(&self) -> HashView;
     fn branch(&self) -> HashView;
-    fn tag(&self) -> NonceView;
+    fn tag(&self) -> TagView;
     fn attached_at(&self) -> usize;
     fn attached_at_lb(&self) -> usize;
     fn attached_at_ub(&self) -> usize;
