@@ -14,17 +14,26 @@ fn step(first: BCTrit, second: BCTrit) -> BCTrit {
 /// Tuple implementation of the `Sponge` for CpuCurl
 impl Sponge for CpuCurl<BCTrit> {
     fn transform(&mut self) {
-        let mut state_clone: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
+        let mut local_state: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
-        for _ in 0..NUMBER_OF_ROUNDS {
+        for round in 0..NUMBER_OF_ROUNDS {
+            let (mut state_out, &state) = if round % 2 == 0 {
+                (&mut local_state, &self.state)
+            } else {
+                (&mut self.state, &local_state)
+            };
+
             for i in 0..STATE_LENGTH {
-                state_clone[i] = step(
-                    self.state[TRANSFORM_INDICES[i]],
-                    self.state[TRANSFORM_INDICES[i + 1]],
+                state_out[i] = step(
+                    state[TRANSFORM_INDICES[i]],
+                    state[TRANSFORM_INDICES[i + 1]],
                 );
             }
 
-            self.state = state_clone;
+        }
+
+        if NUMBER_OF_ROUNDS % 2 == 1 {
+            self.state = local_state;
         }
     }
 

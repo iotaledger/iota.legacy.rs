@@ -10,17 +10,23 @@ impl Sponge for CpuCurl<Trit> {
     fn transform(&mut self) {
         let mut local_state: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
 
-        for _ in 0..NUMBER_OF_ROUNDS {
+        for round in 0..NUMBER_OF_ROUNDS {
+            let (mut state_out, &state) = if round % 2 == 0 {
+                (&mut local_state, &self.state)
+            } else {
+                (&mut self.state, &local_state)
+            };
+
             for state_index in 0..STATE_LENGTH {
-                let idx: usize = (self.state[TRANSFORM_INDICES[state_index]] as usize)
-                    .wrapping_add(
-                        (self.state[TRANSFORM_INDICES[state_index + 1]] as usize) << 2,
-                    )
+                let idx: usize = (state[TRANSFORM_INDICES[state_index]] as usize)
+                    .wrapping_add((state[TRANSFORM_INDICES[state_index + 1]] as usize) << 2)
                     .wrapping_add(5);
 
-                local_state[state_index] = TRUTH_TABLE[idx];
+                state_out[state_index] = TRUTH_TABLE[idx];
             }
+        }
 
+        if NUMBER_OF_ROUNDS % 2 == 1 {
             self.state = local_state;
         }
     }
@@ -50,12 +56,11 @@ mod tests {
         fn transform(&self, t: &[Trit]) -> Vec<Trit> {
             t.to_vec()
         }
-        
     }
 
     #[test]
     pub fn run_testsuite() {
-        curl::tests::run::<Trit, CpuCurl<Trit>> (&TritTransformer);
+        curl::tests::run::<Trit, CpuCurl<Trit>>(&TritTransformer);
     }
 
 }
