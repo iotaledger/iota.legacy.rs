@@ -2,14 +2,17 @@
 
 use super::*;
 use trytes::*;
-use core::iter::FromIterator;
 use core::fmt;
+
+pub trait TransformerFn<A> {
+    fn transform(&self, trits: &[Trit]) -> Vec<A>;
+}
 
 mod inner {
     use super::*;
     use trytes::*;
 
-    fn test_hash_eq<A, B>(trans: &IntoTrits<A>, expected: &IntoTrits<A>)
+    fn test_hash_eq<A, B>(trans: &[A], expected: &[A])
     where
         A: Copy + Clone + Sized,
         Vec<A>: fmt::Debug + PartialEq,
@@ -17,21 +20,19 @@ mod inner {
     {
 
         let mut curl = B::default();
-        let trits = trans.trits();
-        curl.absorb(trits.as_slice());
+        curl.absorb(trans);
         let hash: Vec<A> = curl.squeeze(HASH_LENGTH);
 
-        assert_eq!(hash, expected.trits());
+        assert_eq!(hash, expected.to_vec());
     }
 
-    pub fn hash_works2<A, B>()
+    pub fn hash_works1<A, B>(transformer: &TransformerFn<A>)
     where
         A: Copy + PartialEq + fmt::Debug,
         B: Curl<A>,
-        &'static str: IntoTrits<A>,
     {
 
-        let trans = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+        let trans : Vec<Trit> = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
                                    RZBPKRKQAIPGOHBTHTGYXTBJLSURDSPEOJ9UKJECUKCCPVIQQHDUYKVKISCE\
                                    IEGVOQWRBAYXWGSJUTEVG9RPQLPTKYCRAJ9YNCUMDVDYDQCKRJOAPXCSUDAJ\
@@ -75,21 +76,31 @@ mod inner {
                                    MLFURISLYSWKXHJKXMHUWZXUQARMYPGKRKQMHVR9JEYXJRPNZINYNCGZHHUN\
                                    HBAIJHLYZIZGGIDFWVNXZQADLEDJFTIUTQWCQSX9QNGUZXGXJYUUTFSZPQKX\
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
-                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
+                                   OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        let hash = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
-                                 9EFZJKFYCZKQPPBXYSGJ";
+        let hash : Vec<Trit> = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
+                                 9EFZJKFYCZKQPPBXYSGJ"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        test_hash_eq::<A, B>(&trans, &hash);
+        let trans_t = transformer.transform(trans.as_slice());
+        let hash_t = transformer.transform(hash.as_slice());
+
+        test_hash_eq::<A, B>(trans_t.as_slice(), hash_t.as_slice());
     }
 
-    pub fn hash_works1<A, B>()
+    pub fn hash_works2<A, B>(transformer: &TransformerFn<A>)
     where
         A: Copy + PartialEq + fmt::Debug,
         B: Curl<A>,
-        &'static str: IntoTrits<A>,
     {
-        let trans = "9999999999999999999999999999999999999999999999999999999999999\
+        let trans : Vec<Trit> = "9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
@@ -132,12 +143,23 @@ mod inner {
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               999999999999999999999999999999T999999999999999999999999999999\
-                              99999999999999999999999OLOB99999999999999999999999";
+                              99999999999999999999999OLOB99999999999999999999999"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        let ex_hash = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
-                             DANIYSMFYPVABX9999";
+        let hash : Vec<Trit> = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
+                             DANIYSMFYPVABX9999"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        test_hash_eq::<A, B>(&trans, &ex_hash);
+        let trans_t = transformer.transform(trans.as_slice());
+        let hash_t = transformer.transform(hash.as_slice());
+
+        test_hash_eq::<A, B>(trans_t.as_slice(), hash_t.as_slice());
     }
 
     pub fn test_pow<A, C>()
@@ -192,13 +214,13 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
         let min_weight = 11u8;
-        let trits: Vec<Trit> = trans.trits();
+        let trits: Vec<Trit> = trans.chars().flat_map(char_to_trits).cloned().collect();
         let nonce = A::search(&trits, min_weight).expect("Some PoW Failure.");
 
         let final_t: Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
             .into_iter()
             .cloned()
-            .chain(nonce.trits().into_iter())
+            .chain(nonce)
             .collect();
 
         let mut curl = C::default();
@@ -225,8 +247,8 @@ mod inner {
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
+        let trits: Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
         for security in 1u8..4u8 {
-            let trits: Vec<Trit> = trytes.trits();
             let nonce = A::search(&trits, 3, security).expect("Some Search Failure.");
 
             let len_trits = {
@@ -236,8 +258,8 @@ mod inner {
 
             let mut curl = C::default();
             curl.absorb(len_trits.as_slice());
-            curl.absorb(trytes.trits().as_slice());
-            curl.absorb(nonce.trits().as_slice());
+            curl.absorb(trits.as_slice());
+            curl.absorb(nonce.as_slice());
             let hash = curl.squeeze(security as usize * HASH_LENGTH / 3);
             let hash_security = {
                 let mut sum = 0;
@@ -267,15 +289,14 @@ mod inner {
     }
 }
 
-pub fn run<A, B>()
+pub fn run<A, B>(transformer: &TransformerFn<A>)
 where
     A: Copy + PartialEq + fmt::Debug,
     B: Curl<A>,
-    &'static str: IntoTrits<A>,
 {
     // run tests
-    inner::hash_works1::<A, B>();
-    inner::hash_works2::<A, B>();
+    inner::hash_works1::<A, B>(transformer);
+    inner::hash_works2::<A, B>(transformer);
 }
 
 pub fn run_search<A, C>()

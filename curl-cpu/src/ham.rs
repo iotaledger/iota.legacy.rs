@@ -1,34 +1,32 @@
 use curl::*;
 use cpucurl::CpuCurl;
-use trytes::offset::*;
+use tmath::*;
 use trytes::*;
 use search::*;
 use alloc::*;
-use core::mem;
 
 pub struct CpuHam;
 
-fn prepare_search(input: &IntoTrits<Trit>) -> Vec<BCTrit> {
+fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
     let mut curl = CpuCurl::<Trit>::default();
-    let trits: Vec<Trit> = input.trits();
     let length_trits: Vec<Trit> = {
-        let l = (trits.len() / TRITS_PER_TRYTE) as isize;
+        let l = (input.len() / TRITS_PER_TRYTE) as isize;
         num::int2trits(l, num::min_trits(l))
     };
     curl.absorb(length_trits.as_slice());
-    curl.absorb(trits.as_slice());
-    let mut state: Vec<BCTrit> = curl.state.to_vec().trits();
+    curl.absorb(input);
+    let mut state: Vec<BCTrit> = curl.state.iter().cloned().map(trit_to_bct).collect();
     (&mut state[0..4]).offset();
     state
 }
 
 impl HammingNonce<Trit> for CpuHam {
-    fn search(input: &IntoTrits<Trit>, length: u8, security: u8) -> Option<Vec<Trit>> {
+    fn search(input: &[Trit], length: u8, security: u8) -> Option<Vec<Trit>> {
         let state = prepare_search(input);
         search_cpu(state.as_slice(), length as usize, 0, move |t: &[BCTrit]| {
             let mux = TrinaryDemultiplexer::new(t);
             for i in 0..mux.len() {
-                let ref trits = mux[i];
+                let trits: Vec<Trit> = mux.get(i).collect();
                 match security {
                     1 => {
                         if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) == 0 {

@@ -31,9 +31,10 @@ mod cpu_search {
             index = check(&cpy.state[..HASH_LENGTH]);
         }
 
-        let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
+        let squeezed = curl.squeeze(size);
+        let mux = TrinaryDemultiplexer::new(&squeezed);
 
-        Some(mux[index.unwrap()].clone())
+        Some(mux.get(index.unwrap()).collect())
     }
 }
 

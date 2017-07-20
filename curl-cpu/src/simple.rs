@@ -42,10 +42,20 @@ impl Default for CpuCurl<Trit> {
 mod tests {
     use super::*;
     use super::super::curl;
+    use alloc::Vec;
+
+    struct TritTransformer;
+
+    impl curl::tests::TransformerFn<Trit> for TritTransformer {
+        fn transform(&self, t: &[Trit]) -> Vec<Trit> {
+            t.to_vec()
+        }
+        
+    }
 
     #[test]
     pub fn run_testsuite() {
-        curl::tests::run::<Trit, CpuCurl<Trit>>();
+        curl::tests::run::<Trit, CpuCurl<Trit>> (&TritTransformer);
     }
 
 }
