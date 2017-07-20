@@ -41,9 +41,10 @@ mod tests {
     use alloc::*;
     #[test]
     fn test_bct_incr() {
-        let t = "H";
-        let i = "I";
-        let mut bct: Vec<BCTrit> = t.trits();
+        let t = 'H';
+        let i = 'I';
+        let mut bct: Vec<BCTrit> = char_to_trits(t).iter().cloned().map(trit_to_bct).collect();
+        let it : Vec<Trit> = char_to_trits(i).to_vec();
 
         bct.as_mut_slice().incr();
 
@@ -51,18 +52,17 @@ mod tests {
         let low = usize::min_value();
         assert_eq!(bct, vec![(high, high), (high, high), (low, high)]);
 
-        let it : Vec<Trit> = i.trits();
-        assert_eq!(it, bct.trits());
+        assert_eq!(it, bct.into_iter().map(bct_to_trit).collect::<Vec<Trit>>());
     }
     #[test]
     fn test_simple_incr() {
-        let t = "H";
-        let i = "I";
-        let mut bct: Vec<Trit> = t.trits();
-        let it : Vec<Trit> = i.trits();
+        let t = 'H';
+        let i = 'I';
+        let mut tt : Vec<Trit> = char_to_trits(t).to_vec();
+        let it: Vec<BCTrit> = char_to_trits(i).iter().cloned().map(trit_to_bct).collect();
 
-        bct.as_mut_slice().incr();
+        tt.as_mut_slice().incr();
 
-        assert_eq!(it, bct);
+        assert_eq!(tt.into_iter().map(trit_to_bct).collect::<Vec<BCTrit>>(), it);
     }
 }

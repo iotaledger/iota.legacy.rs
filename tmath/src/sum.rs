@@ -1,7 +1,8 @@
 use trytes::*;
 
-pub fn sum(tuple: (&Trit, &Trit)) -> Trit {
-    let s = *tuple.0 + *tuple.1;
+#[inline]
+pub fn bct_sum(tuple: (Trit, Trit)) -> Trit {
+    let s = tuple.0 + tuple.1;
     match s {
         2 => -1,
         -2 => 1,
@@ -14,12 +15,7 @@ pub trait Sum<T> {
 
 impl Sum<Trit> for (Trit, Trit) {
     fn sum(&self) -> Trit {
-        let s = self.0 + self.1;
-        match s {
-            2 => -1,
-            -2 => 1,
-            _ => s,
-        }
+        bct_sum(*self)
     }
 }
 
