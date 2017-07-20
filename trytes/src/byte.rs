@@ -3,10 +3,6 @@
 use constants::*;
 use mappings::*;
 
-/// Converts a tryte to `TRITS_PER_TRYTE` trits
-pub fn tryte_to_trits(trit: char) -> &'static [Trit; TRITS_PER_TRYTE] {
-    &TRYTE_TO_TRITS_MAPPINGS[TRYTE_ALPHABET.find(trit).unwrap()]
-}
 
 /// Converts a slice of trits to a byte
 /// `trits.len()` must be less or equal to `TRITS_PER_BYTE`
@@ -32,26 +28,17 @@ pub fn byte_to_trits(bu: u8) -> &'static [Trit; TRITS_PER_BYTE] {
     &BYTE_TO_TRITS_MAPPINGS[bpos]
 }
 
-/// Converts a slice of trits to a tryte
-/// `trits.len()` must be less or equal to `TRITS_PER_TRYTE`
-pub fn trits_to_char(trits: &[Trit]) -> char {
-    assert!(trits.len() <= TRITS_PER_TRYTE);
-    match TRYTE_TO_TRITS_MAPPINGS.iter().position(|&x| x == trits) {
-        Some(p) => TRYTE_ALPHABET.chars().nth(p).unwrap(),
-        None => '-',
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
+    use string::char_to_trits;
     #[test]
     fn test_char_to_trit() {
-        for (i, c) in TRYTE_ALPHABET.chars().enumerate() {
+        for (i, c) in TRYTE_ALPHABET.iter().enumerate() {
             let ts = TRYTE_TO_TRITS_MAPPINGS[i];
-            let m = tryte_to_trits(c).clone();
+            let m = char_to_trits(*c);
 
-            assert_eq!(ts, m);
+            assert_eq!(&ts, m);
 
         }
     }

@@ -14,5 +14,5 @@ pub const TRINARY_LENGTH: usize = HASH_LENGTH / (RADIX as usize);
 pub const TRITS_PER_BYTE: usize = 5;
 pub const TRITS_PER_TRYTE: usize = 3;
 /// Valid tryte alphabet
-pub const TRYTE_ALPHABET: &str = "9ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 pub const TRYTE_SPACE: usize = 27;
+pub const TRYTE_ALPHABET: [char; TRYTE_SPACE] = ['9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];

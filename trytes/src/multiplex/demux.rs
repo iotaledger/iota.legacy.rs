@@ -1,86 +1,68 @@
-use types::*;
 use constants::*;
 use multiplex::constants::*;
 
 use core::cmp::min;
-use core::ops::Index;
-use core::iter::IntoIterator;
-use alloc::Vec;
+use core::iter::ExactSizeIterator;
 
 
-pub struct TrinaryDemultiplexer {
-    trinaries: Vec<Vec<Trit>>,
+pub struct TrinaryDemultiplexer<'a> {
+    trits: &'a [BCTrit],
 }
 
 pub struct TrinaryDemultiplexerIter<'a> {
     pos: usize,
-    demux: &'a TrinaryDemultiplexer,
-}
-
-impl<'a> Index<usize> for TrinaryDemultiplexer {
-    type Output = Vec<Trit>;
-    fn index(&self, idx: usize) -> &Self::Output {
-        &self.trinaries[idx]
-    }
+    idx: usize,
+    demux: &'a TrinaryDemultiplexer<'a>,
 }
 
 impl<'a> Iterator for TrinaryDemultiplexerIter<'a> {
-    type Item = &'a Vec<Trit>;
+    type Item = Trit;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos >= self.demux.trinaries.len() {
+        if self.pos >= self.demux.trits.len() {
             None
         } else {
-            let ret = Some(&self.demux.trinaries[self.pos]);
+            let (l, h) = self.demux.trits[self.pos];
+
+            let (low, high) = ((l >> self.idx) & 1, (h >> self.idx) & 1);
             self.pos += 1;
-            ret
+
+            Some(if (low, high) == (1, 0) {
+                -1
+            } else if (low, high) == (0, 1) {
+                1
+            } else if (low, high) == (1, 1) {
+                0
+            } else {
+                0
+            })
         }
     }
 }
 
+impl<'a> ExactSizeIterator for TrinaryDemultiplexerIter<'a> {
+    fn len(&self) -> usize {
+        self.demux.trits.len()
+    }
+}
+
 /// Demultiplexes a slice of `BCTrit` into separate `Vec<Trit>` again.
-impl TrinaryDemultiplexer {
-    pub fn new(bct: &[BCTrit]) -> Self {
-        TrinaryDemultiplexer { trinaries: Self::multiplexed_to_disjoint(bct) }
+impl<'a> TrinaryDemultiplexer<'a> {
+    pub fn new(bct: &'a [BCTrit]) -> Self {
+        TrinaryDemultiplexer { trits: bct }
     }
 
-    pub fn iter(&self) -> TrinaryDemultiplexerIter {
+    pub fn get(&self, idx: usize) -> TrinaryDemultiplexerIter {
         TrinaryDemultiplexerIter {
             pos: 0,
+            idx: idx,
             demux: &self,
         }
     }
 
     /// Number of encoded trinaries.
     pub fn len(&self) -> usize {
-        self.trinaries.len()
-    }
-
-    fn multiplexed_to_disjoint(bct: &[BCTrit]) -> Vec<Vec<Trit>> {
-        let (l, h) = bct[0];
-
-        let trinary_count = MAX_TRINARIES - min(l.leading_zeros(), h.leading_zeros()) as usize;
-
-        let mut out: Vec<Vec<Trit>> = Vec::with_capacity(trinary_count);
-        for i in 0..trinary_count {
-            out.push(
-                bct.iter()
-                    .map(|&(l, h)| {
-                        let (low, high) = ((l >> i) & 1, (h >> i) & 1);
-                        if (low, high) == (1, 0) {
-                            -1
-                        } else if (low, high) == (0, 1) {
-                            1
-                        } else if (low, high) == (1, 1) {
-                            0
-                        } else {
-                            0
-                        }
-                    })
-                    .collect(),
-            );
-        }
-
-        out
+        let (l, h) = self.trits[0];
+        MAX_TRINARIES - min(l.leading_zeros(), h.leading_zeros()) as usize
     }
 }
 
@@ -89,6 +71,8 @@ impl TrinaryDemultiplexer {
 mod test {
     use super::*;
     use multiplex::mux::*;
+    use string::char_to_trits;
+    use alloc::Vec;
 
     static T1: &'static str = "99JMJHGHGFVJHBJHGJLERDTFYGHUSDKJSDSIJO";
     static T2: &'static str = "ASDLKJQLWKEJLASJDFLAKDJFSLDKVJASDFJALK";
@@ -97,12 +81,14 @@ mod test {
 
     #[test]
     fn test_demux_count() {
+        let t1: Vec<Trit> = T1.chars().flat_map(char_to_trits).cloned().collect();
+        let t2: Vec<Trit> = T2.chars().flat_map(char_to_trits).cloned().collect();
+        let t3: Vec<Trit> = T3.chars().flat_map(char_to_trits).cloned().collect();
 
         let mut multi = TrinaryMultiplexer::new();
-        multi += &T1;
-        multi += &T2;
-        multi += &T3;
-
+        multi += &t1;
+        multi += &t2;
+        multi += &t3;
 
         let ex = multi.extract();
         let demux = TrinaryDemultiplexer::new(&ex);
@@ -112,31 +98,20 @@ mod test {
 
     #[test]
     fn test_demux_id() {
+        let t1: Vec<Trit> = T1.chars().flat_map(char_to_trits).cloned().collect();
+        let t2: Vec<Trit> = T2.chars().flat_map(char_to_trits).cloned().collect();
+        let t3: Vec<Trit> = T3.chars().flat_map(char_to_trits).cloned().collect();
+
         let mut multi = TrinaryMultiplexer::new();
-        multi += &T1;
-        multi += &T2;
-        multi += &T3;
+        multi += &t1;
+        multi += &t2;
+        multi += &t3;
 
         let ex = multi.extract();
         let demux = TrinaryDemultiplexer::new(&ex);
 
         for i in 0..multi.len() {
-            assert_eq!(multi.get(i).trits(), demux[i]);
-        }
-    }
-
-    #[test]
-    fn test_demux_iter() {
-        let mut multi = TrinaryMultiplexer::new();
-        multi += &T1;
-        multi += &T2;
-        multi += &T3;
-
-        let ex = multi.extract();
-        let demux = TrinaryDemultiplexer::new(&ex);
-
-        for (a, b) in multi.iter().zip(demux.iter()) {
-            assert_eq!(&a.trits(), b);
+            assert_eq!(multi.get(i).to_vec(), demux.get(i).collect::<Vec<Trit>>());
         }
     }
 }

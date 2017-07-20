@@ -1,32 +1,31 @@
-use alloc::vec::Vec;
 use alloc::string::String;
 
 use constants::*;
-use util::*;
-use types::*;
-use bct::trit_to_bct;
+use mappings::TRYTE_TO_TRITS_MAPPINGS;
 
-impl<'a> IntoTrits<Trit> for &'a str {
-    fn len_trits(&self) -> usize {
-        self.len() * TRITS_PER_TRYTE
+/// Converts a tryte to `TRITS_PER_TRYTE` trits
+#[inline]
+pub fn char_to_trits(tryte: char) -> &'static [Trit; TRITS_PER_TRYTE] {
+    for i in 0..TRYTE_SPACE {
+        if TRYTE_ALPHABET[i] == tryte {
+            return &TRYTE_TO_TRITS_MAPPINGS[i];
+        }
     }
 
-    fn trits(&self) -> Vec<Trit> {
-        self.chars().flat_map(tryte_to_trits).cloned().collect()
+    &TRYTE_TO_TRITS_MAPPINGS[0]
+}
+
+/// Converts a slice of trits to a tryte
+/// `trits.len()` must be less or equal to `TRITS_PER_TRYTE`
+#[inline]
+pub fn trits_to_char(trits: &[Trit]) -> char {
+    assert!(trits.len() <= TRITS_PER_TRYTE);
+    match TRYTE_TO_TRITS_MAPPINGS.iter().position(|&x| x == trits) {
+        Some(p) => TRYTE_ALPHABET[p],
+        None => '-',
     }
 }
 
-impl<'a> IntoTrits<BCTrit> for &'a str {
-    fn len_trits(&self) -> usize {
-        self.len() * TRITS_PER_TRYTE
-    }
-
-    fn trits(&self) -> Vec<BCTrit> {
-        self.trits().into_iter().map(trit_to_bct).collect()
-    }
-}
-
-#[allow(dead_code)]
 pub fn trits_to_string(t: &[Trit]) -> Option<String> {
     if t.len() % 3 != 0 {
         return None;
@@ -39,25 +38,32 @@ pub fn trits_to_string(t: &[Trit]) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::Vec;
 
     #[test]
     fn fromtostr_test1() {
         let trytes = "UYSSM9KIH";
-        let back = trytes.trits();
-        assert_eq!(trits_to_string(&back).unwrap(), trytes);
+
+        let as_trits : Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
+        let as_string = trits_to_string(as_trits.as_slice()).unwrap();
+        assert_eq!(as_string, trytes);
     }
 
     #[test]
     fn fromtostr_test2() {
         let trytes = "LCUNQ99HCQM9HSATSQOPOWXXKGKDVZSEKVWJZRGWFRVLEQ9XG9INIPKAM9BQVGCIRNPZOS9LUZRBHB9P";
-        let back = trytes.trits();
-        assert_eq!(trits_to_string(&back).unwrap(), trytes);
+
+        let as_trits : Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
+        let as_string = trits_to_string(as_trits.as_slice()).unwrap();
+        assert_eq!(as_string, trytes);
     }
 
     #[test]
     fn fromtostr_test3() {
         let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQI";
-        let back = trytes.trits();
-        assert_eq!(trits_to_string(&back).unwrap(), trytes);
+
+        let as_trits : Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
+        let as_string = trits_to_string(as_trits.as_slice()).unwrap();
+        assert_eq!(as_string, trytes);
     }
 }

@@ -10,20 +10,20 @@ pub mod constants;
 mod mappings;
 
 // Helper methods
-pub mod util;
 pub mod num;
 
-pub mod types;
+// Different representations
+pub mod byte;
 pub mod string;
 pub mod bct;
-pub mod offset;
 
+// Helpers for multiple trits encoded as BCTrit
 pub mod multiplex;
 
-pub use types::*;
 pub use multiplex::*;
 pub use bct::*;
 pub use string::*;
+pub use byte::*;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;

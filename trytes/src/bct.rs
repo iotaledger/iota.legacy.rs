@@ -1,8 +1,6 @@
 use constants::BCTrit;
 use constants::Trit;
 
-
-
 #[inline(always)]
 pub fn trit_to_bct(t: Trit) -> BCTrit {
     let high = usize::max_value();
@@ -35,12 +33,12 @@ pub fn bct_to_trit(t: BCTrit) -> Trit {
 mod test {
     use super::*;
     use alloc::*;
-    use types::*;
+    use string::char_to_trits;
 
     #[test]
     fn test_trit_bc() {
         let t = "H";
-        let bct: Vec<BCTrit> = t.trits();
+        let bct: Vec<BCTrit> = t.chars().flat_map(char_to_trits).cloned().map(trit_to_bct).collect();
 
         let high = usize::max_value();
         let low = usize::min_value();
