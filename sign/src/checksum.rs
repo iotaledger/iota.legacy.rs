@@ -1,5 +1,4 @@
 use alloc::vec::Vec;
-use core::result::Result;
 
 use trytes::*;
 use curl::*;
@@ -8,28 +7,49 @@ use curl_cpu::*;
 pub const CHECKSUM_LEN: usize = 9;
 const CHECKSUM_TRITS: usize = CHECKSUM_LEN * TRITS_PER_TRYTE;
 
-pub trait Checksum {
-    fn checksum(&self) -> Vec<Trit>;
-    fn with_checksum(&self) -> Vec<Trit>;
+pub fn trits_checksum<'a, T>(t: &'a [T]) -> Vec<T>
+where
+    T: Clone + Copy + Sized,
+    CpuCurl<T>: Curl<T>,
+{
+    let mut curl = CpuCurl::<T>::default();
+    curl.absorb(t);
+    curl.squeeze(CHECKSUM_TRITS)
 }
 
-impl<T> Checksum for T
+pub fn trits_with_checksum<'a, T>(t: &'a [T]) -> Vec<T>
 where
-    T: IntoTrits<Trit>,
+    T: Clone + Copy + Sized,
+    CpuCurl<T>: Curl<T>,
 {
-    fn checksum(&self) -> Vec<Trit> {
-        let mut curl = CpuCurl::<Trit>::default();
-        let trits: Vec<Trit> = self.trits();
-        curl.absorb(&trits);
-        curl.squeeze(CHECKSUM_TRITS)
+    let mut tc = t.to_vec();
+    tc.append(&mut trits_checksum(t));
+    tc
+}
+
+pub fn trits_without_checksum<'a, T>(t: &'a [T]) -> &'a [T] {
+    &t[0..t.len() - CHECKSUM_LEN]
+}
+
+pub fn trits_validate_checksum<'a, T>(t: &'a [T]) -> Option<ChecksumValidationError>
+where
+    T: Clone + Copy + Sized,
+    CpuCurl<T>: Curl<T>,
+    Vec<T>: PartialEq,
+{
+    use ChecksumValidationError::*;
+
+    if t.len() <= CHECKSUM_LEN {
+        return Some(InvalidLength);
     }
 
-    fn with_checksum(&self) -> Vec<Trit> {
-        let mut this = self.trits();
-        this.append(&mut self.checksum());
+    let (body, rest) = t.split_at(t.len() - CHECKSUM_LEN);
 
-        this
+    if !(trits_checksum(body) == rest.to_vec()) {
+        return Some(InvalidChecksum);
     }
+
+    None
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -40,133 +60,77 @@ pub enum ChecksumValidationError {
     InvalidChecksum,
 }
 
-trait FromTrinaryWithChecksum<T>
-where
-    T: FromTrits<Trit>,
-{
-    /// Verifies a Checksum. If it's valid it'll call `T::from_trits` with the input trinary without the final checksum.
-    fn from_trits_with_checksum(
-        trinary: &IntoTrits<Trit>,
-    ) -> Result<Result<T, T::Err>, ChecksumValidationError>;
-}
-
-impl<T> FromTrinaryWithChecksum<T> for T
-where
-    T: FromTrits<Trit>,
-{
-    fn from_trits_with_checksum(
-        trinary: &IntoTrits<Trit>,
-    ) -> Result<Result<T, T::Err>, ChecksumValidationError> {
-        if trinary.len_trits() <= CHECKSUM_LEN {
-            return Err(ChecksumValidationError::InvalidLength);
-        }
-
-        let trits: Vec<Trit> = trinary.trits();
-        let (base, provided_checksum) = trits.split_at(trits.len() - CHECKSUM_TRITS);
-
-        // Validate that input checksum matches computed checksum
-        let base_checksum: Vec<Trit> = base.checksum();
-        if base_checksum != provided_checksum {
-            return Err(ChecksumValidationError::InvalidChecksum);
-        }
-
-        // Checksums are valid.
-        Ok(Self::from_trits(&base))
-    }
-}
-
-trait ToTrinaryWithChecksum<T>
-where
-    T: IntoTrits<Trit>,
-{
-    fn to_trinary_with_checksum(&self) -> Vec<Trit>;
-}
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    #[derive(Debug)]
-    struct MyModel(Vec<Trit>);
-
-    #[derive(Debug, PartialEq, Eq)]
-    enum FromTrinaryError {
-        SomeError,
-    }
-
-    impl FromTrits<Trit> for MyModel {
-        type Err = FromTrinaryError;
-        fn from_trits(_: &[Trit]) -> Result<Self, Self::Err> {
-            Err(FromTrinaryError::SomeError)
-        }
-    }
-
-    #[test]
-    fn my_model_from() {
-        let t: Vec<Trit> = "ABC".trits();
-        let res = MyModel::from_trits(&t);
-        let res_checksum = MyModel::from_trits_with_checksum(&t);
-
-        assert_eq!(res.unwrap_err(), FromTrinaryError::SomeError);
-        assert_eq!(
-            res_checksum.unwrap_err(),
-            ChecksumValidationError::InvalidLength
-        );
-    }
 
     #[test]
     fn checksum_test_1() {
-        let c: Vec<Trit> = "FOXM9MUBX".trits();
+        let c: Vec<Trit> = "FOXM9MUBX"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
         let t: Vec<Trit> = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVA"
-            .trits();
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
         let combined: Vec<Trit> = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVAFOXM9MUBX"
-            .trits();
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        assert_eq!(t.checksum(), c);
-        assert_eq!(t.with_checksum(), combined);
+        assert_eq!(trits_checksum(t.as_slice()), c);
+        assert_eq!(trits_with_checksum(t.as_slice()), combined);
     }
 
     #[test]
     fn checksum_test_2() {
-        let c: Vec<Trit> = "9QTIWOWTY".trits();
+        let c: Vec<Trit> = "9QTIWOWTY"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
         let t: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL"
-            .trits();
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
         let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
-            .trits();
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        assert_eq!(t.checksum(), c);
-        assert_eq!(t.with_checksum(), combined);
+        assert_eq!(trits_checksum(t.as_slice()), c);
+        assert_eq!(trits_with_checksum(t.as_slice()), combined);
     }
 
     #[test]
-    fn from_trits_with_checksum_valid() {
-        let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
-            .trits();
-        let ex: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL"
-            .trits();
-
-        let result = Vec::<Trit>::from_trits_with_checksum(&combined);
-        let inner = result.unwrap();
-
-        assert_eq!(ex, inner.unwrap());
-    }
-
-    #[test]
-    fn from_trits_with_checksum_invalid() {
+    fn checksum_invalid() {
         let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTX"
-            .trits();
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
-        let result = Vec::<Trit>::from_trits_with_checksum(&combined);
-
-        assert_eq!(result, Err(ChecksumValidationError::InvalidChecksum));
+        assert_eq!(
+            trits_validate_checksum(combined.as_slice()),
+            Some(ChecksumValidationError::InvalidChecksum)
+        );
     }
 
     #[test]
-    fn from_trits_with_checksum_length() {
-        let combined: Vec<Trit> = "KTX".trits();
+    fn checksum_invalid_length() {
+        let combined: Vec<Trit> = "KTX".chars().flat_map(char_to_trits).cloned().collect();
 
-        let result = Vec::<Trit>::from_trits_with_checksum(&combined);
-
-        assert_eq!(result, Err(ChecksumValidationError::InvalidLength));
+        assert_eq!(
+            trits_validate_checksum(combined.as_slice()),
+            Some(ChecksumValidationError::InvalidLength)
+        );
     }
 }
