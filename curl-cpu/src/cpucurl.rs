@@ -32,7 +32,7 @@ where
     }
 
     fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
-        let mut out: Vec<T> = Vec::new();
+        let mut out: Vec<T> = Vec::with_capacity(trit_count);
 
         let hash_count = trit_count / HASH_LENGTH;
 
