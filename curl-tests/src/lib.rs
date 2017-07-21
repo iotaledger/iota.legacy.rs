@@ -39,9 +39,10 @@ mod inner {
         assert_eq!(hash, expected.to_vec());
 
         curl.reset();
+        /*let mut duplex_hash : Vec<A> = Vec::with_capacity((trans.len() ))
         curl.duplex(trans, hash.as_mut_slice());
         assert_eq!(trans.len(), hash.len());
-        assert_ne!(trans.to_vec(), hash);
+        assert_ne!(trans.to_vec(), hash);*/
     }
 
     pub fn hash_works1<A, B>(transformer: &TransformerFn<A>)
@@ -274,7 +275,7 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
         let trits: Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
-        let mut nonce: Vec<Trit> = vec![0; 3];
+        let mut nonce: Vec<Trit> = vec![0; core::cmp::min(trits.len(), HASH_LENGTH)];
         for security in 1u8..4u8 {
             assert!(
                 A::search(&trits, security, nonce.as_mut_slice()),

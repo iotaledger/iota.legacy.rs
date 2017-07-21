@@ -13,3 +13,6 @@ parallel = []
 iota-tmath = { path = "../tmath" }
 iota-trytes = { path = "../trytes" }
 iota-curl = { path = "../curl" }
+
+[dev-dependencies]
+iota-curl-tests = { path = "../curl-tests" }

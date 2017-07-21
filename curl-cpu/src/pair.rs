@@ -52,12 +52,13 @@ impl Default for CpuCurl<BCTrit> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::curl;
     use alloc::Vec;
+    use curl_tests;
+
 
     struct BCTritTransformer;
 
-    impl curl::tests::TransformerFn<BCTrit> for BCTritTransformer {
+    impl curl_tests::TransformerFn<BCTrit> for BCTritTransformer {
         fn transform(&self, t: &[Trit]) -> Vec<BCTrit> {
             t.iter().cloned().map(trit_to_bct).collect()
         }
@@ -65,6 +66,6 @@ mod tests {
 
     #[test]
     pub fn run_testsuite() {
-        curl::tests::run::<BCTrit, CpuCurl<BCTrit>> (&BCTritTransformer);
+        curl_tests::run::<BCTrit, CpuCurl<BCTrit>> (&BCTritTransformer);
     }
 }

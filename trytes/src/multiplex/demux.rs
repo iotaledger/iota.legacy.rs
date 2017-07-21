@@ -5,10 +5,12 @@ use core::cmp::min;
 use core::iter::ExactSizeIterator;
 
 
+#[derive(PartialEq, Clone, Eq)]
 pub struct TrinaryDemultiplexer<'a> {
     trits: &'a [BCTrit],
 }
 
+#[derive(PartialEq, Clone, Eq)]
 pub struct TrinaryDemultiplexerIter<'a> {
     pos: usize,
     idx: usize,

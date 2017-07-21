@@ -69,12 +69,14 @@ fn curl_pair(b: &mut Bencher) {
     let mut curl = CpuCurl::<BCTrit>::default();
     curl.reset();
     curl.absorb(&trits);
-    curl.squeeze(243);
+
+    let mut out = [(0, 0); HASH_LENGTH];
+    curl.squeeze(&mut out);
 
     b.iter(|| {
         curl.reset();
         curl.absorb(&trits);
-        curl.squeeze(243);
+        curl.squeeze(&mut out);
     })
 }
 
@@ -82,13 +84,14 @@ fn curl_pair(b: &mut Bencher) {
 fn curl_simple(b: &mut Bencher) {
     let trits: Vec<Trit> = TRINARY.chars().flat_map(char_to_trits).cloned().collect();
     let mut curl = CpuCurl::<Trit>::default();
+    let mut out = [0; HASH_LENGTH];
     curl.reset();
     curl.absorb(&trits);
-    curl.squeeze(243);
+    curl.squeeze(&mut out);
 
     b.iter(|| {
         curl.reset();
         curl.absorb(&trits);
-        curl.squeeze(243);
+        curl.squeeze(&mut out);
     })
 }
