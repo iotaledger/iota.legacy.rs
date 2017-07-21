@@ -24,6 +24,11 @@ mod inner {
         let hash: Vec<A> = curl.squeeze(HASH_LENGTH);
 
         assert_eq!(hash, expected.to_vec());
+
+        curl.reset();
+        let duplex_hash: Vec<A> = curl.duplex(trans);
+        assert_eq!(trans.len(), duplex_hash.len());
+        assert_ne!(trans.to_vec(), duplex_hash);
     }
 
     pub fn hash_works1<A, B>(transformer: &TransformerFn<A>)
