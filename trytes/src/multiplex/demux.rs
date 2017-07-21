@@ -45,7 +45,7 @@ impl<'a> ExactSizeIterator for TrinaryDemultiplexerIter<'a> {
     }
 }
 
-/// Demultiplexes a slice of `BCTrit` into separate `Vec<Trit>` again.
+/// Demultiplexes a slice of `BCTrit` into separate `Iterator<Item Trit>` again.
 impl<'a> TrinaryDemultiplexer<'a> {
     pub fn new(bct: &'a [BCTrit]) -> Self {
         TrinaryDemultiplexer { trits: bct }
@@ -90,7 +90,9 @@ mod test {
         multi += &t2;
         multi += &t3;
 
-        let ex = multi.extract();
+
+        let mut ex = vec![(0,0); multi.len_trits()];
+        multi.extract(&mut ex);
         let demux = TrinaryDemultiplexer::new(&ex);
 
         assert_eq!(multi.len(), demux.len());
@@ -107,7 +109,8 @@ mod test {
         multi += &t2;
         multi += &t3;
 
-        let ex = multi.extract();
+        let mut ex = vec![(0,0); multi.len_trits()];
+        multi.extract(&mut ex);
         let demux = TrinaryDemultiplexer::new(&ex);
 
         for i in 0..multi.len() {

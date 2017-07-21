@@ -1,7 +1,9 @@
 #![no_std]
-#![feature(alloc)]
+#![cfg_attr(any(feature = "alloc", test), feature(alloc))]
 
 #[allow(unused_imports)]
+
+#[cfg(any(test, feature = "alloc"))]
 #[macro_use]
 extern crate alloc;
 

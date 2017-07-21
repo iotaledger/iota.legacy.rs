@@ -2,10 +2,10 @@ use constants::*;
 use multiplex::constants::*;
 
 use core::ops::AddAssign;
-use alloc::Vec;
 
 pub struct TrinaryMultiplexer<'a> {
-    trinaries: Vec<&'a [Trit]>,
+    trinaries: [&'a [Trit]; MAX_TRINARIES],
+    idx: usize,
 }
 
 impl<'a> AddAssign<&'a [Trit]> for TrinaryMultiplexer<'a> {
@@ -38,28 +38,35 @@ impl<'a> Iterator for TrinaryMultiplexerIter<'a> {
     }
 }
 
+static EMPTY_MUX: [Trit; 1] = [0];
+
 /// A helper class to encode multiple `Trinary` in a single vector of `BCTrit`
 /// Essentially: for the i-th `Trit` in a `Trinary`, the i-th bit of the `BCTrit` is set to the corresponding bit representation.
 impl<'a> TrinaryMultiplexer<'a> {
     pub fn new() -> Self {
-        TrinaryMultiplexer { trinaries: Vec::new() }
+        TrinaryMultiplexer {
+            trinaries: [&EMPTY_MUX; MAX_TRINARIES],
+            idx: 0,
+        }
     }
 
     /// Adds a `Trinary` to the multiplexer.
     /// This will `assert!` that `len() != max_len()`
     pub fn add(&mut self, t: &'a [Trit]) -> usize {
         assert!(
-            self.trinaries.len() < Self::max_len(),
+            self.idx <= Self::max_len(),
             "Maximum supported number of trinaries already being multiplexed."
         );
 
         assert!(
-            self.trinaries.len() == 0 || t.len() == self.trinaries[0].len(),
+            self.idx == 0 || (self.trinaries.len() == 0 || t.len() == self.trinaries[0].len()),
             "Different Trinary trit lengths are not supported."
         );
 
-        self.trinaries.push(t);
-        self.trinaries.len()
+        self.trinaries[self.idx] = t;
+        self.idx += 1;
+
+        self.idx - 1
     }
 
     pub fn get(&self, idx: usize) -> &'a [Trit] {
@@ -77,21 +84,30 @@ impl<'a> TrinaryMultiplexer<'a> {
 
     /// Returns how many `Trinary` are currently being multiplexed.
     pub fn len(&self) -> usize {
-        self.trinaries.len()
+        self.idx - 1
+    }
+
+    pub fn len_trits(&self) -> usize {
+        assert!(
+            self.idx > 0,
+            "No multiplex target was added before calling len_trits()."
+        );
+        self.trinaries[0].len()
     }
 
     /// Performs the actual multiplexing.
     /// Returns a multiplexed vector of `BCTrit`.
-    pub fn extract(&self) -> Vec<BCTrit> {
-        Self::disjoint_to_multiplexed(self.trinaries.as_slice())
+    pub fn extract(&self, out: &mut [BCTrit]) {
+        assert!(
+            out.len() == self.len_trits(),
+            "Extraction target is not of correct length."
+        );
+        Self::disjoint_to_multiplexed(self.len(), &self.trinaries, out);
     }
 
     /// Internal method for the multiplexing logic.
-    fn disjoint_to_multiplexed(trits: &[&[Trit]]) -> Vec<BCTrit> {
+    fn disjoint_to_multiplexed(trinary_count: usize, trits: &[&[Trit]], out: &mut [BCTrit]) {
         let trit_count = trits[0].len();
-        let trinary_count = trits.len();
-
-        let mut out: Vec<BCTrit> = Vec::with_capacity(trit_count);
 
         for i in 0..trit_count {
             let (mut low, mut high): BCTrit = (0, 0);
@@ -112,10 +128,8 @@ impl<'a> TrinaryMultiplexer<'a> {
                 }
             }
 
-            out.push((low, high));
+            out[i] = (low, high);
         }
-
-        out
     }
 }
 
@@ -123,6 +137,7 @@ impl<'a> TrinaryMultiplexer<'a> {
 mod test {
     use super::*;
     use string::*;
+    use alloc::Vec;
 
     // demux is already testing the other functionality
 

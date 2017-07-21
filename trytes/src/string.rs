@@ -1,3 +1,4 @@
+#[cfg(any(test, feature = "alloc"))]
 use alloc::string::String;
 
 use constants::*;
@@ -26,6 +27,7 @@ pub fn trits_to_char(trits: &[Trit]) -> char {
     }
 }
 
+#[cfg(any(test, feature = "alloc"))]
 pub fn trits_to_string(t: &[Trit]) -> Option<String> {
     if t.len() % 3 != 0 {
         return None;
