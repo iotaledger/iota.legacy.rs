@@ -239,16 +239,14 @@ mod inner {
 
         let trits: Vec<Trit> = trans.chars().flat_map(char_to_trits).cloned().collect();
         let mut nonce: Vec<Trit> = vec![0; HASH_LENGTH];
-        assert!(
-            A::search(
-                &trits,
-                min_weight,
-                nonce.as_mut_slice(),
-                &mut tcurl,
-                &mut bcurl,
-            ),
-            "Some PoW Failure."
-        );
+        A::search(
+            &trits,
+            min_weight,
+            nonce.as_mut_slice(),
+            &mut tcurl,
+            &mut bcurl,
+        ).expect("Some PoW Failure.");
+
         tcurl.reset();
 
         let final_t: Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
@@ -294,16 +292,14 @@ mod inner {
             tcurl.reset();
             bcurl.reset();
 
-            assert!(
-                A::search(
-                    &trits,
-                    security,
-                    nonce.as_mut_slice(),
-                    &mut tcurl,
-                    &mut bcurl,
-                ),
-                "Some Search Failure."
-            );
+            A::search(
+                &trits,
+                security,
+                HASH_LENGTH,
+                nonce.as_mut_slice(),
+                &mut tcurl,
+                &mut bcurl,
+            ).expect("Some Search Failure.");
 
             let len_trits = {
                 let l = (trits.len() / TRITS_PER_TRYTE) as isize;

@@ -46,7 +46,7 @@ pub trait ProofOfWork<T: Copy> {
         out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
-    ) -> bool;
+    ) -> Option<usize>;
 }
 
 pub trait HammingNonce<T: Copy> {
@@ -60,8 +60,9 @@ pub trait HammingNonce<T: Copy> {
     fn search<C: Curl<T>, CB: Curl<BCTrit>>(
         input: &[T],
         security: u8,
+        length: usize,
         out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
-    ) -> bool;
+    ) -> Option<usize>;
 }

@@ -29,18 +29,22 @@ impl HammingNonce<Trit> for CpuHam {
     fn search<C: Curl<Trit>, CB: Curl<BCTrit>>(
         input: &[Trit],
         security: u8,
+        length: usize,
         out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
-    ) -> bool {
+    ) -> Option<usize> {
         let mut bct: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
         prepare_search(input, &mut bct, tcurl);
 
-        search_cpu(&mut bct, out, bcurl, 0, move |t: &[BCTrit]| {
+        search_cpu(&mut bct, length, out, bcurl, 0, move |t: &[BCTrit]| {
             let mux = TrinaryDemultiplexer::new(t);
             for i in 0..mux.len() {
-                if mux.get(i).take(security as usize * t.len() / 3).sum::<Trit>() == 0 {
+                if mux.get(i)
+                    .take(security as usize * t.len() / 3)
+                    .sum::<Trit>() == 0
+                {
                     return Some(i);
                 }
             }

@@ -28,13 +28,13 @@ impl ProofOfWork<Trit> for CpuPoW {
         out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
-    ) -> bool {
+    ) -> Option<usize> {
         let mut bct: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
         tcurl.reset();
 
         prepare_search(input, &mut bct, tcurl);
-        search_cpu(&mut bct, out, bcurl, 0, move |t: &[BCTrit]| {
+        search_cpu(&mut bct, HASH_LENGTH, out, bcurl, 0, move |t: &[BCTrit]| {
             let mut probe = usize::max_value();
             let wt: usize = weight as usize;
             let start = t.len() - wt;

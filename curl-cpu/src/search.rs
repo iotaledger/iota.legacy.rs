@@ -8,15 +8,15 @@ mod cpu_search {
     use tmath::*;
     pub fn search_cpu<F, CB: Curl<BCTrit> + Copy>(
         input: &mut [BCTrit],
+        length: usize,
         out: &mut [Trit],
         curl: &mut CB,
         group: usize,
         check: F,
-    ) -> bool
+    ) -> Option<usize> 
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
     {
-        let length = out.len();
         curl.state_mut().clone_from_slice(input);
         let mut size = min(length, HASH_LENGTH);
         for _ in 0..group {
@@ -43,7 +43,7 @@ mod cpu_search {
             out[i] = v;
         }
 
-        true
+        Some(size)
     }
 }
 
