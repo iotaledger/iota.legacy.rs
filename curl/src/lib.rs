@@ -30,6 +30,8 @@ where
     fn absorb(&mut self, trits: &[T]);
     /// Squeeze the sponge and return a `Vec<T>` with `trit_count` trits
     fn squeeze(&mut self, count: usize) -> Vec<T>;
+    /// Duplexes the sponge, absorbing a `&[Trit]` and returning a `Vec<T>` with `trit_count` trits
+    fn duplex(&mut self, trits: &[T]) -> Vec<T>;
     /// Exposes the first HASH_LENGTH trits of a state
     fn rate(&self) -> &[T];
 }

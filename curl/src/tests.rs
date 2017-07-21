@@ -32,7 +32,7 @@ mod inner {
         B: Curl<A>,
     {
 
-        let trans : Vec<Trit> = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
+        let trans: Vec<Trit> = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
                                    RZBPKRKQAIPGOHBTHTGYXTBJLSURDSPEOJ9UKJECUKCCPVIQQHDUYKVKISCE\
                                    IEGVOQWRBAYXWGSJUTEVG9RPQLPTKYCRAJ9YNCUMDVDYDQCKRJOAPXCSUDAJ\
@@ -82,7 +82,7 @@ mod inner {
             .cloned()
             .collect();
 
-        let hash : Vec<Trit> = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
+        let hash: Vec<Trit> = "KXRVLFETGUTUWBCNCC9DWO99JQTEI9YXVOZHWELSYP9SG9KN9WCKXOVTEFHFH\
                                  9EFZJKFYCZKQPPBXYSGJ"
             .chars()
             .flat_map(char_to_trits)
@@ -100,7 +100,7 @@ mod inner {
         A: Copy + PartialEq + fmt::Debug,
         B: Curl<A>,
     {
-        let trans : Vec<Trit> = "9999999999999999999999999999999999999999999999999999999999999\
+        let trans: Vec<Trit> = "9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
                               9999999999999999999999999999999999999999999999999999999999999\
@@ -149,7 +149,7 @@ mod inner {
             .cloned()
             .collect();
 
-        let hash : Vec<Trit> = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
+        let hash: Vec<Trit> = "TAQCQAEBHLLYKAZWMNSXUPWQICMFSKWPEGQBNM9AQMGLFZGME9REOZTQIJQRKYH\
                              DANIYSMFYPVABX9999"
             .chars()
             .flat_map(char_to_trits)

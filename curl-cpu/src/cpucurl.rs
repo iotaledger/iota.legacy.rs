@@ -42,6 +42,21 @@ where
         }
 
         out.extend_from_slice(&self.state[0..(trit_count - hash_count * HASH_LENGTH)]);
+        if trit_count % HASH_LENGTH != 0 {
+            Sponge::transform(self);
+        }
+
+        out
+    }
+
+    fn duplex(&mut self, trits: &[T]) -> Vec<T> {
+        let mut out: Vec<T> = Vec::new();
+
+        for c in trits.chunks(HASH_LENGTH) {
+            self.state[0..c.len()].clone_from_slice(c);
+            out.extend_from_slice(&self.state[0..HASH_LENGTH]);
+            Sponge::transform(self);
+        }
 
         out
     }
