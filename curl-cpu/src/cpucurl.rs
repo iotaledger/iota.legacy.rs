@@ -50,7 +50,7 @@ where
     }
 
     fn duplex(&mut self, trits: &[T]) -> Vec<T> {
-        let mut out: Vec<T> = Vec::new();
+        let mut out: Vec<T> = Vec::with_capacity(trits.len());
 
         for c in trits.chunks(HASH_LENGTH) {
             self.state[0..c.len()].clone_from_slice(c);
