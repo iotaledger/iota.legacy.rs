@@ -7,4 +7,6 @@ authors = [
         "Andreas C. Osowski <andreas@osowski.de>"
         ]
 
-[dependencies]
+[features]
+default = []
+alloc = []

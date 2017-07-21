@@ -19,7 +19,7 @@ test = false
 default = []
 
 [dependencies]
-iota-trytes = { path = "../trytes" }
+iota-trytes = { path = "../trytes", features = ["alloc"] }
 iota-curl = { path = "../curl" }
 iota-curl-cpu = { path = "../curl-cpu" }
 iota-sign = { path = "../sign" }

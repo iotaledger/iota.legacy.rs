@@ -3,53 +3,46 @@ use cpucurl::CpuCurl;
 use tmath::*;
 use trytes::*;
 use search::*;
-use alloc::*;
 
 pub struct CpuHam;
 
-fn prepare_search(input: &[Trit]) -> Vec<BCTrit> {
+fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
     let mut curl = CpuCurl::<Trit>::default();
-    let length_trits: Vec<Trit> = {
+    let mut space = [0 as Trit; 128];
+
+    let length_trits: &[Trit] = {
         let l = (input.len() / TRITS_PER_TRYTE) as isize;
-        num::int2trits(l, num::min_trits(l))
+        let min = num::min_trits(l);
+        num::int2trits(l, &mut space[0..min]);
+        &space[0..min]
     };
-    curl.absorb(length_trits.as_slice());
+
+    curl.absorb(length_trits);
     curl.absorb(input);
-    let mut state: Vec<BCTrit> = curl.state.iter().cloned().map(trit_to_bct).collect();
-    (&mut state[0..4]).offset();
-    state
+
+    for (&t, mut bct) in curl.state.iter().zip(out.iter_mut()) {
+        *bct = trit_to_bct(t);
+    }
+
+    (&mut out[0..4]).offset();
 }
 
 impl HammingNonce<Trit> for CpuHam {
-    fn search(input: &[Trit], length: u8, security: u8) -> Option<Vec<Trit>> {
-        let state = prepare_search(input);
-        search_cpu(state.as_slice(), length as usize, 0, move |t: &[BCTrit]| {
+    fn search(input: &[Trit], security: u8, out: &mut [Trit]) -> bool {
+        let mut bct: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
+        prepare_search(input, &mut bct);
+
+        search_cpu(&mut bct, out, 0, move |t: &[BCTrit]| {
             let mux = TrinaryDemultiplexer::new(t);
             for i in 0..mux.len() {
-                let trits: Vec<Trit> = mux.get(i).collect();
-                match security {
-                    1 => {
-                        if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) == 0 {
-                            return Some(i);
-                        }
-                    }
-                    2 => {
-                        if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) != 0 {
-                            if trits[..(2 * t.len() / 3)].iter().fold(0, |acc, x| acc + x) == 0 {
-                                return Some(i);
-                            }
-                        }
-                    }
-                    3 => {
-                        if trits[..(t.len() / 3)].iter().fold(0, |acc, x| acc + x) != 0 {
-                            if trits[..(2 * t.len() / 3)].iter().fold(0, |acc, x| acc + x) != 0 {
-                                if trits.iter().fold(0, |acc, x| acc + x) == 0 {
-                                    return Some(i);
-                                }
-                            }
-                        }
-                    }
-                    _ => {}
+                if mux.get(i).take(security as usize * t.len() / 3).fold(
+                    0,
+                    |acc, x| {
+                        acc + x
+                    },
+                ) == 0
+                {
+                    return Some(i);
                 }
             }
             None
@@ -60,12 +53,12 @@ impl HammingNonce<Trit> for CpuHam {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::curl;
     use cpucurl::*;
+    use curl_tests;
 
     #[test]
     pub fn run_testsuite() {
-        curl::tests::run_ham_search::<CpuHam, CpuCurl<Trit>>();
+        curl_tests::run_ham_search::<CpuHam, CpuCurl<Trit>>();
     }
 
 }

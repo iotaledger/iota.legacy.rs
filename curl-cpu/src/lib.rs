@@ -1,12 +1,22 @@
-#![feature(alloc)]
+#![cfg_attr(test, feature(alloc))]
 #![no_std]
-extern crate alloc;
+
 #[cfg(feature = "parallel")]
+#[macro_use]
 extern crate std;
+
+#[cfg(feature = "parallel")]
+extern crate num_cpus;
+
+#[cfg(test)]
+extern crate alloc;
 
 extern crate iota_trytes as trytes;
 extern crate iota_tmath as tmath;
 extern crate iota_curl as curl;
+
+#[cfg(test)]
+extern crate iota_curl_tests as curl_tests;
 
 mod indices;
 mod search;

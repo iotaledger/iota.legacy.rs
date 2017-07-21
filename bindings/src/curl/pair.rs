@@ -40,9 +40,12 @@ pub fn curl_pair_reset(c_curl: *mut c_void) {
 }
 
 #[no_mangle]
-pub fn curl_pair_squeeze(c_curl: *mut c_void, trit_count: isize) -> *const u8 {
+pub fn curl_pair_squeeze(c_curl: *mut c_void, trit_count: usize) -> *const u8 {
     let curl: &mut CpuCurl<BCTrit> = unsafe { &mut *(c_curl as *mut CpuCurl<BCTrit>) };
-    let bctrits = curl.squeeze(trit_count as usize);
+
+
+    let mut bctrits = vec![(0,0); trit_count];
+    curl.squeeze(&mut bctrits);
 
     let trits : Vec<Trit> = bctrits.into_iter().map(bct_to_trit).collect();
     let trinary_str = Box::new(trits_to_string(trits.as_slice()).unwrap() + "\0");

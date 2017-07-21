@@ -1,17 +1,17 @@
 use trytes::*;
 use cpucurl::*;
 use core::cmp::min;
-use alloc::Vec;
 
 #[cfg(not(feature = "parallel"))]
 mod cpu_search {
     use super::*;
     use curl::{Curl, Sponge};
     use tmath::*;
-    pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Vec<Trit>>
+    pub fn search_cpu<F>(input: &mut [BCTrit], out: &mut [Trit], group: usize, check: F) -> bool
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
     {
+        let length = out.len();
         let mut curl = CpuCurl::<BCTrit>::default();
         curl.state.clone_from_slice(input);
         let mut size = min(length, HASH_LENGTH);
@@ -31,31 +31,42 @@ mod cpu_search {
             index = check(&cpy.state[..HASH_LENGTH]);
         }
 
-        let squeezed = curl.squeeze(size);
-        let mux = TrinaryDemultiplexer::new(&squeezed);
 
-        Some(mux.get(index.unwrap()).collect())
+        curl.squeeze(&mut input[0..size]);
+        let mux = TrinaryDemultiplexer::new(&input[0..size]);
+
+        for (i, v) in mux.get(index.unwrap()).enumerate() {
+            out[i] = v;
+        }
+
+        true
     }
 }
 
 #[cfg(feature = "parallel")]
 mod cpu_search {
     use super::*;
-    use tmath::*;
-    use curl::{Curl, Sponge};
     use std::thread;
     use std::sync::mpsc::channel;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
+    use std::vec::Vec;
     use core::marker::*;
-    pub fn search_cpu<F>(input: &[BCTrit], length: usize, group: usize, check: F) -> Option<Trinary>
+    use num_cpus;
+
+    use tmath::*;
+    use curl::{Curl, Sponge};
+
+    pub fn search_cpu<F>(input: &mut [BCTrit], out: &mut [Trit], group: usize, check: F) -> bool
     where
         F: Fn(&[BCTrit]) -> Option<usize> + 'static + Send + Sync,
     {
+        let length = out.len();
         let running = AtomicBool::new(true);
         let check_arc = Arc::new(check);
+        let running_arc = Arc::new(running);
         let (tx, rx) = channel();
-        let handles: Vec<thread::JoinHandle<_>> = (0..8)
+        let handles: Vec<thread::JoinHandle<_>> = (0..num_cpus::get())
             .into_iter()
             .map(|i| {
                 let mut curl = CpuCurl::<BCTrit>::default();
@@ -64,12 +75,14 @@ mod cpu_search {
                 let child_tx = tx.clone();
                 let child_group = i + group;
                 let check_clone = check_arc.clone();
+                let running_clone = running_arc.clone();
+
                 thread::spawn(move || {
                     for _ in 0..child_group {
                         (&mut curl.state[(size / 3)..(size * 2 / 3)]).incr();
                     }
                     let mut index: Option<usize> = None;
-                    while index.is_none() && running.load(Ordering::SeqCst) {
+                    while index.is_none() && running_clone.load(Ordering::SeqCst) {
                         size = min(
                             num::round_third(
                                 size * 2 / 3 + (&mut curl.state[(size * 2 / 3)..size]).incr(),
@@ -80,10 +93,12 @@ mod cpu_search {
                         cpy.transform();
                         index = check_clone(&cpy.state[..HASH_LENGTH]);
                     }
-                    if running.load(Ordering::SeqCst) && index.is_some() {
-                        running.store(false, Ordering::SeqCst);
-                        let mux = TrinaryDemultiplexer::new(curl.squeeze(size).as_slice());
-                        child_tx.send(Some(mux[index.unwrap()].clone())).unwrap();
+                    if running_clone.load(Ordering::SeqCst) && index.is_some() {
+                        running_clone.store(false, Ordering::SeqCst);
+                        let mut tmp = vec![(0,0); size];
+                        curl.squeeze(tmp.as_mut_slice());
+                        let mux = TrinaryDemultiplexer::new(tmp.as_slice());
+                        child_tx.send(mux.get(index.unwrap()).collect::<Vec<Trit>>()).unwrap();
                     }
                 })
             })
@@ -91,7 +106,13 @@ mod cpu_search {
         for h in handles {
             h.join().unwrap();
         }
-        rx.recv().unwrap()
+
+        if let Some(nonce) = rx.recv().ok() {
+            out.clone_from_slice(nonce.as_slice());
+            true
+        } else {
+            false
+        }
     }
 }
 

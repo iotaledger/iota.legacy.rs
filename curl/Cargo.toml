@@ -5,8 +5,5 @@ authors = ["Paul D Handy <paul@pauldhandy.com>",
            "Andreas C. Osowski <andreas@osowski.de>"]
 keywords = ["no_std"]
 
-[features]
-default = []
-
 [dependencies]
 iota-trytes = { path = "../trytes" }

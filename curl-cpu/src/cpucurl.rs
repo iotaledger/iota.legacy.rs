@@ -1,6 +1,5 @@
 use trytes::*;
 use curl::*;
-use alloc::Vec;
 
 #[derive(Copy)]
 pub struct CpuCurl<T>
@@ -31,34 +30,35 @@ where
         }
     }
 
-    fn squeeze(&mut self, trit_count: usize) -> Vec<T> {
-        let mut out: Vec<T> = Vec::with_capacity(trit_count);
-
+    fn squeeze(&mut self, out: &mut [T]) {
+        let trit_count = out.len();
         let hash_count = trit_count / HASH_LENGTH;
 
-        for _ in 0..hash_count {
-            out.extend_from_slice(&self.state[0..HASH_LENGTH]);
+        for i in 0..hash_count {
+            out[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
+                .clone_from_slice(&self.state[0..HASH_LENGTH]);
             Sponge::transform(self);
         }
 
-        out.extend_from_slice(&self.state[0..(trit_count - hash_count * HASH_LENGTH)]);
+        let last = trit_count - hash_count * HASH_LENGTH;
+        out[trit_count - last..].clone_from_slice(&self.state[0..last]);
         if trit_count % HASH_LENGTH != 0 {
             Sponge::transform(self);
         }
-
-        out
     }
 
-    fn duplex(&mut self, trits: &[T]) -> Vec<T> {
-        let mut out: Vec<T> = Vec::with_capacity(trits.len());
+    fn duplex(&mut self, trits: &[T], out: &mut [T]) {
+        assert!(
+            out.len() % HASH_LENGTH == 0,
+            "Output length must be a multiple of HASH_LENGTH"
+        );
 
-        for c in trits.chunks(HASH_LENGTH) {
+        for (i, c) in trits.chunks(HASH_LENGTH).enumerate() {
             self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);
-            out.extend_from_slice(&self.state[0..HASH_LENGTH]);
+            out[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
+                .clone_from_slice(&self.state[0..HASH_LENGTH]);
         }
-
-        out
     }
 
     fn rate(&self) -> &[T] {
