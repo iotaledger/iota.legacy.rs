@@ -107,16 +107,14 @@ where
 }
 
 pub fn checksum_security(hash: &[Trit]) -> usize {
-    match hash[..(HASH_LENGTH / 3)].iter().fold(0, |acc, &i| acc + i) {
+    match hash[..(HASH_LENGTH / 3)].iter().sum() {
         0 => 1,
         _ => {
-            match hash[..(2 * HASH_LENGTH / 3)].iter().fold(
-                0,
-                |acc, &i| acc + i,
-            ) {
+            match hash[..(2 * HASH_LENGTH / 3)].iter().sum()
+             {
                 0 => 2,
                 _ => {
-                    match hash.iter().fold(0, |acc, i| acc + i) {
+                    match hash.iter().sum() {
                         0 => 3,
                         _ => 0,
                     }

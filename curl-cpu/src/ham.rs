@@ -40,13 +40,7 @@ impl HammingNonce<Trit> for CpuHam {
         search_cpu(&mut bct, out, bcurl, 0, move |t: &[BCTrit]| {
             let mux = TrinaryDemultiplexer::new(t);
             for i in 0..mux.len() {
-                if mux.get(i).take(security as usize * t.len() / 3).fold(
-                    0,
-                    |acc, x| {
-                        acc + x
-                    },
-                ) == 0
-                {
+                if mux.get(i).take(security as usize * t.len() / 3).sum::<Trit>() == 0 {
                     return Some(i);
                 }
             }
