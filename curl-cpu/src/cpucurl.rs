@@ -53,9 +53,9 @@ where
         let mut out: Vec<T> = Vec::new();
 
         for c in trits.chunks(HASH_LENGTH) {
-            out.extend_from_slice(&self.state[0..HASH_LENGTH]);
             self.state[0..c.len()].clone_from_slice(c);
             Sponge::transform(self);
+            out.extend_from_slice(&self.state[0..HASH_LENGTH]);
         }
 
         out
