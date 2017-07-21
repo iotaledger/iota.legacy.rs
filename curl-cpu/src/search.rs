@@ -63,15 +63,15 @@ mod cpu_search {
 
     pub fn search_cpu<F, CB: Curl<BCTrit>>(
         input: &mut [BCTrit],
+        length: usize,
         out: &mut [Trit],
         curl: &mut CB,
         group: usize,
         check: F,
-    ) -> bool
+    ) -> Option<usize>
     where
         F: Fn(&[BCTrit]) -> Option<usize> + 'static + Send + Sync,
     {
-        let length = out.len();
         let running = AtomicBool::new(true);
         let check_arc = Arc::new(check);
         let running_arc = Arc::new(running);
@@ -121,9 +121,9 @@ mod cpu_search {
 
         if let Some(nonce) = rx.recv().ok() {
             out.clone_from_slice(nonce.as_slice());
-            true
+            Some(nonce.len())
         } else {
-            false
+            None
         }
     }
 }
