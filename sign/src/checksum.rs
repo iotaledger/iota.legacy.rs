@@ -1,16 +1,15 @@
 use curl::*;
-use curl_cpu::*;
 use trytes::TRITS_PER_TRYTE;
 
 pub const CHECKSUM_TRYTES : usize = 9;
 pub const CHECKSUM_LEN: usize = CHECKSUM_TRYTES * TRITS_PER_TRYTE;
 
-pub fn trits_checksum<'a, T>(t: &'a [T], out: &mut [T])
+pub fn trits_checksum<'a, T, C>(t: &'a [T], out: &mut [T], curl: &mut C)
 where
     T: Clone + Copy + Sized,
-    CpuCurl<T>: Curl<T>,
+    C: Curl<T>,
 {
-    let mut curl = CpuCurl::<T>::default();
+    assert_eq!(out.len(), CHECKSUM_LEN);
     curl.absorb(t);
     curl.squeeze(out)
 }
@@ -19,10 +18,10 @@ pub fn trits_without_checksum<'a, T>(t: &'a [T]) -> &'a [T] {
     &t[0..t.len() - CHECKSUM_LEN]
 }
 
-pub fn trits_validate_checksum<'a, T>(t: &'a [T]) -> Option<ChecksumValidationError>
+pub fn trits_validate_checksum<'a, T, C>(t: &'a [T], curl: &mut C) -> Option<ChecksumValidationError>
 where
     T: Clone + Copy + Sized + PartialEq,
-    CpuCurl<T>: Curl<T>,
+    C: Curl<T>
 {
     use ChecksumValidationError::*;
 
@@ -34,7 +33,7 @@ where
     let (body, rest) = t.split_at(t.len() - CHECKSUM_LEN);
 
     let mut checksum = [t[0]; CHECKSUM_LEN];
-    trits_checksum(body, &mut checksum);
+    trits_checksum(body, &mut checksum, curl);
 
     if rest != checksum {
         return Some(InvalidChecksum);
@@ -55,6 +54,7 @@ pub enum ChecksumValidationError {
 #[cfg(test)]
 mod test {
     use super::*;
+    use curl_cpu::*;
     use trytes::*;
     use alloc::vec::Vec;
 
@@ -72,7 +72,8 @@ mod test {
             .collect();
 
         let mut checksum = [0 as Trit; CHECKSUM_LEN];
-        trits_checksum(t.as_slice(), &mut checksum);
+        let mut curl = CpuCurl::<Trit>::default();
+        trits_checksum(t.as_slice(), &mut checksum, &mut curl);
         assert_eq!(c.as_slice(), checksum);
     }
 
@@ -90,7 +91,8 @@ mod test {
             .collect();
 
         let mut checksum = [0 as Trit; CHECKSUM_LEN];
-        trits_checksum(t.as_slice(), &mut checksum);
+        let mut curl = CpuCurl::<Trit>::default();
+        trits_checksum(t.as_slice(), &mut checksum, &mut curl);
         assert_eq!(c.as_slice(), checksum);
     }
 
@@ -102,8 +104,9 @@ mod test {
             .cloned()
             .collect();
 
+        let mut curl = CpuCurl::<Trit>::default();
         assert_eq!(
-            trits_validate_checksum(combined.as_slice()),
+            trits_validate_checksum(combined.as_slice(), &mut curl),
             Some(ChecksumValidationError::InvalidChecksum)
         );
     }
@@ -111,9 +114,10 @@ mod test {
     #[test]
     fn checksum_invalid_length() {
         let combined: Vec<Trit> = "KTX".chars().flat_map(char_to_trits).cloned().collect();
+        let mut curl = CpuCurl::<Trit>::default();
 
         assert_eq!(
-            trits_validate_checksum(combined.as_slice()),
+            trits_validate_checksum(combined.as_slice(), &mut curl),
             Some(ChecksumValidationError::InvalidLength)
         );
     }
