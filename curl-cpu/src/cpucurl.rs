@@ -4,14 +4,14 @@ use curl::*;
 #[derive(Copy)]
 pub struct CpuCurl<T>
 where
-    T: Clone + Copy + Sized,
+    T: Clone + Copy + Sized + Send + 'static,
 {
     pub state: [T; STATE_LENGTH],
 }
 
 impl<T> Clone for CpuCurl<T>
 where
-    T: Clone + Copy + Sized,
+    T: Clone + Copy + Sized + Send + 'static,
 {
     fn clone(&self) -> Self {
         *self
@@ -20,7 +20,7 @@ where
 
 impl<T> Curl<T> for CpuCurl<T>
 where
-    T: Clone + Copy + Sized,
+    T: Clone + Copy + Sized + Send + 'static,
     CpuCurl<T>: Sponge + Default,
 {
     fn absorb(&mut self, trits: &[T]) {
@@ -63,5 +63,13 @@ where
 
     fn rate(&self) -> &[T] {
         &self.state[0..HASH_LENGTH]
+    }
+
+    fn state(&self) -> &[T] {
+        &self.state
+    }
+
+    fn state_mut(&mut self) -> &mut [T] {
+        &mut self.state
     }
 }

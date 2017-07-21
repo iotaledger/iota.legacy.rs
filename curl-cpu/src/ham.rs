@@ -1,13 +1,11 @@
 use curl::*;
-use cpucurl::CpuCurl;
 use tmath::*;
 use trytes::*;
 use search::*;
 
 pub struct CpuHam;
 
-fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
-    let mut curl = CpuCurl::<Trit>::default();
+fn prepare_search<C: Curl<Trit>>(input: &[Trit], out: &mut [BCTrit], curl: &mut C) {
     let mut space = [0 as Trit; 128];
 
     let length_trits: &[Trit] = {
@@ -20,7 +18,7 @@ fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
     curl.absorb(length_trits);
     curl.absorb(input);
 
-    for (&t, mut bct) in curl.state.iter().zip(out.iter_mut()) {
+    for (&t, mut bct) in curl.state().iter().zip(out.iter_mut()) {
         *bct = trit_to_bct(t);
     }
 
@@ -28,11 +26,18 @@ fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
 }
 
 impl HammingNonce<Trit> for CpuHam {
-    fn search(input: &[Trit], security: u8, out: &mut [Trit]) -> bool {
+    fn search<C: Curl<Trit>, CB: Curl<BCTrit>>(
+        input: &[Trit],
+        security: u8,
+        out: &mut [Trit],
+        tcurl: &mut C,
+        bcurl: &mut CB,
+    ) -> bool {
         let mut bct: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
-        prepare_search(input, &mut bct);
 
-        search_cpu(&mut bct, out, 0, move |t: &[BCTrit]| {
+        prepare_search(input, &mut bct, tcurl);
+
+        search_cpu(&mut bct, out, bcurl, 0, move |t: &[BCTrit]| {
             let mux = TrinaryDemultiplexer::new(t);
             for i in 0..mux.len() {
                 if mux.get(i).take(security as usize * t.len() / 3).fold(
@@ -58,7 +63,7 @@ mod tests {
 
     #[test]
     pub fn run_testsuite() {
-        curl_tests::run_ham_search::<CpuHam, CpuCurl<Trit>>();
+        curl_tests::run_ham_search::<CpuHam, CpuCurl<Trit>, CpuCurl<BCTrit>>();
     }
 
 }

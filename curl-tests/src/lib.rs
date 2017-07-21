@@ -181,10 +181,11 @@ mod inner {
         test_hash_eq::<A, B>(trans_t.as_slice(), hash_t.as_slice());
     }
 
-    pub fn test_pow<A, C>()
+    pub fn test_pow<A, CT, CB>()
     where
         A: ProofOfWork<Trit>,
-        C: Curl<Trit>,
+        CT: Curl<Trit>,
+        CB: Curl<BCTrit>,
     {
         let trans = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    WITXNCSBBDHEEKDRBHVTWCZ9SZOOZHVBPCQNPKTWFNZAWGCZ9QDIMKRVINMI\
@@ -233,12 +234,22 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
         let min_weight = 11u8;
+        let mut tcurl = CT::default();
+        let mut bcurl = CB::default();
+
         let trits: Vec<Trit> = trans.chars().flat_map(char_to_trits).cloned().collect();
         let mut nonce: Vec<Trit> = vec![0; HASH_LENGTH];
         assert!(
-            A::search(&trits, min_weight, nonce.as_mut_slice()),
+            A::search(
+                &trits,
+                min_weight,
+                nonce.as_mut_slice(),
+                &mut tcurl,
+                &mut bcurl,
+            ),
             "Some PoW Failure."
         );
+        tcurl.reset();
 
         let final_t: Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
             .into_iter()
@@ -246,11 +257,10 @@ mod inner {
             .chain(nonce)
             .collect();
 
-        let mut curl = C::default();
-        curl.absorb(&final_t);
+        tcurl.absorb(&final_t);
 
         let mut hash = vec![0; HASH_LENGTH];
-        curl.squeeze(hash.as_mut_slice());
+        tcurl.squeeze(hash.as_mut_slice());
 
         let weight: usize = hash[(HASH_LENGTH - min_weight as usize)..]
             .into_iter()
@@ -259,10 +269,11 @@ mod inner {
             .count();
         assert_eq!(weight, min_weight as usize);
     }
-    pub fn test_ham<A, C>()
+    pub fn test_ham<A, CT, CB>()
     where
         A: HammingNonce<Trit>,
-        C: Curl<Trit>,
+        CT: Curl<Trit>,
+        CB: Curl<BCTrit>,
     {
         let trytes = "RSWWSFXPQJUBJROQBRQZWZXZJWMUBVIVMHPPTYSNW9YQIQQF9RCSJJCVZG9Z\
                                    GBDXROXGH9MTNFSLWJZRAPOKKRGXAAQBFPYPAAXLSTMNSNDTTJQSDQORNJS9\
@@ -274,11 +285,23 @@ mod inner {
                                    BA9DFRQRLTLUJENKESDGTZRGRSLTNYTITXRXRGVLWBTEWPJXZYLGHLQBAVYV\
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
+        let mut tcurl = CT::default();
+        let mut bcurl = CB::default();
+
         let trits: Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
         let mut nonce: Vec<Trit> = vec![0; core::cmp::min(trits.len(), HASH_LENGTH)];
         for security in 1u8..4u8 {
+            tcurl.reset();
+            bcurl.reset();
+
             assert!(
-                A::search(&trits, security, nonce.as_mut_slice()),
+                A::search(
+                    &trits,
+                    security,
+                    nonce.as_mut_slice(),
+                    &mut tcurl,
+                    &mut bcurl,
+                ),
                 "Some Search Failure."
             );
 
@@ -289,12 +312,13 @@ mod inner {
                 out
             };
 
-            let mut curl = C::default();
-            curl.absorb(len_trits.as_slice());
-            curl.absorb(trits.as_slice());
-            curl.absorb(nonce.as_slice());
+            tcurl.reset();
+
+            tcurl.absorb(&len_trits);
+            tcurl.absorb(&trits);
+            tcurl.absorb(&nonce);
             let mut hash = vec![0 as Trit; security as usize * HASH_LENGTH / 3];
-            curl.squeeze(hash.as_mut_slice());
+            tcurl.squeeze(&mut hash);
 
             let hash_security = {
                 let mut sum = 0;
@@ -319,6 +343,7 @@ mod inner {
                     }
                 }
             };
+
             assert_eq!(hash_security, security);
         }
     }
@@ -334,18 +359,20 @@ where
     inner::hash_works2::<A, B>(transformer);
 }
 
-pub fn run_search<A, C>()
+pub fn run_search<A, CT, CB>()
 where
     A: ProofOfWork<Trit>,
-    C: Curl<Trit>,
+    CT: Curl<Trit>,
+    CB: Curl<BCTrit>,
 {
-    inner::test_pow::<A, C>();
+    inner::test_pow::<A, CT, CB>();
 }
 
-pub fn run_ham_search<A, C>()
+pub fn run_ham_search<A, CT, CB>()
 where
     A: HammingNonce<Trit>,
-    C: Curl<Trit>,
+    CT: Curl<Trit>,
+    CB: Curl<BCTrit>,
 {
-    inner::test_ham::<A, C>();
+    inner::test_ham::<A, CT, CB>();
 }

@@ -38,8 +38,7 @@ impl Sponge for CpuCurl<Trit> {
 
 impl Default for CpuCurl<Trit> {
     fn default() -> Self {
-        let x: Trit = 0 as Trit;
-        CpuCurl::<Trit> { state: [x; STATE_LENGTH] }
+        CpuCurl::<Trit> { state: [0 as Trit; STATE_LENGTH] }
     }
 }
 

@@ -1,13 +1,11 @@
 use curl::{STATE_LENGTH, ProofOfWork, Curl};
-use cpucurl::CpuCurl;
 use trytes::*;
 use search::*;
 use tmath::*;
 
 pub struct CpuPoW;
 
-fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
-    let mut curl = CpuCurl::<Trit>::default();
+fn prepare_search<C: Curl<Trit>>(input: &[Trit], out: &mut [BCTrit], curl: &mut C) {
     let size = if input.len() % HASH_LENGTH == 0 {
         input.len() - HASH_LENGTH
     } else {
@@ -15,8 +13,8 @@ fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
     };
     curl.absorb(&input[..size]);
 
-    for (&t, mut bct) in curl.state.iter().zip(out.iter_mut()) {
-       *bct = trit_to_bct(t); 
+    for (&t, mut bct) in curl.state().iter().zip(out.iter_mut()) {
+        *bct = trit_to_bct(t);
     }
 
     (&mut out[0..4]).offset();
@@ -24,10 +22,19 @@ fn prepare_search(input: &[Trit], out: &mut [BCTrit]) {
 
 
 impl ProofOfWork<Trit> for CpuPoW {
-    fn search(input: &[Trit], weight: u8, out: &mut [Trit]) -> bool {
-        let mut bct : [BCTrit; STATE_LENGTH] = [(0,0); STATE_LENGTH];
-        prepare_search(input, &mut bct);
-        search_cpu(&mut bct, out, 0, move |t: &[BCTrit]| {
+    fn search<C: Curl<Trit>, CB: Curl<BCTrit>>(
+        input: &[Trit],
+        weight: u8,
+        out: &mut [Trit],
+        tcurl: &mut C,
+        bcurl: &mut CB,
+    ) -> bool {
+        let mut bct: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
+
+        tcurl.reset();
+
+        prepare_search(input, &mut bct, tcurl);
+        search_cpu(&mut bct, out, bcurl, 0, move |t: &[BCTrit]| {
             let mut probe = usize::max_value();
             let wt: usize = weight as usize;
             let start = t.len() - wt;
@@ -50,7 +57,7 @@ mod tests {
 
     #[test]
     pub fn run_testsuite() {
-        curl_tests::run_search::<CpuPoW, CpuCurl<Trit>>();
+        curl_tests::run_search::<CpuPoW, CpuCurl<Trit>, CpuCurl<BCTrit>>();
     }
 
 }
