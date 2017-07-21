@@ -14,7 +14,7 @@ pub fn subseed(c_seed: *const c_char, index: usize) -> *const u8 {
     let seed: Vec<Trit> = seed_str.chars().flat_map(char_to_trits).cloned().collect();
 
 
-    let mut subseed = vec![0; seed.len()];
+    let mut subseed = vec![0; HASH_LENGTH];
     iss::subseed::<CpuCurl<Trit>>(&seed, index, &mut subseed);
 
     let out_str = Box::new(trits_to_string(subseed.as_slice()).unwrap() + "\0");

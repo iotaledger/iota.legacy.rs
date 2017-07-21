@@ -18,6 +18,8 @@ pub fn subseed<C>(seed: &[Trit], index: usize, out: &mut [Trit])
 where
     C: Curl<Trit>,
 {
+    assert_eq!(out.len(),  HASH_LENGTH);
+
     out.clone_from_slice(seed);
     let mut curl = C::default();
     let len = out.len();
