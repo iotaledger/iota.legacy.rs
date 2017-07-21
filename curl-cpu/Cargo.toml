@@ -7,12 +7,13 @@ keywords = ["no_std"]
 
 [features]
 default = []
-parallel = []
+parallel = ["num_cpus"]
 
 [dependencies]
 iota-tmath = { path = "../tmath" }
 iota-trytes = { path = "../trytes" }
 iota-curl = { path = "../curl" }
+num_cpus = {version = "1.6.2", optional = true }
 
 [dev-dependencies]
 iota-curl-tests = { path = "../curl-tests" }

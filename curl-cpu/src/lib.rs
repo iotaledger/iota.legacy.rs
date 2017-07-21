@@ -5,6 +5,9 @@
 #[macro_use]
 extern crate std;
 
+#[cfg(feature = "parallel")]
+extern crate num_cpus;
+
 #[cfg(test)]
 extern crate alloc;
 

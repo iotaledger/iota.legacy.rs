@@ -46,14 +46,17 @@ mod cpu_search {
 #[cfg(feature = "parallel")]
 mod cpu_search {
     use super::*;
-    use tmath::*;
-    use curl::{Curl, Sponge};
     use std::thread;
     use std::sync::mpsc::channel;
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::sync::Arc;
     use std::vec::Vec;
     use core::marker::*;
+    use num_cpus;
+
+    use tmath::*;
+    use curl::{Curl, Sponge};
+
     pub fn search_cpu<F>(input: &mut [BCTrit], out: &mut [Trit], group: usize, check: F) -> bool
     where
         F: Fn(&[BCTrit]) -> Option<usize> + 'static + Send + Sync,
@@ -63,7 +66,7 @@ mod cpu_search {
         let check_arc = Arc::new(check);
         let running_arc = Arc::new(running);
         let (tx, rx) = channel();
-        let handles: Vec<thread::JoinHandle<_>> = (0..4)
+        let handles: Vec<thread::JoinHandle<_>> = (0..num_cpus::get())
             .into_iter()
             .map(|i| {
                 let mut curl = CpuCurl::<BCTrit>::default();
