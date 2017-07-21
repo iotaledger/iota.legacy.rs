@@ -1,6 +1,8 @@
 #![no_std]
-#![feature(alloc)]
+#![cfg_attr(test, feature(alloc))]
 
+#[cfg(test)]
+#[macro_use]
 extern crate alloc;
 
 extern crate iota_trytes as trytes;

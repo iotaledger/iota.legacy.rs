@@ -8,5 +8,5 @@ authors = [
         ]
 
 [features]
-default = ["alloc"]
+default = []
 alloc = []

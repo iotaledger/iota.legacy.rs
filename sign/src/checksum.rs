@@ -1,30 +1,18 @@
-use alloc::vec::Vec;
-
-use trytes::*;
 use curl::*;
 use curl_cpu::*;
+use trytes::TRITS_PER_TRYTE;
 
-pub const CHECKSUM_LEN: usize = 9;
-const CHECKSUM_TRITS: usize = CHECKSUM_LEN * TRITS_PER_TRYTE;
+pub const CHECKSUM_TRYTES : usize = 9;
+pub const CHECKSUM_LEN: usize = CHECKSUM_TRYTES * TRITS_PER_TRYTE;
 
-pub fn trits_checksum<'a, T>(t: &'a [T]) -> Vec<T>
+pub fn trits_checksum<'a, T>(t: &'a [T], out: &mut [T])
 where
     T: Clone + Copy + Sized,
     CpuCurl<T>: Curl<T>,
 {
     let mut curl = CpuCurl::<T>::default();
     curl.absorb(t);
-    curl.squeeze(CHECKSUM_TRITS)
-}
-
-pub fn trits_with_checksum<'a, T>(t: &'a [T]) -> Vec<T>
-where
-    T: Clone + Copy + Sized,
-    CpuCurl<T>: Curl<T>,
-{
-    let mut tc = t.to_vec();
-    tc.append(&mut trits_checksum(t));
-    tc
+    curl.squeeze(out)
 }
 
 pub fn trits_without_checksum<'a, T>(t: &'a [T]) -> &'a [T] {
@@ -33,9 +21,8 @@ pub fn trits_without_checksum<'a, T>(t: &'a [T]) -> &'a [T] {
 
 pub fn trits_validate_checksum<'a, T>(t: &'a [T]) -> Option<ChecksumValidationError>
 where
-    T: Clone + Copy + Sized,
+    T: Clone + Copy + Sized + PartialEq,
     CpuCurl<T>: Curl<T>,
-    Vec<T>: PartialEq,
 {
     use ChecksumValidationError::*;
 
@@ -43,9 +30,13 @@ where
         return Some(InvalidLength);
     }
 
+
     let (body, rest) = t.split_at(t.len() - CHECKSUM_LEN);
 
-    if !(trits_checksum(body) == rest.to_vec()) {
+    let mut checksum = [t[0]; CHECKSUM_LEN];
+    trits_checksum(body, &mut checksum);
+
+    if rest != checksum {
         return Some(InvalidChecksum);
     }
 
@@ -64,7 +55,8 @@ pub enum ChecksumValidationError {
 #[cfg(test)]
 mod test {
     use super::*;
-
+    use trytes::*;
+    use alloc::vec::Vec;
 
     #[test]
     fn checksum_test_1() {
@@ -78,14 +70,10 @@ mod test {
             .flat_map(char_to_trits)
             .cloned()
             .collect();
-        let combined: Vec<Trit> = "RVORZ9SIIP9RCYMREUIXXVPQIPHVCNPQ9HZWYKFWYWZRE9JQKG9REPKIASHUUECPSQO9JT9XNMVKWYGVAFOXM9MUBX"
-            .chars()
-            .flat_map(char_to_trits)
-            .cloned()
-            .collect();
 
-        assert_eq!(trits_checksum(t.as_slice()), c);
-        assert_eq!(trits_with_checksum(t.as_slice()), combined);
+        let mut checksum = [0 as Trit; CHECKSUM_LEN];
+        trits_checksum(t.as_slice(), &mut checksum);
+        assert_eq!(c.as_slice(), checksum);
     }
 
     #[test]
@@ -100,14 +88,10 @@ mod test {
             .flat_map(char_to_trits)
             .cloned()
             .collect();
-        let combined: Vec<Trit> = "KTXFP9XOVMVWIXEWMOISJHMQEXMYMZCUGEQNKGUNVRPUDPRX9IR9LBASIARWNFXXESPITSLYAQMLCLVTL9QTIWOWTY"
-            .chars()
-            .flat_map(char_to_trits)
-            .cloned()
-            .collect();
 
-        assert_eq!(trits_checksum(t.as_slice()), c);
-        assert_eq!(trits_with_checksum(t.as_slice()), combined);
+        let mut checksum = [0 as Trit; CHECKSUM_LEN];
+        trits_checksum(t.as_slice(), &mut checksum);
+        assert_eq!(c.as_slice(), checksum);
     }
 
     #[test]
