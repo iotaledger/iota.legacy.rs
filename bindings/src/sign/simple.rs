@@ -13,14 +13,16 @@ pub fn subseed(c_seed: *const c_char, index: usize) -> *const u8 {
     let seed_str = unsafe { c_str_to_static_slice(c_seed) };
     let seed: Vec<Trit> = seed_str.chars().flat_map(char_to_trits).cloned().collect();
 
-    let subseed = iss::subseed::<CpuCurl<Trit>>(&seed, index);
+
+    let mut subseed = vec![0; seed.len()];
+    iss::subseed::<CpuCurl<Trit>>(&seed, index, &mut subseed);
 
     let out_str = Box::new(trits_to_string(subseed.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }
 
 #[no_mangle]
-pub fn key(c_subseed: *const c_char, security: u8) -> *const u8 {
+pub fn key(c_subseed: *const c_char, security: usize) -> *const u8 {
     let subseed_str = unsafe { c_str_to_static_slice(c_subseed) };
     let subseed: Vec<Trit> = subseed_str
         .chars()
@@ -28,9 +30,11 @@ pub fn key(c_subseed: *const c_char, security: u8) -> *const u8 {
         .cloned()
         .collect();
 
-    let key = iss::key::<Trit, CpuCurl<Trit>>(&subseed, security);
+    let mut security_space = vec![0; security * iss::KEY_LENGTH];
+    let mut key = vec![0; iss::KEY_LENGTH];
+    iss::key::<Trit, CpuCurl<Trit>>(&subseed, &mut security_space, &mut key);
 
-    let out_str = Box::new(trits_to_string(key.as_slice()).unwrap() + "\0");
+    let out_str = Box::new(trits_to_string(&key).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }
 
@@ -39,7 +43,9 @@ pub fn digest_key(c_key: *const c_char) -> *const u8 {
     let key_str = unsafe { c_str_to_static_slice(c_key) };
     let key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
 
-    let digest = iss::digest_key::<Trit, CpuCurl<Trit>>(&key);
+
+    let mut digest = vec![0; iss::DIGEST_LENGTH];
+    iss::digest_key::<Trit, CpuCurl<Trit>>(&key, &mut digest);
 
     let out_str = Box::new(trits_to_string(digest.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
@@ -54,7 +60,8 @@ pub fn address(c_digest: *const c_char) -> *const u8 {
         .cloned()
         .collect();
 
-    let address = iss::address::<Trit, CpuCurl<Trit>>(&digest);
+    let mut address = vec![0; iss::ADDRESS_LENGTH];
+    iss::address::<Trit, CpuCurl<Trit>>(&digest, &mut address);
 
     let out_str = Box::new(trits_to_string(address.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
@@ -72,7 +79,8 @@ pub fn signature(c_bundle: *const c_char, c_key: *const c_char) -> *const u8 {
         .cloned()
         .collect();
 
-    let signature = iss::signature::<CpuCurl<Trit>>(&bundle, &key);
+    let mut signature = vec![0; key.len()];
+    iss::signature::<CpuCurl<Trit>>(&bundle, &key, &mut signature);
 
     let out_str = Box::new(trits_to_string(signature.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
@@ -94,7 +102,8 @@ pub fn digest_bundle_signature(c_bundle: *const c_char, c_signature: *const c_ch
         .cloned()
         .collect();
 
-    let digest = iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &signature);
+    let mut digest = vec![0; iss::DIGEST_LENGTH];
+    iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &signature, &mut digest);
 
     let out_str = Box::new(trits_to_string(digest.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8

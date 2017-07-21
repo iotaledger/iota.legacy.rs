@@ -10,9 +10,9 @@ const TRYTE_WIDTH: usize = 3;
 const MAX_TRYTE_VALUE: i8 = 13;
 const MIN_TRYTE_VALUE: i8 = -13;
 pub const KEY_LENGTH: usize = ((HASH_LENGTH / 3) / RADIX as usize) * HASH_LENGTH;
-const DIGEST_LENGTH: usize = HASH_LENGTH;
-const ADDRESS_LENGTH: usize = HASH_LENGTH;
-const SIGNATURE_LENGTH: usize = KEY_LENGTH;
+pub const DIGEST_LENGTH: usize = HASH_LENGTH;
+pub const ADDRESS_LENGTH: usize = HASH_LENGTH;
+pub const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 
 pub fn subseed<C>(seed: &[Trit], index: usize, out: &mut [Trit])
 where

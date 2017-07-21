@@ -35,9 +35,11 @@ pub fn curl_simple_reset(c_curl: *mut c_void) {
 }
 
 #[no_mangle]
-pub fn curl_simple_squeeze(c_curl: *mut c_void, trit_count: isize) -> *const u8 {
+pub fn curl_simple_squeeze(c_curl: *mut c_void, trit_count: usize) -> *const u8 {
     let curl: &mut CpuCurl<Trit> = unsafe { &mut *(c_curl as *mut CpuCurl<Trit>) };
-    let trits = curl.squeeze(trit_count as usize);
+
+    let mut trits = vec![0 as Trit; trit_count];
+    curl.squeeze(&mut trits);
 
     let trinary_str = Box::new(trits_to_string(trits.as_slice()).unwrap() + "\0");
 
