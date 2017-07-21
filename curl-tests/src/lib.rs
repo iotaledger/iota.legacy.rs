@@ -1,8 +1,17 @@
 #![allow(unused_imports)]
+#![feature(alloc)]
 
-use super::*;
-use trytes::*;
+extern crate iota_trytes as trytes;
+extern crate iota_curl as curl;
+
+extern crate core;
+extern crate alloc;
+
+use alloc::Vec;
 use core::fmt;
+
+use curl::*;
+use trytes::*;
 
 pub trait TransformerFn<A> {
     fn transform(&self, trits: &[Trit]) -> Vec<A>;
@@ -21,14 +30,18 @@ mod inner {
 
         let mut curl = B::default();
         curl.absorb(trans);
-        let hash: Vec<A> = curl.squeeze(HASH_LENGTH);
+        let mut hash: Vec<A> = Vec::with_capacity(HASH_LENGTH);
+        unsafe {
+            hash.set_len(HASH_LENGTH);
+        }
+        curl.squeeze(hash.as_mut_slice());
 
         assert_eq!(hash, expected.to_vec());
 
         curl.reset();
-        let duplex_hash: Vec<A> = curl.duplex(trans);
-        assert_eq!(trans.len(), duplex_hash.len());
-        assert_ne!(trans.to_vec(), duplex_hash);
+        curl.duplex(trans, hash.as_mut_slice());
+        assert_eq!(trans.len(), hash.len());
+        assert_ne!(trans.to_vec(), hash);
     }
 
     pub fn hash_works1<A, B>(transformer: &TransformerFn<A>)
@@ -220,7 +233,11 @@ mod inner {
 
         let min_weight = 11u8;
         let trits: Vec<Trit> = trans.chars().flat_map(char_to_trits).cloned().collect();
-        let nonce = A::search(&trits, min_weight).expect("Some PoW Failure.");
+        let mut nonce: Vec<Trit> = vec![0; HASH_LENGTH];
+        assert!(
+            A::search(&trits, min_weight, nonce.as_mut_slice()),
+            "Some PoW Failure."
+        );
 
         let final_t: Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
             .into_iter()
@@ -230,7 +247,11 @@ mod inner {
 
         let mut curl = C::default();
         curl.absorb(&final_t);
-        let weight: usize = curl.squeeze(HASH_LENGTH)[(HASH_LENGTH - min_weight as usize)..]
+
+        let mut hash = vec![0; HASH_LENGTH];
+        curl.squeeze(hash.as_mut_slice());
+
+        let weight: usize = hash[(HASH_LENGTH - min_weight as usize)..]
             .into_iter()
             .rev()
             .take_while(|&&t| t == 0)
@@ -253,19 +274,27 @@ mod inner {
                                    OSABIVTQYQM9FIQKCBRRUEMVVTMERLWOK";
 
         let trits: Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
+        let mut nonce: Vec<Trit> = vec![0; 3];
         for security in 1u8..4u8 {
-            let nonce = A::search(&trits, 3, security).expect("Some Search Failure.");
+            assert!(
+                A::search(&trits, security, nonce.as_mut_slice()),
+                "Some Search Failure."
+            );
 
             let len_trits = {
                 let l = (trits.len() / TRITS_PER_TRYTE) as isize;
-                num::int2trits(l, num::min_trits(l))
+                let mut out = vec![0; num::min_trits(l) as usize];
+                num::int2trits(l, out.as_mut_slice());
+                out
             };
 
             let mut curl = C::default();
             curl.absorb(len_trits.as_slice());
             curl.absorb(trits.as_slice());
             curl.absorb(nonce.as_slice());
-            let hash = curl.squeeze(security as usize * HASH_LENGTH / 3);
+            let mut hash = vec![0 as Trit; security as usize * HASH_LENGTH / 3];
+            curl.squeeze(hash.as_mut_slice());
+
             let hash_security = {
                 let mut sum = 0;
                 for i in hash[..(HASH_LENGTH / 3)].iter() {
