@@ -54,10 +54,10 @@ where
         );
 
         for (i, c) in trits.chunks(HASH_LENGTH).enumerate() {
-            self.state[0..c.len()].clone_from_slice(c);
-            Sponge::transform(self);
             out[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]
                 .clone_from_slice(&self.state[0..HASH_LENGTH]);
+            Sponge::transform(self);
+            self.state[0..c.len()].clone_from_slice(c);
         }
     }
 
