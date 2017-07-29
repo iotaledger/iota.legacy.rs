@@ -1,5 +1,11 @@
 use trytes::*;
 
+/*
+ * For more information of how the logic of a trinary adder works, see:
+ * http://homepage.divms.uiowa.edu/~jones/ternary/arith.shtml
+*/
+
+/// Takes in `lh` slice of trits, writes out the sum with `rh` slice.
 #[inline]
 pub fn add_trits(lh: &[Trit], rh: &mut [Trit]) {
     let mut c = 0;
@@ -10,6 +16,7 @@ pub fn add_trits(lh: &[Trit], rh: &mut [Trit]) {
     }
 }
 
+/// Adds values `a` with `b` with a carry `c`, and returns (sum, carry)
 #[inline]
 pub fn trit_full_add(a: Trit, b: Trit, c: Trit) -> (Trit, Trit) {
     let s_ab = trit_sum(a, b);
@@ -19,11 +26,13 @@ pub fn trit_full_add(a: Trit, b: Trit, c: Trit) -> (Trit, Trit) {
     );
 }
 
+/// Returns the consensus of `a` and `b`
 #[inline]
 pub fn trit_cons(a: Trit, b: Trit) -> Trit {
     if a == b { a } else { 0 }
 }
 
+/// Trit sum of `a` and `b`
 #[inline]
 pub fn trit_sum(a: Trit, b: Trit) -> Trit {
     let s = a + b;
