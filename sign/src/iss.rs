@@ -20,12 +20,9 @@ where
 {
     assert_eq!(out.len(), HASH_LENGTH);
 
-    out.clone_from_slice(seed);
-    let len = out.len();
-
-    for _ in 0..index {
-        (&mut out[0..len]).incr();
-    }
+    let mut idx: [Trit; HASH_LENGTH] = [0; HASH_LENGTH];
+    num::int2trits(index as isize, &mut idx);
+    add_trits(seed, &idx, out);
 
     curl.absorb(out);
     curl.squeeze(out)
@@ -110,8 +107,7 @@ pub fn checksum_security(hash: &[Trit]) -> usize {
     match hash[..(HASH_LENGTH / 3)].iter().sum() {
         0 => 1,
         _ => {
-            match hash[..(2 * HASH_LENGTH / 3)].iter().sum()
-             {
+            match hash[..(2 * HASH_LENGTH / 3)].iter().sum() {
                 0 => 2,
                 _ => {
                     match hash.iter().sum() {
@@ -240,8 +236,9 @@ mod test {
         let mut address_space = vec![0; ADDRESS_LENGTH];
         let mut sig_address_space = vec![0; ADDRESS_LENGTH];
         let mut signature_space = vec![0; SIGNATURE_LENGTH];
+        let index = 23498762134896712438679;
 
-        subseed::<CpuCurl<Trit>>(&seed, 0, &mut subseed_space, &mut c1);
+        subseed::<CpuCurl<Trit>>(&seed, index, &mut subseed_space, &mut c1);
         c1.reset();
         key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut security_space, &mut key_space, &mut c1);
         c1.reset();

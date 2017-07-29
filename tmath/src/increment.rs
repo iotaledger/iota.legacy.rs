@@ -44,7 +44,7 @@ mod tests {
         let t = 'H';
         let i = 'I';
         let mut bct: Vec<BCTrit> = char_to_trits(t).iter().cloned().map(trit_to_bct).collect();
-        let it : Vec<Trit> = char_to_trits(i).to_vec();
+        let it: Vec<Trit> = char_to_trits(i).to_vec();
 
         bct.as_mut_slice().incr();
 
@@ -58,7 +58,7 @@ mod tests {
     fn test_simple_incr() {
         let t = 'H';
         let i = 'I';
-        let mut tt : Vec<Trit> = char_to_trits(t).to_vec();
+        let mut tt: Vec<Trit> = char_to_trits(t).to_vec();
         let it: Vec<BCTrit> = char_to_trits(i).iter().cloned().map(trit_to_bct).collect();
 
         tt.as_mut_slice().incr();
