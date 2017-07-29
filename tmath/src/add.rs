@@ -1,13 +1,12 @@
 use trytes::*;
-use core::cmp::max;
 
 #[inline]
-pub fn add_trits(first: &[Trit], other: &[Trit], out: &mut [Trit]) {
+pub fn add_trits(lh: &[Trit], rh: &mut [Trit]) {
     let mut c = 0;
-    for i in 0..out.len() {
-        let (s, d) = trit_full_add(first[i], other[i], c);
+    for i in 0..rh.len() {
+        let (s, d) = trit_full_add(lh[i], rh[i], c);
         c = d;
-        out[i] = s;
+        rh[i] = s;
     }
 }
 
@@ -40,18 +39,16 @@ mod tests {
     use super::*;
     use alloc::*;
     use alloc::string::ToString;
-    use trytes::*;
     #[test]
     fn test_simple_add() {
         let t = 'H';
         let i = 'Z';
         let tt: Vec<Trit> = char_to_trits(t).to_vec();
-        let it: Vec<Trit> = char_to_trits(i).to_vec();
+        let mut it: Vec<Trit> = char_to_trits(i).to_vec();
 
-        let mut out: Vec<Trit> = vec![0; tt.len()];
-        add_trits(tt.as_slice(), it.as_slice(), &mut out);
+        add_trits(tt.as_slice(), it.as_mut_slice());
 
-        let s: String = out.chunks(TRITS_PER_TRYTE).map(trits_to_char).collect();
+        let s: String = it.chunks(TRITS_PER_TRYTE).map(trits_to_char).collect();
         let exp: String = "G".to_string();
 
         assert_eq!(exp, s);
