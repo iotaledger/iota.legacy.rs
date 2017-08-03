@@ -22,7 +22,7 @@ fn prepare_search<C: Curl<Trit>>(input: &[Trit], out: &mut [BCTrit], curl: &mut 
         *bct = trit_to_bct(t);
     }
 
-    (&mut out[0..4]).offset();
+    (&mut out[0..4]).offset(0);
 }
 
 impl HammingNonce<Trit> for CpuHam {
