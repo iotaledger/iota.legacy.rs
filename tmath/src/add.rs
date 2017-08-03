@@ -1,4 +1,5 @@
 use trytes::*;
+use core::cmp::min;
 
 /*
  * For more information of how the logic of a trinary adder works, see:
@@ -9,7 +10,7 @@ use trytes::*;
 #[inline]
 pub fn add_trits(lh: &[Trit], rh: &mut [Trit]) {
     let mut c = 0;
-    for i in 0..rh.len() {
+    for i in 0..min(lh.len(), rh.len()) {
         let (s, d) = trit_full_add(lh[i], rh[i], c);
         c = d;
         rh[i] = s;

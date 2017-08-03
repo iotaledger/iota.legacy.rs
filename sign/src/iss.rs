@@ -18,17 +18,17 @@ pub fn subseed<C>(seed: &[Trit], index: usize, out: &mut [Trit], curl: &mut C)
 where
     C: Curl<Trit>,
 {
-    assert_eq!(out.len(), HASH_LENGTH);
+    assert!(out.len() >= HASH_LENGTH);
 
     num::int2trits(index as isize, out);
     add_trits(seed, out);
 
     curl.absorb(out);
-    curl.squeeze(out)
+    curl.squeeze(&mut out[0..HASH_LENGTH])
 }
 
 // Note that this will y
-pub fn key<T, C>(subseed: &[T], key_space: &mut [T], security: u8, curl: &mut C)
+pub fn key<T, C>(key_space: &mut [T], security: u8, curl: &mut C)
 where
     T: Copy,
     C: Curl<T>,
@@ -43,8 +43,7 @@ where
         length == key_space.len(),
         "Key space size must be equal to security space size"
     );
-
-    curl.absorb(subseed);
+    curl.absorb(&key_space[0..HASH_LENGTH]);
     curl.squeeze(&mut key_space[0..length]);
 
     for div_offset in 0..(length / HASH_LENGTH) {
@@ -193,16 +192,15 @@ mod test {
             .collect();
 
         let security = 1;
-        let mut subseed_space = vec![0; seed.len()];
         let mut key_space = vec![0; KEY_LENGTH];
         let mut key_digest_space = vec![0; DIGEST_LENGTH];
         let mut address_space = vec![0; ADDRESS_LENGTH];
 
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
-        subseed::<CpuCurl<Trit>>(&seed, 0, &mut subseed_space, &mut c1);
+        subseed::<CpuCurl<Trit>>(&seed, 0, &mut key_space, &mut c1);
         c1.reset();
-        key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut key_space, security, &mut c1);
+        key(&mut key_space, security, &mut c1);
         c1.reset();
         digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut key_digest_space, &mut c1, &mut c2);
         c1.reset();
@@ -227,7 +225,6 @@ mod test {
 
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
-        let mut subseed_space = vec![0; seed.len()];
         let mut key_space = vec![0; KEY_LENGTH];
         let mut digest_space = vec![0; DIGEST_LENGTH];
         let mut address_space = vec![0; ADDRESS_LENGTH];
@@ -235,9 +232,9 @@ mod test {
         let mut signature_space = vec![0; SIGNATURE_LENGTH];
         let index = 234987621;
 
-        subseed::<CpuCurl<Trit>>(&seed, index, &mut subseed_space, &mut c1);
+        subseed::<CpuCurl<Trit>>(&seed, index, &mut key_space, &mut c1);
         c1.reset();
-        key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut key_space, security, &mut c1);
+        key(&mut key_space, security, &mut c1);
         c1.reset();
         digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut digest_space, &mut c1, &mut c2);
         c1.reset();

@@ -32,8 +32,9 @@ pub fn key(c_subseed: *const c_char, security: u8) -> *const u8 {
         .collect();
 
     let mut key = vec![0; iss::KEY_LENGTH];
+    key[..HASH_LENGTH].clone_from_slice(&subseed);
     let mut curl = CpuCurl::<Trit>::default();
-    iss::key(&subseed, &mut key, security, &mut curl);
+    iss::key(&mut key, security, &mut curl);
 
     let out_str = Box::new(trits_to_string(&key).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
