@@ -183,19 +183,22 @@ mod test {
 
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
-        subseed::<CpuCurl<Trit>>(&seed, 0, &mut key_space, &mut c1);
+        subseed(&seed, 0, &mut key_space, &mut c1);
         c1.reset();
         key(&mut key_space, security, &mut c1);
         c1.reset();
-        digest_key::<Trit, CpuCurl<Trit>>(&mut key_space, &mut c1, &mut c2);
+        digest_key(&mut key_space, &mut c1, &mut c2);
         c1.reset();
-        address::<Trit, CpuCurl<Trit>>(&mut key_space[..DIGEST_LENGTH], &mut c1);
+        address(&mut key_space[..DIGEST_LENGTH], &mut c1);
         address_space.clone_from_slice(&key_space[..ADDRESS_LENGTH]);
 
         address_space.len();
 
         let mut c3 = CpuCurl::<Trit>::default();
-        let bsubseed: Vec<BCTrit> = key_space[..HASH_LENGTH].iter().map(trit_to_bct).collect();
+        let bsubseed: Vec<BCTrit> = key_space[..HASH_LENGTH]
+            .into_iter()
+            .map(|&i| trit_to_bct(i))
+            .collect();
         key(&mut bsubseed, security, &mut c3);
     }
 
