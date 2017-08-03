@@ -6,6 +6,30 @@ use core::cmp::min;
  * http://homepage.divms.uiowa.edu/~jones/ternary/arith.shtml
 */
 
+#[inline]
+pub fn add_assign(out: &mut [Trit], v: isize) {
+    let size = out.len();
+    let negative = v < 0;
+
+    let mut value = if negative { -v } else { v };
+    let mut res = (0, 0);
+
+    for i in 0..size {
+        if value == 0 && res.1 == 0 {
+            break;
+        }
+
+        let mut trit = ((value + 1) % (constants::RADIX as isize)) as i8 - 1;
+        if negative {
+            trit = -trit;
+        }
+
+        res = trit_full_add(out[i], trit, res.1);
+        out[i] = res.0;
+        value = (value + 1) / (constants::RADIX as isize);
+    }
+}
+
 /// Takes in `lh` slice of trits, writes out the sum with `rh` slice.
 #[inline]
 pub fn add_trits(lh: &[Trit], rh: &mut [Trit]) {
@@ -59,9 +83,13 @@ mod tests {
         add_trits(tt.as_slice(), it.as_mut_slice());
 
         let s: String = it.chunks(TRITS_PER_TRYTE).map(trits_to_char).collect();
-        let exp: String = "G".to_string();
+        let mut exp: String = "G".to_string();
 
         assert_eq!(exp, s);
+
+        add_assign(it.as_mut_slice(), 1);
+        let o: String = it.chunks(TRITS_PER_TRYTE).map(trits_to_char).collect();
+        assert_eq!(t.to_string(), o);
 
         //assert_eq!(tt.into_iter().map(trit_to_bct).collect::<Vec<BCTrit>>(), it);
     }

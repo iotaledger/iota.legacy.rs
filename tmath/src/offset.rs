@@ -8,7 +8,7 @@ pub trait Offset {
 }
 
 #[inline]
-fn trits_in_word_offset() -> usize {
+pub fn trits_in_word_offset() -> usize {
     let usize_size = mem::size_of::<usize>() * 8;
     // get the number of trits needed for a full set of offset binary coded trits
     let mut o = 1;

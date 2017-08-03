@@ -14,20 +14,21 @@ pub const DIGEST_LENGTH: usize = HASH_LENGTH;
 pub const ADDRESS_LENGTH: usize = HASH_LENGTH;
 pub const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 
-pub fn subseed<C>(seed: &[Trit], index: usize, out: &mut [Trit], curl: &mut C)
+pub fn subseed<C>(seed: &[Trit], index: isize, out: &mut [Trit], curl: &mut C)
 where
     C: Curl<Trit>,
 {
     assert!(out.len() >= HASH_LENGTH);
+    out[..seed.len()].clone_from_slice(seed);
 
-    num::int2trits(index as isize, out);
-    add_trits(seed, out);
+    add_assign(out, index);
+    //add_trits(seed, out);
 
-    curl.absorb(out);
+    curl.absorb(&out[0..seed.len()]);
     curl.squeeze(&mut out[0..HASH_LENGTH])
 }
 
-// Note that this will y
+/// Take first 243 trits of `key_space` as subseed, and write key out to `key_space`
 pub fn key<T, C>(key_space: &mut [T], security: u8, curl: &mut C)
 where
     T: Copy,
@@ -65,6 +66,7 @@ pub fn digest_key<T, C>(
     C: Curl<T>,
 {
     assert_eq!(0, key.len() % KEY_LENGTH);
+
     assert!(
         digest_space.len() == DIGEST_LENGTH,
         "Digest space size must be qual to DIGEST_LENGTH"
@@ -85,20 +87,18 @@ pub fn digest_key<T, C>(
     }
 
     digest_curl.squeeze(digest_space);
+
 }
 
-pub fn address<T, C>(digests: &[T], address_space: &mut [T], curl: &mut C)
+/// since `digests` is normally ephemeral, address is written out to `digests`
+pub fn address<T, C>(digests: &mut [T], curl: &mut C)
 where
     T: Copy,
     C: Curl<T>,
 {
-    assert!(
-        address_space.len() == ADDRESS_LENGTH,
-        "Address space size must be equal to ADDRESS_LENGTH"
-    );
 
     curl.absorb(digests);
-    curl.squeeze(address_space);
+    curl.squeeze(&mut digests[..ADDRESS_LENGTH]);
 }
 
 pub fn checksum_security(hash: &[Trit]) -> usize {
@@ -118,16 +118,15 @@ pub fn checksum_security(hash: &[Trit]) -> usize {
     }
 }
 
-pub fn signature<C>(bundle: &[Trit], key: &[Trit], signature_space: &mut [Trit], curl: &mut C)
+/// Takes a `bundle` and input key `key_signature`, and writes the signature out to `key_signature`
+pub fn signature<C>(bundle: &[Trit], key_signature: &mut [Trit], curl: &mut C)
 where
     C: Curl<Trit>,
 {
     assert_eq!(HASH_LENGTH, bundle.len());
 
     let length = KEY_LENGTH * checksum_security(bundle);
-    assert_eq!(length, key.len());
-
-    signature_space.clone_from_slice(&key);
+    assert_eq!(length, key_signature.len());
 
     for i in 0..(length / HASH_LENGTH) {
         for _ in 0..
@@ -136,24 +135,23 @@ where
                      bundle[i * TRYTE_WIDTH + 2] * 9)
         {
             curl.reset();
-            curl.absorb(&signature_space[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
-            signature_space[i * HASH_LENGTH..(i + 1) * HASH_LENGTH].clone_from_slice(curl.rate());
+            curl.absorb(&key_signature[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
+            key_signature[i * HASH_LENGTH..(i + 1) * HASH_LENGTH].clone_from_slice(curl.rate());
         }
     }
 
 }
 
+/// Takes an input `signature`, and writes its digest out to the first 243 trits
 pub fn digest_bundle_signature<C>(
     bundle: &[Trit],
-    signature: &[Trit],
-    digest_space: &mut [Trit],
+    signature: &mut [Trit],
     digest_curl: &mut C,
     signature_fragment_curl: &mut C,
 ) where
     C: Curl<Trit>,
 {
     assert_eq!(DIGEST_LENGTH, bundle.len());
-    assert_eq!(DIGEST_LENGTH, digest_space.len());
 
     let length = SIGNATURE_LENGTH * checksum_security(bundle);
     assert_eq!(length, signature.len());
@@ -173,7 +171,7 @@ pub fn digest_bundle_signature<C>(
         digest_curl.absorb(&buffer);
     }
 
-    digest_curl.squeeze(digest_space)
+    digest_curl.squeeze(&mut signature[..DIGEST_LENGTH])
 }
 
 
@@ -194,19 +192,20 @@ mod test {
         let security = 1;
         let mut key_space = vec![0; KEY_LENGTH];
         let mut key_digest_space = vec![0; DIGEST_LENGTH];
-        let mut address_space = vec![0; ADDRESS_LENGTH];
 
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
-        subseed::<CpuCurl<Trit>>(&seed, 0, &mut key_space, &mut c1);
+        subseed(&seed, 0, &mut key_space, &mut c1);
         c1.reset();
         key(&mut key_space, security, &mut c1);
         c1.reset();
-        digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut key_digest_space, &mut c1, &mut c2);
+        digest_key(&mut key_space, &mut key_digest_space, &mut c1, &mut c2);
         c1.reset();
-        address::<Trit, CpuCurl<Trit>>(&key_digest_space, &mut address_space, &mut c1);
+        address(&mut key_digest_space, &mut c1);
 
-        address_space.len();
+        let mut c3 = CpuCurl::<BCTrit>::default();
+        let mut bsubseed: Vec<BCTrit> = key_space.into_iter().map(trit_to_bct).collect();
+        key::<BCTrit, CpuCurl<BCTrit>>(&mut bsubseed, security, &mut c3);
     }
 
     #[test]
@@ -238,27 +237,25 @@ mod test {
         c1.reset();
         digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut digest_space, &mut c1, &mut c2);
         c1.reset();
-        address::<Trit, CpuCurl<Trit>>(&digest_space, &mut address_space, &mut c1);
+        address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
+        address_space.clone_from_slice(&digest_space);
 
         c1.reset();
-        signature::<CpuCurl<Trit>>(
-            message_hash.as_slice(),
-            &key_space,
-            &mut signature_space,
-            &mut c1,
-        );
+        signature::<CpuCurl<Trit>>(message_hash.as_slice(), &mut key_space, &mut c1);
+        signature_space.clone_from_slice(&key_space);
 
         c1.reset();
         c2.reset();
         digest_bundle_signature::<CpuCurl<Trit>>(
             message_hash.as_slice(),
-            &signature_space,
-            &mut digest_space,
+            &mut signature_space,
             &mut c1,
             &mut c2,
         );
+        digest_space.clone_from_slice(&signature_space[..DIGEST_LENGTH]);
         c1.reset();
-        address::<Trit, CpuCurl<Trit>>(&digest_space, &mut sig_address_space, &mut c1);
+        address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
+        sig_address_space.clone_from_slice(&digest_space);
 
         assert_eq!(address_space, sig_address_space);
     }
