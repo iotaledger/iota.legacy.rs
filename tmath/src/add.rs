@@ -6,6 +6,29 @@ use core::cmp::min;
  * http://homepage.divms.uiowa.edu/~jones/ternary/arith.shtml
 */
 
+pub fn add_assign(out: &mut [Trit], v: isize) {
+    let size = out.len();
+    let negative = v < 0;
+
+    let mut value = if negative { -v } else { v };
+    let mut res = (0, 0);
+
+    for i in 0..size {
+        if value == 0 {
+            break;
+        }
+
+        let mut trit = ((value + 1) % (constants::RADIX as isize)) as i8 - 1;
+        if negative {
+            trit = -trit;
+        }
+
+        res = trit_full_add(out[i], trit, res.1);
+        out[i] = res.0;
+        value = (value + 1) / (constants::RADIX as isize);
+    }
+}
+
 /// Takes in `lh` slice of trits, writes out the sum with `rh` slice.
 #[inline]
 pub fn add_trits(lh: &[Trit], rh: &mut [Trit]) {
