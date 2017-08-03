@@ -43,39 +43,37 @@ pub fn key(c_subseed: *const c_char, security: u8) -> *const u8 {
 #[no_mangle]
 pub fn digest_key(c_key: *const c_char) -> *const u8 {
     let key_str = unsafe { c_str_to_static_slice(c_key) };
-    let key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
+    let mut key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
 
 
-    let mut digest = vec![0; iss::DIGEST_LENGTH];
     let mut curl = CpuCurl::<Trit>::default();
     let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_key::<Trit, CpuCurl<Trit>>(&key, &mut digest, &mut curl, &mut curl2);
+    iss::digest_key::<Trit, CpuCurl<Trit>>(&mut key, &mut curl, &mut curl2);
 
-    let out_str = Box::new(trits_to_string(digest.as_slice()).unwrap() + "\0");
+    let out_str = Box::new(trits_to_string(&key[..HASH_LENGTH]).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }
 
 #[no_mangle]
 pub fn address(c_digest: *const c_char) -> *const u8 {
     let digest_str = unsafe { c_str_to_static_slice(c_digest) };
-    let digest: Vec<Trit> = digest_str
+    let mut digest: Vec<Trit> = digest_str
         .chars()
         .flat_map(char_to_trits)
         .cloned()
         .collect();
 
-    let mut address = vec![0; iss::ADDRESS_LENGTH];
     let mut curl = CpuCurl::<Trit>::default();
-    iss::address::<Trit, CpuCurl<Trit>>(&digest, &mut address, &mut curl);
+    iss::address::<Trit, CpuCurl<Trit>>(&mut digest, &mut curl);
 
-    let out_str = Box::new(trits_to_string(address.as_slice()).unwrap() + "\0");
+    let out_str = Box::new(trits_to_string(&digest[..HASH_LENGTH]).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }
 
 #[no_mangle]
 pub fn signature(c_bundle: *const c_char, c_key: *const c_char) -> *const u8 {
     let key_str = unsafe { c_str_to_static_slice(c_key) };
-    let key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
+    let mut key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
 
     let bundle_str = unsafe { c_str_to_static_slice(c_bundle) };
     let bundle: Vec<Trit> = bundle_str
@@ -86,16 +84,16 @@ pub fn signature(c_bundle: *const c_char, c_key: *const c_char) -> *const u8 {
 
     let mut signature = vec![0; key.len()];
     let mut curl = CpuCurl::<Trit>::default();
-    iss::signature::<CpuCurl<Trit>>(&bundle, &key, &mut signature, &mut curl);
+    iss::signature::<CpuCurl<Trit>>(&bundle, &mut key, &mut curl);
 
-    let out_str = Box::new(trits_to_string(signature.as_slice()).unwrap() + "\0");
+    let out_str = Box::new(trits_to_string(key.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }
 
 #[no_mangle]
 pub fn digest_bundle_signature(c_bundle: *const c_char, c_signature: *const c_char) -> *const u8 {
     let signature_str = unsafe { c_str_to_static_slice(c_signature) };
-    let signature: Vec<Trit> = signature_str
+    let mut signature: Vec<Trit> = signature_str
         .chars()
         .flat_map(char_to_trits)
         .cloned()
@@ -108,17 +106,10 @@ pub fn digest_bundle_signature(c_bundle: *const c_char, c_signature: *const c_ch
         .cloned()
         .collect();
 
-    let mut digest = vec![0; iss::DIGEST_LENGTH];
     let mut curl = CpuCurl::<Trit>::default();
     let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_bundle_signature::<CpuCurl<Trit>>(
-        &bundle,
-        &signature,
-        &mut digest,
-        &mut curl,
-        &mut curl2,
-    );
+    iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &mut signature, &mut curl, &mut curl2);
 
-    let out_str = Box::new(trits_to_string(digest.as_slice()).unwrap() + "\0");
+    let out_str = Box::new(trits_to_string(&signature[..HASH_LENGTH]).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }
