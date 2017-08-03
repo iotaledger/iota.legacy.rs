@@ -28,12 +28,12 @@ where
 }
 
 // Note that this will y
-pub fn key<T, C>(subseed: &[T], security_space: &mut [T], key_space: &mut [T], curl: &mut C)
+pub fn key<T, C>(subseed: &[T], key_space: &mut [T], security: u8, curl: &mut C)
 where
     T: Copy,
     C: Curl<T>,
 {
-    let length = security_space.len();
+    let length = security as usize * KEY_LENGTH;
 
     assert!(
         length % KEY_LENGTH == 0,
@@ -194,7 +194,6 @@ mod test {
 
         let security = 1;
         let mut subseed_space = vec![0; seed.len()];
-        let mut security_space = vec![0; security * KEY_LENGTH];
         let mut key_space = vec![0; KEY_LENGTH];
         let mut key_digest_space = vec![0; DIGEST_LENGTH];
         let mut address_space = vec![0; ADDRESS_LENGTH];
@@ -203,7 +202,7 @@ mod test {
         let mut c2 = CpuCurl::<Trit>::default();
         subseed::<CpuCurl<Trit>>(&seed, 0, &mut subseed_space, &mut c1);
         c1.reset();
-        key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut security_space, &mut key_space, &mut c1);
+        key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut key_space, security, &mut c1);
         c1.reset();
         digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut key_digest_space, &mut c1, &mut c2);
         c1.reset();
@@ -229,7 +228,6 @@ mod test {
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
         let mut subseed_space = vec![0; seed.len()];
-        let mut security_space = vec![0; security * KEY_LENGTH];
         let mut key_space = vec![0; KEY_LENGTH];
         let mut digest_space = vec![0; DIGEST_LENGTH];
         let mut address_space = vec![0; ADDRESS_LENGTH];
@@ -239,7 +237,7 @@ mod test {
 
         subseed::<CpuCurl<Trit>>(&seed, index, &mut subseed_space, &mut c1);
         c1.reset();
-        key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut security_space, &mut key_space, &mut c1);
+        key::<Trit, CpuCurl<Trit>>(&subseed_space, &mut key_space, security, &mut c1);
         c1.reset();
         digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut digest_space, &mut c1, &mut c2);
         c1.reset();
