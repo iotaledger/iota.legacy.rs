@@ -9,7 +9,7 @@ use iota_curl_cpu::*;
 use util::c_str_to_static_slice;
 
 #[no_mangle]
-pub fn subseed(c_seed: *const c_char, index: usize) -> *const u8 {
+pub fn subseed(c_seed: *const c_char, index: isize) -> *const u8 {
     let seed_str = unsafe { c_str_to_static_slice(c_seed) };
     let seed: Vec<Trit> = seed_str.chars().flat_map(char_to_trits).cloned().collect();
 
@@ -46,9 +46,10 @@ pub fn digest_key(c_key: *const c_char) -> *const u8 {
     let mut key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
 
 
+    let mut digest = vec![0; iss::DIGEST_LENGTH];
     let mut curl = CpuCurl::<Trit>::default();
     let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_key::<Trit, CpuCurl<Trit>>(&mut key, &mut curl, &mut curl2);
+    iss::digest_key::<Trit, CpuCurl<Trit>>(&key, &mut digest, &mut curl, &mut curl2);
 
     let out_str = Box::new(trits_to_string(&key[..HASH_LENGTH]).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8

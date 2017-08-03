@@ -14,20 +14,21 @@ pub const DIGEST_LENGTH: usize = HASH_LENGTH;
 pub const ADDRESS_LENGTH: usize = HASH_LENGTH;
 pub const SIGNATURE_LENGTH: usize = KEY_LENGTH;
 
-pub fn subseed<C>(seed: &[Trit], index: usize, out: &mut [Trit], curl: &mut C)
+pub fn subseed<C>(seed: &[Trit], index: isize, out: &mut [Trit], curl: &mut C)
 where
     C: Curl<Trit>,
 {
     assert!(out.len() >= HASH_LENGTH);
+    out[..seed.len()].clone_from_slice(seed);
 
-    num::int2trits(index as isize, out);
-    add_trits(seed, out);
+    add_assign(out, index);
+    //add_trits(seed, out);
 
-    curl.absorb(out);
+    curl.absorb(&out[0..seed.len()]);
     curl.squeeze(&mut out[0..HASH_LENGTH])
 }
 
-// Note that this will y
+/// Take first 243 trits of `key_space` as subseed, and write key out to `key_space`
 pub fn key<T, C>(key_space: &mut [T], security: u8, curl: &mut C)
 where
     T: Copy,
@@ -55,12 +56,21 @@ where
     }
 }
 
-pub fn digest_key<T, C>(key: &mut [T], digest_curl: &mut C, key_fragment_curl: &mut C)
-where
+pub fn digest_key<T, C>(
+    key: &[T],
+    digest_space: &mut [T],
+    digest_curl: &mut C,
+    key_fragment_curl: &mut C,
+) where
     T: Copy + Clone + Sized,
     C: Curl<T>,
 {
     assert_eq!(0, key.len() % KEY_LENGTH);
+
+    assert!(
+        digest_space.len() == DIGEST_LENGTH,
+        "Digest space size must be qual to DIGEST_LENGTH"
+    );
 
     let mut buffer: [T; HASH_LENGTH] = [key[0]; HASH_LENGTH];
 
@@ -76,10 +86,11 @@ where
         digest_curl.absorb(&buffer);
     }
 
-    digest_curl.squeeze(&mut key[..DIGEST_LENGTH]);
+    digest_curl.squeeze(digest_space);
 
 }
 
+/// since `digests` is normally ephemeral, address is written out to `digests`
 pub fn address<T, C>(digests: &mut [T], curl: &mut C)
 where
     T: Copy,
@@ -107,6 +118,7 @@ pub fn checksum_security(hash: &[Trit]) -> usize {
     }
 }
 
+/// Takes a `bundle` and input key `key_signature`, and writes the signature out to `key_signature`
 pub fn signature<C>(bundle: &[Trit], key_signature: &mut [Trit], curl: &mut C)
 where
     C: Curl<Trit>,
@@ -130,6 +142,7 @@ where
 
 }
 
+/// Takes an input `signature`, and writes its digest out to the first 243 trits
 pub fn digest_bundle_signature<C>(
     bundle: &[Trit],
     signature: &mut [Trit],
@@ -179,7 +192,6 @@ mod test {
         let security = 1;
         let mut key_space = vec![0; KEY_LENGTH];
         let mut key_digest_space = vec![0; DIGEST_LENGTH];
-        let mut address_space = vec![0; ADDRESS_LENGTH];
 
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
@@ -187,12 +199,9 @@ mod test {
         c1.reset();
         key(&mut key_space, security, &mut c1);
         c1.reset();
-        digest_key(&mut key_space, &mut c1, &mut c2);
+        digest_key(&mut key_space, &mut key_digest_space, &mut c1, &mut c2);
         c1.reset();
-        address(&mut key_space[..DIGEST_LENGTH], &mut c1);
-        address_space.clone_from_slice(&key_space[..ADDRESS_LENGTH]);
-
-        address_space.len();
+        address(&mut key_digest_space, &mut c1);
 
         let mut c3 = CpuCurl::<BCTrit>::default();
         let mut bsubseed: Vec<BCTrit> = key_space.into_iter().map(trit_to_bct).collect();
@@ -226,12 +235,10 @@ mod test {
         c1.reset();
         key(&mut key_space, security, &mut c1);
         c1.reset();
-        digest_space.clone_from_slice(&key_space[..DIGEST_LENGTH]);
-        digest_key::<Trit, CpuCurl<Trit>>(&mut key_space, &mut c1, &mut c2);
+        digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut digest_space, &mut c1, &mut c2);
         c1.reset();
-        address_space.clone_from_slice(&key_space[..DIGEST_LENGTH]);
-        key_space[..DIGEST_LENGTH].clone_from_slice(&digest_space);
-        address::<Trit, CpuCurl<Trit>>(&mut address_space, &mut c1);
+        address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
+        address_space.clone_from_slice(&digest_space);
 
         c1.reset();
         signature::<CpuCurl<Trit>>(message_hash.as_slice(), &mut key_space, &mut c1);
