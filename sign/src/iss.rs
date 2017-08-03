@@ -194,12 +194,9 @@ mod test {
 
         address_space.len();
 
-        let mut c3 = CpuCurl::<Trit>::default();
-        let bsubseed: Vec<BCTrit> = key_space[..HASH_LENGTH]
-            .into_iter()
-            .map(|&i| trit_to_bct(i))
-            .collect();
-        key(&mut bsubseed, security, &mut c3);
+        let mut c3 = CpuCurl::<BCTrit>::default();
+        let mut bsubseed: Vec<BCTrit> = key_space.into_iter().map(trit_to_bct).collect();
+        key::<BCTrit, CpuCurl<BCTrit>>(&mut bsubseed, security, &mut c3);
     }
 
     #[test]
