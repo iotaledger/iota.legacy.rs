@@ -23,7 +23,7 @@ pub fn subseed(c_seed: *const c_char, index: usize) -> *const u8 {
 }
 
 #[no_mangle]
-pub fn key(c_subseed: *const c_char, security: usize) -> *const u8 {
+pub fn key(c_subseed: *const c_char, security: u8) -> *const u8 {
     let subseed_str = unsafe { c_str_to_static_slice(c_subseed) };
     let subseed: Vec<Trit> = subseed_str
         .chars()
@@ -31,10 +31,9 @@ pub fn key(c_subseed: *const c_char, security: usize) -> *const u8 {
         .cloned()
         .collect();
 
-    let mut security_space = vec![0; security * iss::KEY_LENGTH];
     let mut key = vec![0; iss::KEY_LENGTH];
     let mut curl = CpuCurl::<Trit>::default();
-    iss::key(&subseed, &mut security_space, &mut key, &mut curl);
+    iss::key(&subseed, &mut key, security, &mut curl);
 
     let out_str = Box::new(trits_to_string(&key).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
@@ -111,7 +110,13 @@ pub fn digest_bundle_signature(c_bundle: *const c_char, c_signature: *const c_ch
     let mut digest = vec![0; iss::DIGEST_LENGTH];
     let mut curl = CpuCurl::<Trit>::default();
     let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &signature, &mut digest, &mut curl, &mut curl2);
+    iss::digest_bundle_signature::<CpuCurl<Trit>>(
+        &bundle,
+        &signature,
+        &mut digest,
+        &mut curl,
+        &mut curl2,
+    );
 
     let out_str = Box::new(trits_to_string(digest.as_slice()).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
