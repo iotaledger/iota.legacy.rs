@@ -21,11 +21,13 @@ pub mod bct;
 
 // Helpers for multiple trits encoded as BCTrit
 pub mod multiplex;
+pub mod trits;
 
 pub use multiplex::*;
 pub use bct::*;
 pub use string::*;
 pub use byte::*;
+pub use trits::*;
 
 pub use constants::TRYTE_ALPHABET;
 pub use constants::Trit;
