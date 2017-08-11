@@ -144,8 +144,10 @@ where
 
 }
 
+/// Given a `hash` to sign, a `subkey` (or subseed), and a `security` (size of signature in units
+/// of `SIGNATURE_LENGTH`, write output to `signature`
 pub fn subseed_to_signature<C>(
-    bundle: &[Trit],
+    hash: &[Trit],
     subkey: &[Trit],
     signature: &mut [Trit],
     security: usize,
@@ -168,8 +170,8 @@ pub fn subseed_to_signature<C>(
         signature[offset..offset + HASH_LENGTH].clone_from_slice(curl2.rate());
         for _ in 0..
             MAX_TRYTE_VALUE -
-                (bundle[i * TRYTE_WIDTH] + bundle[i * TRYTE_WIDTH + 1] * 3 +
-                     bundle[i * TRYTE_WIDTH + 2] * 9)
+                (hash[i * TRYTE_WIDTH] + hash[i * TRYTE_WIDTH + 1] * 3 +
+                     hash[i * TRYTE_WIDTH + 2] * 9)
         {
             curl2.reset();
             curl2.absorb(&signature[offset..offset + HASH_LENGTH]);
