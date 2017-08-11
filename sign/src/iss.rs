@@ -145,7 +145,7 @@ where
 }
 
 /// Given a `hash` to sign, a `subkey` (or subseed), and a `security` (size of signature in units
-/// of `SIGNATURE_LENGTH`, write output to `signature`
+/// of `SIGNATURE_LENGTH`), write output to `signature`
 pub fn subseed_to_signature<C>(
     hash: &[Trit],
     subkey: &[Trit],
