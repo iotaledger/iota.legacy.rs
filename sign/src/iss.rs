@@ -5,6 +5,7 @@ use trytes::*;
 use tmath::*;
 use trytes::constants::RADIX;
 use curl::*;
+use core::cmp::min;
 
 const TRYTE_WIDTH: usize = 3;
 const MAX_TRYTE_VALUE: i8 = 13;
@@ -19,7 +20,8 @@ where
     C: Curl<Trit>,
 {
     assert!(out.len() >= HASH_LENGTH);
-    out[..seed.len()].clone_from_slice(seed);
+    let out_copy_len = min(out.len(), seed.len());
+    out[..out_copy_len].clone_from_slice(seed);
 
     add_assign(out, index);
     //add_trits(seed, out);
@@ -142,6 +144,41 @@ where
 
 }
 
+pub fn subseed_to_signature<C>(
+    bundle: &[Trit],
+    subkey: &[Trit],
+    signature: &mut [Trit],
+    security: usize,
+    curl1: &mut C,
+    curl2: &mut C,
+) where
+    C: Curl<Trit>,
+{
+    let length = security as usize * KEY_LENGTH;
+
+    curl1.reset();
+    curl1.absorb(&subkey[..HASH_LENGTH]);
+
+    for i in 0..(length / HASH_LENGTH) {
+        let offset = i * HASH_LENGTH;
+        curl2.reset();
+        curl1.squeeze(&mut signature[offset..offset + HASH_LENGTH]);
+        curl2.absorb(&signature[offset..offset + HASH_LENGTH]);
+
+        signature[offset..offset + HASH_LENGTH].clone_from_slice(curl2.rate());
+        for _ in 0..
+            MAX_TRYTE_VALUE -
+                (bundle[i * TRYTE_WIDTH] + bundle[i * TRYTE_WIDTH + 1] * 3 +
+                     bundle[i * TRYTE_WIDTH + 2] * 9)
+        {
+            curl2.reset();
+            curl2.absorb(&signature[offset..offset + HASH_LENGTH]);
+            signature[offset..offset + HASH_LENGTH].clone_from_slice(curl2.rate());
+        }
+    }
+
+}
+
 /// Takes an input `signature`, and writes its digest out to the first 243 trits
 pub fn digest_bundle_signature<C>(
     bundle: &[Trit],
@@ -257,6 +294,67 @@ mod test {
         address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
         sig_address_space.clone_from_slice(&digest_space);
 
+        assert_eq!(address_space, sig_address_space);
+    }
+
+    #[test]
+    fn test_subseed_to_signature_matches_address() {
+        let seed: Vec<Trit> = "WJRVZJOSSMRCGCJYFN9SSETWFLRCPWSCOEPPT9KNHWUTTW9BTELBWDPMHDRN9NTFGWESKAKZCFHGBJJQZ"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
+        let message_hash: Vec<Trit> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ9ABCDEFGHIJKLMNOPQRSTUVWXYZ9ABCDEFGHIJKLMNOPQRSTUVWXYZ9"
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
+        let security = 1;
+
+        let mut c1 = CpuCurl::<Trit>::default();
+        let mut c2 = CpuCurl::<Trit>::default();
+        let mut key_space = vec![0; KEY_LENGTH];
+        let mut digest_space = vec![0; DIGEST_LENGTH];
+        let mut address_space = vec![0; ADDRESS_LENGTH];
+        let mut sig_address_space = vec![0; ADDRESS_LENGTH];
+        let mut signature_space = vec![0; SIGNATURE_LENGTH];
+        let index = 234987621;
+
+        subseed::<CpuCurl<Trit>>(&seed, index, &mut key_space, &mut c1);
+        c1.reset();
+        key(&mut key_space, security, &mut c1);
+        c1.reset();
+        digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut digest_space, &mut c1, &mut c2);
+        c1.reset();
+        address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
+        address_space.clone_from_slice(&digest_space);
+
+        c1.reset();
+        subseed(&seed, index, &mut digest_space, &mut c1);
+        subseed_to_signature(
+            message_hash.as_slice(),
+            digest_space.as_mut_slice(),
+            &mut signature_space,
+            security as usize,
+            &mut c1,
+            &mut c2,
+        );
+        //signature_space.clone_from_slice(&key_space);
+
+        c1.reset();
+        c2.reset();
+        digest_bundle_signature::<CpuCurl<Trit>>(
+            message_hash.as_slice(),
+            &mut signature_space,
+            &mut c1,
+            &mut c2,
+        );
+        digest_space.clone_from_slice(&signature_space[..DIGEST_LENGTH]);
+        c1.reset();
+        address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
+        sig_address_space.clone_from_slice(&digest_space);
+
+        //assert_eq!(address_space, sig_address_space);
         assert_eq!(address_space, sig_address_space);
     }
 }
