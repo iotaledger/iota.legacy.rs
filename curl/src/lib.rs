@@ -34,6 +34,10 @@ where
     fn state(&self) -> &[T];
     /// Exposes the complete mutable state
     fn state_mut(&mut self) -> &mut [T];
+    /// Returns the current number of rounds
+    fn rounds(&self) -> u8;
+    /// Sets the number of rounds
+    fn set_rounds(&mut self, rounds: u8);
 }
 
 pub trait ProofOfWork<T: Copy> {

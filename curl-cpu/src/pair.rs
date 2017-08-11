@@ -16,7 +16,7 @@ impl Sponge for CpuCurl<BCTrit> {
     fn transform(&mut self) {
         let mut local_state: [BCTrit; STATE_LENGTH] = [(0, 0); STATE_LENGTH];
 
-        for round in 0..NUMBER_OF_ROUNDS {
+        for round in 0..self.rounds{
             let (mut state_out, &state) = if round % 2 == 0 {
                 (&mut local_state, &self.state)
             } else {
@@ -29,19 +29,25 @@ impl Sponge for CpuCurl<BCTrit> {
 
         }
 
-        if NUMBER_OF_ROUNDS % 2 == 1 {
+        if self.rounds % 2 == 1 {
             self.state = local_state;
         }
     }
 
     fn reset(&mut self) {
-        self.state = [(usize::max_value(), usize::max_value()); STATE_LENGTH];
+        self.state_mut().clone_from_slice(
+            &[(usize::max_value(), usize::max_value());
+                STATE_LENGTH],
+        );
     }
 }
 
 impl Default for CpuCurl<BCTrit> {
     fn default() -> Self {
-        CpuCurl::<BCTrit> { state: [(usize::max_value(), usize::max_value()); STATE_LENGTH] }
+        CpuCurl::<BCTrit> {
+            state: [(usize::max_value(), usize::max_value()); STATE_LENGTH],
+            rounds: NUMBER_OF_ROUNDS as u8,
+        }
     }
 }
 

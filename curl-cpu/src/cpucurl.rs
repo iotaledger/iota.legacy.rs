@@ -7,6 +7,7 @@ where
     T: Clone + Copy + Sized + Send + 'static,
 {
     pub state: [T; STATE_LENGTH],
+    pub rounds: u8,
 }
 
 impl<T> Clone for CpuCurl<T>
@@ -71,5 +72,13 @@ where
 
     fn state_mut(&mut self) -> &mut [T] {
         &mut self.state
+    }
+
+    fn rounds(&self) -> u8 {
+        self.rounds
+    }
+
+    fn set_rounds(&mut self, rounds: u8) {
+        self.rounds = rounds;
     }
 }

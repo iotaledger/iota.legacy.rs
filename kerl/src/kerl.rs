@@ -75,6 +75,14 @@ where
     fn state_mut(&mut self) -> &mut [Trit] {
         &mut self.state
     }
+
+    fn rounds(&self) -> u8 {
+        0
+    }
+
+    fn set_rounds(&mut self, rounds: u8) {
+
+    }
 }
 
 

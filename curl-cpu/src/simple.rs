@@ -10,7 +10,7 @@ impl Sponge for CpuCurl<Trit> {
     fn transform(&mut self) {
         let mut local_state: [Trit; STATE_LENGTH] = [0; STATE_LENGTH];
 
-        for round in 0..NUMBER_OF_ROUNDS {
+        for round in 0..self.rounds {
             let (mut state_out, &state) = if round % 2 == 0 {
                 (&mut local_state, &self.state)
             } else {
@@ -26,7 +26,7 @@ impl Sponge for CpuCurl<Trit> {
             }
         }
 
-        if NUMBER_OF_ROUNDS % 2 == 1 {
+        if self.rounds % 2 == 1 {
             self.state = local_state;
         }
     }
@@ -38,7 +38,10 @@ impl Sponge for CpuCurl<Trit> {
 
 impl Default for CpuCurl<Trit> {
     fn default() -> Self {
-        CpuCurl::<Trit> { state: [0 as Trit; STATE_LENGTH] }
+        CpuCurl::<Trit> {
+            state: [0 as Trit; STATE_LENGTH],
+            rounds: NUMBER_OF_ROUNDS as u8,
+        }
     }
 }
 
