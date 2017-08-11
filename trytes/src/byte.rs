@@ -1,9 +1,9 @@
-use constants::*;
+use constants::{RADIX, Trit, TRITS_PER_BYTE};
 use mappings::*;
-use constants::{Trit, TRITS_PER_BYTE};
 
 /// Converts a slice of trits to a byte
 /// `trits.len()` must be less or equal to `TRITS_PER_BYTE`
+#[inline]
 pub fn trits_to_byte(trits: &[Trit]) -> u8 {
     assert!(trits.len() <= TRITS_PER_BYTE);
 
@@ -16,6 +16,7 @@ pub fn trits_to_byte(trits: &[Trit]) -> u8 {
 }
 
 /// Converts a byte to `&[Trit]`
+#[inline]
 pub fn byte_to_trits(bu: u8) -> &'static [Trit; TRITS_PER_BYTE] {
     let b = bu as i8;
     let bpos: usize = (if b < 0 {
@@ -38,15 +39,20 @@ pub struct ByteTritsSliceIter<'a> {
     pos: usize,
 }
 
+#[inline(always)]
+fn trit_at_idx(bytes: &[u8], idx: usize) -> Trit {
+    let q = idx / TRITS_PER_BYTE;
+    let r = idx % TRITS_PER_BYTE;
+    byte_to_trits(bytes[q])[r]
+}
+
 impl<'a> Iterator for ByteTritsSliceIter<'a> {
     type Item = Trit;
     fn next(&mut self) -> Option<Trit> {
         if self.pos >= self.len() {
             None
         } else {
-            let q = self.pos / TRITS_PER_BYTE;
-            let r = self.pos % TRITS_PER_BYTE;
-            let ret = byte_to_trits(self.slice.data[q])[r];
+            let ret = trit_at_idx(self.slice.data, self.pos);
             self.pos += 1;
             Some(ret)
         }
@@ -67,18 +73,54 @@ impl<'s> ByteTritsSlice<'s> {
         }
     }
 
+    /// Returns the underlying bytes.
     pub fn bytes(&self) -> &[u8] {
         self.data
     }
 
+    /// The number of trits this slice represents.
     pub fn len(&self) -> usize {
         self.length
+    }
+
+    /// Returns the trit value at the given index
+    pub fn at(&self, idx: usize) -> Trit {
+        assert!(self.len() > idx, "Index greater than available trits.");
+        trit_at_idx(self.data, idx)
+    }
+
+
+    /// Efficient way to write the trits this `ByteTritsSlice` represents
+    /// into a slice. 
+    pub fn into_slice(&self, out: &mut [Trit]) {
+        assert!(
+            out.len() >= self.len(),
+            "Output slice is shorter than trit count"
+        );
+
+        let rest = self.len() % TRITS_PER_BYTE;
+        if rest == 0 {
+            for i in 0..self.data.len() {
+                out[i * TRITS_PER_BYTE..(i + 1) * TRITS_PER_BYTE]
+                    .clone_from_slice(byte_to_trits(self.data[i]));
+            }
+        } else {
+            let last = self.data.len() - 1;
+            for i in 0..last {
+                out[i * TRITS_PER_BYTE..(i + 1) * TRITS_PER_BYTE]
+                    .clone_from_slice(byte_to_trits(self.data[i]));
+            }
+
+            out[last * TRITS_PER_BYTE..(last * TRITS_PER_BYTE + rest)]
+                .clone_from_slice(&byte_to_trits(self.data[last])[..rest]);
+        }
     }
 }
 
 /// Generic trait for creating a trit iterator out of a struct
 pub trait ToTrits<'a> {
     type Iter: ExactSizeIterator<Item = Trit>;
+    /// Returns a trits iterator for this instance.
     fn trits(&'a self) -> Self::Iter;
 }
 
@@ -152,15 +194,18 @@ mod with_alloc {
             }
         }
 
+        /// Returns a view of the underlying bytes
         pub fn data(&self) -> &[u8] {
             &self.data
         }
 
+        /// Returns the number of trits represented by this `ByteTrits` instance
         pub fn len(&self) -> usize {
             self.length
         }
     }
 
+    /// Allows to `.collect()` into a ByteTrits
     impl<'a> FromIterator<&'a Trit> for ByteTrits {
         fn from_iter<I: IntoIterator<Item = &'a Trit>>(iter: I) -> Self {
             let mut space = [0 as Trit; TRITS_PER_BYTE];
@@ -241,12 +286,12 @@ mod test {
     #[test]
     fn trits_bytes_inplace() {
         use core::mem;
-        
+
         let trits = IN.to_vec();
         let trits_shadow = unsafe {
             Vec::from_raw_parts(trits.as_ptr() as *mut u8, trits.len(), trits.capacity())
         };
-       
+
         let bytes = ByteTrits::inplace(trits);
 
         assert_eq!(
@@ -264,14 +309,15 @@ mod test {
 
     #[test]
     fn bytes_to_trits() {
-
-
+        let mut into_trits = [0 as Trit; 27];
         let slice = ByteTritsSlice::from_raw(&BYTES, 27);
         let vec: Vec<Trit> = slice.trits().collect();
         let bytetrits: ByteTrits = IN.iter().collect();
 
+        slice.into_slice(&mut into_trits);
 
         assert_eq!(vec, IN.to_vec());
+        assert_eq!(into_trits, IN);
         assert_eq!(bytetrits.data().to_vec(), BYTES.to_vec());
         assert_eq!(bytetrits.len(), 27);
     }
