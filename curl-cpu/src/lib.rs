@@ -20,6 +20,7 @@ extern crate iota_curl_tests as curl_tests;
 
 mod indices;
 mod search;
+pub mod copy;
 pub mod cpucurl;
 pub mod pow;
 pub mod ham;

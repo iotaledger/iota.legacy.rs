@@ -24,10 +24,7 @@ impl Sponge for CpuCurl<BCTrit> {
             };
 
             for i in 0..STATE_LENGTH {
-                state_out[i] = step(
-                    state[TRANSFORM_INDICES[i]],
-                    state[TRANSFORM_INDICES[i + 1]],
-                );
+                state_out[i] = step(state[TRANSFORM_INDICES[i]], state[TRANSFORM_INDICES[i + 1]]);
             }
 
         }
@@ -66,6 +63,6 @@ mod tests {
 
     #[test]
     pub fn run_testsuite() {
-        curl_tests::run::<BCTrit, CpuCurl<BCTrit>> (&BCTritTransformer);
+        curl_tests::run::<BCTrit, CpuCurl<BCTrit>>(&BCTritTransformer);
     }
 }

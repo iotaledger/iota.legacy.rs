@@ -7,17 +7,15 @@ mod cpu_search {
     use curl::Curl;
     use tmath::*;
     pub fn search_cpu<F, CB: Curl<BCTrit> + Copy>(
-        input: &mut [BCTrit],
         length: usize,
         out: &mut [Trit],
         curl: &mut CB,
         group: usize,
         check: F,
-    ) -> Option<usize> 
+    ) -> Option<usize>
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
     {
-        curl.state_mut().clone_from_slice(input);
         let mut size = min(length, HASH_LENGTH);
         for _ in 0..group {
             (&mut curl.state_mut()[(size / 3)..(size * 2 / 3)]).incr();
@@ -35,9 +33,7 @@ mod cpu_search {
             index = check(&cpy.state()[..HASH_LENGTH]);
         }
 
-
-        curl.squeeze(&mut input[0..size]);
-        let mux = TrinaryDemultiplexer::new(&input[0..size]);
+        let mux = TrinaryDemultiplexer::new(&curl.rate()[0..size]);
 
         for (i, v) in mux.get(index.unwrap()).enumerate() {
             out[i] = v;
@@ -62,7 +58,6 @@ mod cpu_search {
     use curl::Curl;
 
     pub fn search_cpu<F, CB: Curl<BCTrit>>(
-        input: &mut [BCTrit],
         length: usize,
         out: &mut [Trit],
         curl: &mut CB,
@@ -80,7 +75,6 @@ mod cpu_search {
             .into_iter()
             .map(|i| {
                 let mut curl = curl.clone();
-                curl.state_mut().clone_from_slice(input);
                 let mut size = min(length, HASH_LENGTH);
                 let child_tx = tx.clone();
                 let child_group = i + group;

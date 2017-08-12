@@ -34,15 +34,15 @@ where
     fn state(&self) -> &[T];
     /// Exposes the complete mutable state
     fn state_mut(&mut self) -> &mut [T];
-
 }
 
 pub trait ProofOfWork<T: Copy> {
-    /// Searches for a nonce given an `input` that gives a hash with `weight` zeros
-    /// Returns true if it found a nonce.
+    /// Searches for a nonce, given a `length`. The trits should already be
+    /// absorbed into the `tcurl` instance.
+    /// Returns the length of the nonce
     fn search<C: Curl<T>, CB: Curl<BCTrit>>(
-        input: &[T],
         weight: u8,
+        length: usize,
         out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
@@ -57,8 +57,8 @@ pub trait HammingNonce<T: Copy> {
     /// If security is 2, then the first 81 trits will not sum to 0, but the first 162 trits will.
     /// If security is 3, then neither the first 81 nor the first 162 trits will sum to zero, but
     /// the entire hash will sum to zero
+    /// To prepare, you should absorb the length in trits
     fn search<C: Curl<T>, CB: Curl<BCTrit>>(
-        input: &[T],
         security: u8,
         length: usize,
         out: &mut [Trit],

@@ -238,24 +238,18 @@ mod inner {
         let mut bcurl = CB::default();
 
         let trits: Vec<Trit> = trans.chars().flat_map(char_to_trits).cloned().collect();
+        let nonce_len = HASH_LENGTH / 3;
         let mut nonce: Vec<Trit> = vec![0; HASH_LENGTH];
+        tcurl.absorb(&trits[..trits.len() - HASH_LENGTH]);
         A::search(
-            &trits,
             min_weight,
+            nonce_len,
             nonce.as_mut_slice(),
             &mut tcurl,
             &mut bcurl,
         ).expect("Some PoW Failure.");
 
-        tcurl.reset();
-
-        let final_t: Vec<Trit> = trits[..(trits.len() - HASH_LENGTH)]
-            .into_iter()
-            .cloned()
-            .chain(nonce)
-            .collect();
-
-        tcurl.absorb(&final_t);
+        tcurl.absorb(&nonce[..nonce_len]);
 
         let mut hash = vec![0; HASH_LENGTH];
         tcurl.squeeze(hash.as_mut_slice());
@@ -287,60 +281,43 @@ mod inner {
         let mut bcurl = CB::default();
 
         let trits: Vec<Trit> = trytes.chars().flat_map(char_to_trits).cloned().collect();
-        let mut nonce: Vec<Trit> = vec![0; core::cmp::min(trits.len(), HASH_LENGTH)];
+        let mut nonce: [Trit; HASH_LENGTH] = [0; HASH_LENGTH];
+        let mut hash: [Trit; HASH_LENGTH] = [0 as Trit; HASH_LENGTH];
         for security in 1u8..4u8 {
             tcurl.reset();
             bcurl.reset();
-
-            A::search(
-                &trits,
-                security,
-                HASH_LENGTH,
-                nonce.as_mut_slice(),
-                &mut tcurl,
-                &mut bcurl,
-            ).expect("Some Search Failure.");
-
-            let len_trits = {
-                let l = (trits.len() / TRITS_PER_TRYTE) as isize;
-                let mut out = vec![0; num::min_trits(l) as usize];
-                num::int2trits(l, out.as_mut_slice());
-                out
+            let len_trytes = {
+                let l = (trits.len()) as isize;
+                let mut len = vec![0; num::min_trits(l) as usize];
+                num::int2trits(l, len.as_mut_slice());
+                len
             };
-
-            tcurl.reset();
-
-            tcurl.absorb(&len_trits);
+            tcurl.absorb(&len_trytes);
             tcurl.absorb(&trits);
-            tcurl.absorb(&nonce);
-            let mut hash = vec![0 as Trit; security as usize * HASH_LENGTH / 3];
+
+            let nonce_len = A::search(security, HASH_LENGTH, &mut nonce, &mut tcurl, &mut bcurl)
+                .expect("Some Search Failure.");
+
+            tcurl.absorb(&nonce[..nonce_len]);
             tcurl.squeeze(&mut hash);
 
-            let hash_security = {
-                let mut sum = 0;
-                for i in hash[..(HASH_LENGTH / 3)].iter() {
-                    sum += *i;
-                }
-                if sum == 0 {
-                    1
-                } else {
-                    sum = 0;
-                    for i in hash[..(2 * HASH_LENGTH / 3)].iter() {
-                        sum += *i;
-                    }
-                    if sum == 0 {
-                        2
-                    } else {
-                        sum = 0;
-                        for i in hash {
-                            sum += i;
+            assert_eq!(
+                {
+                    let mut sum = 0;
+                    let mut s = 0;
+                    for c in hash.chunks(HASH_LENGTH / 3) {
+                        for i in c {
+                            sum += *i;
                         }
-                        if sum == 0 { 3 } else { 0 }
+                        s += 1;
+                        if sum == 0 {
+                            break;
+                        }
                     }
-                }
-            };
-
-            assert_eq!(hash_security, security);
+                    if sum == 0 { s } else { 0 }
+                },
+                security
+            );
         }
     }
 }
