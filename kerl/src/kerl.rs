@@ -7,21 +7,21 @@ use converter::*;
 
 
 #[derive(Clone)]
-pub struct CpuKerl {
+pub struct Kerl {
     keccak: Keccak,
     state: [Trit; 0],
 }
 
-impl Default for CpuKerl {
-    fn default() -> CpuKerl {
-        CpuKerl {
+impl Default for Kerl {
+    fn default() -> Kerl {
+        Kerl {
             keccak: Keccak::new_keccak384(),
             state: [],
         }
     }
 }
 
-impl Sponge for CpuKerl {
+impl Sponge for Kerl {
     fn transform(&mut self) {
         self.keccak.keccakf();
     }
@@ -32,7 +32,7 @@ impl Sponge for CpuKerl {
 }
 
 
-impl Curl<Trit> for CpuKerl
+impl Curl<Trit> for Kerl
 where
     Self: Sponge,
 {
@@ -94,7 +94,7 @@ mod tests {
             .collect();
 
 
-        let mut kerl = CpuKerl::default();
+        let mut kerl = Kerl::default();
         kerl.absorb(&trits);
         kerl.squeeze(&mut trits);
 
@@ -114,7 +114,7 @@ JQNDWRYLCA"
             .cloned()
             .collect();
 
-        let mut kerl = CpuKerl::default();
+        let mut kerl = Kerl::default();
         kerl.absorb(&trits);
 
         let mut out = vec![0 as Trit; 486];
@@ -135,7 +135,7 @@ JQNDWRYLCA"
             .cloned()
             .collect();
 
-        let mut kerl = CpuKerl::default();
+        let mut kerl = Kerl::default();
         kerl.absorb(&trits);
 
         let mut out = vec![0 as Trit; 486];

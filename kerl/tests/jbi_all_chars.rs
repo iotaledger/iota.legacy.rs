@@ -1,4 +1,4 @@
-extern crate iota_kerl_cpu as kerl;
+extern crate iota_kerl as kerl;
 extern crate iota_trytes as trytes;
 
 use trytes::*;

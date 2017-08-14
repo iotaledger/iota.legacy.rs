@@ -20,7 +20,7 @@ mod keccak;
 
 mod constants;
 mod converter;
-mod cpukerl;
+mod kerl;
 
 pub use converter::*;
-pub use cpukerl::*;
+pub use kerl::*;
