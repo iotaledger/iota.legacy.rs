@@ -115,29 +115,10 @@ impl<'s> ByteTritsSlice<'s> {
                 .clone_from_slice(&byte_to_trits(self.data[last])[..rest]);
         }
     }
-}
 
-/// Generic trait for creating a trit iterator out of a struct
-pub trait ToTrits<'a> {
-    type Iter: ExactSizeIterator<Item = Trit>;
-    /// Returns a trits iterator for this instance.
-    fn trits(&'a self) -> Self::Iter;
-}
-
-impl<'a> ToTrits<'a> for &'a ByteTritsSlice<'a> {
-    type Iter = ByteTritsSliceIter<'a>;
-    fn trits(&'a self) -> Self::Iter {
-        ByteTritsSliceIter::<'a> {
-            slice: self,
-            pos: 0,
-        }
-    }
-}
-
-impl<'a> ToTrits<'a> for ByteTritsSlice<'a> {
-    type Iter = ByteTritsSliceIter<'a>;
-    fn trits(&'a self) -> Self::Iter {
-        ByteTritsSliceIter::<'a> {
+    /// Returns a trits iterator for this byte slice.
+    pub fn trits(&'s self) -> ByteTritsSliceIter<'s> {
+        ByteTritsSliceIter::<'s> {
             slice: self,
             pos: 0,
         }
