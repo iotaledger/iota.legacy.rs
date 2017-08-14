@@ -1,0 +1,20 @@
+[package]
+name = "iota-kerl-cpu"
+version = "0.1.0"
+authors = ["Paul D Handy <paul@pauldhandy.com>",
+           "Andreas C. Osowski <andreas@osowski.de>"]
+keywords = ["no_std"]
+
+[features]
+default = []
+
+[dependencies]
+iota-trytes = { path = "../trytes" }
+iota-curl = { path = "../curl" }
+
+[dev-dependencies.iota-trytes]
+path = "../trytes"
+features = ["alloc"]
+
+[dev-dependencies.rand]
+version = "*"

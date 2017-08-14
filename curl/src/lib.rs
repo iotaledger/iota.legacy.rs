@@ -19,7 +19,7 @@ pub trait Sponge {
 
 pub trait Curl<T>
 where
-    Self: Default + Sponge + Copy + Send + 'static,
+    Self: Default + Sponge + Clone + Send + 'static,
     T: Copy + Clone + Sized,
 {
     /// Absorb a `&[Trit]` into the sponge

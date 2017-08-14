@@ -6,7 +6,7 @@ mod cpu_search {
     use super::*;
     use curl::Curl;
     use tmath::*;
-    pub fn search_cpu<F, CB: Curl<BCTrit> + Copy>(
+    pub fn search_cpu<F, CB: Curl<BCTrit>>(
         out: &mut [Trit],
         curl: &mut CB,
         offset: usize,

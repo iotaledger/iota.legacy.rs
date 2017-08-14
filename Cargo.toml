@@ -2,6 +2,7 @@
 members = [
         "curl",
         "curl-cpu",
+        "kerl-cpu",
         "curl-tests",
         "trytes",
         "tmath",
