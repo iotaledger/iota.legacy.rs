@@ -8,34 +8,41 @@ pub struct CpuHam;
 impl HammingNonce<Trit> for CpuHam {
     fn search<C: Curl<Trit>, CB: Curl<BCTrit>>(
         security: u8,
+        offset: usize,
         length: usize,
-        out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
     ) -> Option<usize> {
 
-        search_prepare_trits(tcurl, bcurl);
+        search_prepare_trits(tcurl, bcurl, offset);
 
-        search_cpu(length, out, bcurl, 0, move |t: &[BCTrit]| {
-            let mux = TrinaryDemultiplexer::new(t);
-            for i in 0..mux.len() {
-                let mut sum = 0;
-                for j in 0..security as usize {
-                    sum += mux.get(i)
-                        .skip(j * HASH_LENGTH / 3)
-                        .take(HASH_LENGTH / 3)
-                        .sum::<Trit>();
-                    if sum == 0 && j < security as usize - 1 {
-                        sum = 1;
-                        break;
+        search_cpu(
+            &mut tcurl.state_mut()[..HASH_LENGTH],
+            bcurl,
+            offset,
+            length,
+            0,
+            move |t: &[BCTrit]| {
+                let mux = TrinaryDemultiplexer::new(t);
+                for i in 0..mux.len() {
+                    let mut sum = 0;
+                    for j in 0..security as usize {
+                        sum += mux.get(i)
+                            .skip(j * HASH_LENGTH / 3)
+                            .take(HASH_LENGTH / 3)
+                            .sum::<Trit>();
+                        if sum == 0 && j < security as usize - 1 {
+                            sum = 1;
+                            break;
+                        }
+                    }
+                    if sum == 0 {
+                        return Some(i);
                     }
                 }
-                if sum == 0 {
-                    return Some(i);
-                }
-            }
-            None
-        })
+                None
+            },
+        )
     }
 }
 

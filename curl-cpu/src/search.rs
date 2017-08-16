@@ -7,27 +7,29 @@ mod cpu_search {
     use curl::Curl;
     use tmath::*;
     pub fn search_cpu<F, CB: Curl<BCTrit> + Copy>(
-        length: usize,
         out: &mut [Trit],
         curl: &mut CB,
+        offset: usize,
+        length: usize,
         group: usize,
         check: F,
     ) -> Option<usize>
     where
         F: Fn(&[BCTrit]) -> Option<usize>,
     {
-        let mut size = min(length, HASH_LENGTH);
+        let mut size = min(length, HASH_LENGTH) - offset;
         for _ in 0..group {
-            (&mut curl.state_mut()[(size / 3)..(size * 2 / 3)]).incr();
+            (&mut curl.state_mut()[offset + size / 3..offset + size * 2 / 3]).incr();
         }
         let mut index: Option<usize> = None;
         while index.is_none() {
             size = min(
                 num::round_third(
-                    size * 2 / 3 + (&mut curl.state_mut()[(size * 2 / 3)..size]).incr(),
+                    offset + size * 2 / 3 +
+                        (&mut curl.state_mut()[offset + size * 2 / 3..offset + size]).incr(),
                 ),
                 HASH_LENGTH,
-            );
+            ) - offset;
             let mut cpy = curl.clone();
             cpy.transform();
             index = check(&cpy.state()[..HASH_LENGTH]);
@@ -58,9 +60,10 @@ mod cpu_search {
     use curl::Curl;
 
     pub fn search_cpu<F, CB: Curl<BCTrit>>(
-        length: usize,
         out: &mut [Trit],
         curl: &mut CB,
+        offset: usize,
+        length: usize,
         group: usize,
         check: F,
     ) -> Option<usize>
@@ -75,7 +78,7 @@ mod cpu_search {
             .into_iter()
             .map(|i| {
                 let mut curl = curl.clone();
-                let mut size = min(length, HASH_LENGTH);
+                let mut size = min(length, HASH_LENGTH) - offset;
                 let child_tx = tx.clone();
                 let child_group = i + group;
                 let check_clone = check_arc.clone();
@@ -83,16 +86,18 @@ mod cpu_search {
 
                 thread::spawn(move || {
                     for _ in 0..child_group {
-                        (&mut curl.state_mut()[(size / 3)..(size * 2 / 3)]).incr();
+                        (&mut curl.state_mut()[offset + size / 3..offset + size * 2 / 3]).incr();
                     }
                     let mut index: Option<usize> = None;
                     while index.is_none() && running_clone.load(Ordering::SeqCst) {
                         size = min(
                             num::round_third(
-                                size * 2 / 3 + (&mut curl.state_mut()[(size * 2 / 3)..size]).incr(),
+                                offset + size * 2 / 3 +
+                                    (&mut curl.state_mut()[offset + size * 2 / 3..offset + size])
+                                        .incr(),
                             ),
                             HASH_LENGTH,
-                        );
+                        ) - offset;
                         let mut cpy = curl.clone();
                         cpy.transform();
                         index = check_clone(&cpy.state()[..HASH_LENGTH]);

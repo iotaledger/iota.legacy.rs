@@ -239,16 +239,13 @@ mod inner {
 
         let trits: Vec<Trit> = trans.chars().flat_map(char_to_trits).cloned().collect();
         let nonce_len = HASH_LENGTH / 3;
-        let mut nonce: Vec<Trit> = vec![0; HASH_LENGTH];
+        let offset = 0;
+        let mut nonce = [0; HASH_LENGTH];
         tcurl.absorb(&trits[..trits.len() - HASH_LENGTH]);
-        A::search(
-            min_weight,
-            nonce_len,
-            nonce.as_mut_slice(),
-            &mut tcurl,
-            &mut bcurl,
-        ).expect("Some PoW Failure.");
+        A::search(min_weight, offset, nonce_len, &mut tcurl, &mut bcurl)
+            .expect("Some PoW Failure.");
 
+        nonce.clone_from_slice(&tcurl.rate());
         tcurl.absorb(&nonce[..nonce_len]);
 
         let mut hash = vec![0; HASH_LENGTH];
@@ -295,9 +292,12 @@ mod inner {
             tcurl.absorb(&len_trytes);
             tcurl.absorb(&trits);
 
-            let nonce_len = A::search(security, HASH_LENGTH, &mut nonce, &mut tcurl, &mut bcurl)
+            let offset = 0;
+            let nonce_len = A::search(security, offset, HASH_LENGTH, &mut tcurl, &mut bcurl)
                 .expect("Some Search Failure.");
 
+            // already absorbed in tcurl
+            nonce.clone_from_slice(&tcurl.rate());
             tcurl.absorb(&nonce[..nonce_len]);
             tcurl.squeeze(&mut hash);
 

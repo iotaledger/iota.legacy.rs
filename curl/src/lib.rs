@@ -42,8 +42,8 @@ pub trait ProofOfWork<T: Copy> {
     /// Returns the length of the nonce
     fn search<C: Curl<T>, CB: Curl<BCTrit>>(
         weight: u8,
+        offset: usize,
         length: usize,
-        out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
     ) -> Option<usize>;
@@ -60,8 +60,8 @@ pub trait HammingNonce<T: Copy> {
     /// To prepare, you should absorb the length in trits
     fn search<C: Curl<T>, CB: Curl<BCTrit>>(
         security: u8,
+        offset: usize,
         length: usize,
-        out: &mut [Trit],
         tcurl: &mut C,
         bcurl: &mut CB,
     ) -> Option<usize>;
