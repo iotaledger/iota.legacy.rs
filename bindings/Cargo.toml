@@ -7,13 +7,13 @@ keywords = ["no_std"]
 [lib]
 path = "src/lib.rs"
 test = true
-doc = true
+doc = true 
+doctest = false
 
 [[bin]]
 name = "iota_bindings"
 path = "src/main.rs"
-doc = false
-test = false
+doctest  = true
 
 [features]
 default = []
