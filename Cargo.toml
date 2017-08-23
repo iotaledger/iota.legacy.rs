@@ -7,5 +7,6 @@ members = [
         "trytes",
         "tmath",
         "sign",
+        "storage",
         "bindings"
         ]
