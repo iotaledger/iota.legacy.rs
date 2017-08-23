@@ -9,6 +9,7 @@ extern crate std;
 #[cfg(test)]
 extern crate rand;
 
+#[cfg(test)]
 #[macro_use]
 extern crate alloc;
 
