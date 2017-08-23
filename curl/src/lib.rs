@@ -34,6 +34,13 @@ where
     fn state(&self) -> &[T];
     /// Exposes the complete mutable state
     fn state_mut(&mut self) -> &mut [T];
+    /// Absorbs the input trits and squeezes to output of `HASH_LENGTH`
+    fn hash(&mut self, trits: &[T], out: &mut [T]) {
+        assert_eq!(out.len(), HASH_LENGTH);
+
+        self.absorb(trits);
+        self.squeeze(out);
+    }
 }
 
 pub trait ProofOfWork<T: Copy> {

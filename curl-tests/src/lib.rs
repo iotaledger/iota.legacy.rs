@@ -29,12 +29,11 @@ mod inner {
     {
 
         let mut curl = B::default();
-        curl.absorb(trans);
         let mut hash: Vec<A> = Vec::with_capacity(HASH_LENGTH);
         unsafe {
             hash.set_len(HASH_LENGTH);
         }
-        curl.squeeze(hash.as_mut_slice());
+        curl.hash(trans, &mut hash);
 
         assert_eq!(hash, expected.to_vec());
 
