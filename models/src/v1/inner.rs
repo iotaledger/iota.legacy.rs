@@ -1,5 +1,5 @@
-use core::fmt;
-use core::ops::Deref;
 use trytes::*;
 
-typed_view!(Nonce, NonceParseError, NONCE_LEN_TRITS, 243);
+pub const NONCE_LEN_TRITS: usize = 243;
+typed_view!(NonceView, NONCE_LEN_TRITS);
+typed_own!(Nonce, NonceView, NONCE_LEN_TRITS);

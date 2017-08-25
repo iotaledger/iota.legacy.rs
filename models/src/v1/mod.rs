@@ -7,7 +7,6 @@ mod constants;
 mod debug;
 
 pub use self::inner::*;
-pub use super::inner::*;
 
 pub use self::debug::*;
 pub use self::types::*;
