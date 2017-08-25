@@ -72,12 +72,12 @@ impl TransactionBuilder {
         }
     }
 
-    pub fn set_extra_data_digest(&mut self, h: &Hash) -> &mut Self {
+    pub fn set_extra_data_digest(&mut self, h: &HashView) -> &mut Self {
         self.0[EXTRA_DATA_OFFSET..ADDRESS_OFFSET].clone_from_slice(h);
         self
     }
 
-    pub fn set_address(&mut self, h: &Hash) -> &mut Self {
+    pub fn set_address(&mut self, h: &HashView) -> &mut Self {
         self.0[ADDRESS_OFFSET..VALUE_OFFSET].clone_from_slice(h);
         self
     }
@@ -111,22 +111,22 @@ impl TransactionBuilder {
         self
     }
 
-    pub fn set_bundle_nonce(&mut self, n: &Nonce) -> &mut Self {
+    pub fn set_bundle_nonce(&mut self, n: &NonceView) -> &mut Self {
         self.0[BUNDLE_NONCE_OFFSET..TRUNK_OFFSET].clone_from_slice(n);
         self
     }
 
-    pub fn set_trunk(&mut self, h: &Hash) -> &mut Self {
+    pub fn set_trunk(&mut self, h: &HashView) -> &mut Self {
         self.0[TRUNK_OFFSET..BRANCH_OFFSET].clone_from_slice(h);
         self
     }
 
-    pub fn set_branch(&mut self, h: &Hash) -> &mut Self {
+    pub fn set_branch(&mut self, h: &HashView) -> &mut Self {
         self.0[BRANCH_OFFSET..TAG_OFFSET].clone_from_slice(h);
         self
     }
 
-    pub fn set_tag(&mut self, t: &Tag) -> &mut Self {
+    pub fn set_tag(&mut self, t: &TagView) -> &mut Self {
         self.0[TAG_OFFSET..ATTACHED_AT_OFFSET].clone_from_slice(t);
         self
     }
@@ -152,7 +152,7 @@ impl TransactionBuilder {
         self
     }
 
-    pub fn set_nonce(&mut self, n: &Nonce) -> &mut Self {
+    pub fn set_nonce(&mut self, n: &NonceView) -> &mut Self {
         self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS].clone_from_slice(n);
         self
     }
