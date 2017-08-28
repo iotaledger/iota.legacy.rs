@@ -1,4 +1,3 @@
-use cty::*;
 use alloc::Vec;
 use alloc::boxed::Box;
 
@@ -9,18 +8,18 @@ use curl::iota_curl_cpu::*;
 use shared::*;
 
 #[no_mangle]
-pub fn curl_pair_new() -> *const CpuCurl<BCTrit> {
+pub fn iota_curl_bctrit_new() -> *const CpuCurl<BCTrit> {
     let curl = Box::new(CpuCurl::<BCTrit>::default());
     Box::into_raw(curl)
 }
 
 #[no_mangle]
-pub fn curl_pair_delete(c_curl: *mut CpuCurl<BCTrit>) {
+pub fn iota_curl_bctrit_delete(c_curl: *mut CpuCurl<BCTrit>) {
     unsafe { Box::from_raw(c_curl) };
 }
 
 #[no_mangle]
-pub fn curl_pair_absorb(c_curl: &mut CpuCurl<BCTrit>, trinary: &CTrits) {
+pub fn iota_curl_bctrit_absorb(c_curl: &mut CpuCurl<BCTrit>, trinary: &CTrits) {
     let trits: Vec<BCTrit> = {
         if trinary.encoding == TritEncoding::TRIT {
             ctrits_slice_trits(trinary)
@@ -39,12 +38,12 @@ pub fn curl_pair_absorb(c_curl: &mut CpuCurl<BCTrit>, trinary: &CTrits) {
 }
 
 #[no_mangle]
-pub fn curl_pair_reset(c_curl: &mut CpuCurl<BCTrit>) {
+pub fn iota_curl_bctrit_reset(c_curl: &mut CpuCurl<BCTrit>) {
     c_curl.reset();
 }
 
 #[no_mangle]
-pub fn curl_pair_squeeze(c_curl: &mut CpuCurl<BCTrit>, trit_count: usize) -> *const CTrits {
+pub fn iota_curl_bctrit_squeeze(c_curl: &mut CpuCurl<BCTrit>, trit_count: usize) -> *const CTrits {
     let trits: Vec<Trit> = {
         let mut bctrits = vec![(0, 0); trit_count];
         c_curl.squeeze(&mut bctrits);

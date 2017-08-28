@@ -1,17 +1,14 @@
-use cty::*;
 use alloc::boxed::Box;
-use alloc::Vec;
 
 use shared::*;
-use shared::util::*;
 
-use iota_curl::{Curl, Sponge};
+use iota_curl::*;
 use iota_trytes::*;
 use iota_sign::iss;
 use iota_curl_cpu::*;
 
 #[no_mangle]
-pub fn subseed(seed: &CTrits, index: isize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
+pub  fn iota_sign_iss_subseed(seed: &CTrits, index: isize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut subseed = vec![0; HASH_LENGTH];
 
     if seed.encoding == TritEncoding::TRIT {
@@ -27,7 +24,7 @@ pub fn subseed(seed: &CTrits, index: isize, curl: &mut CpuCurl<Trit>) -> *const 
 }
 
 #[no_mangle]
-pub fn key(subseed: &CTrits, security: usize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
+pub  fn iota_sign_iss_key(subseed: &CTrits, security: usize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut key = vec![0; security * iss::KEY_LENGTH];
     assert_eq!(subseed.length, HASH_LENGTH);
 
@@ -37,8 +34,7 @@ pub fn key(subseed: &CTrits, security: usize, curl: &mut CpuCurl<Trit>) -> *cons
         key[..HASH_LENGTH].clone_from_slice(&ctrits_to_trits(subseed));
     }
 
-    let mut curl = CpuCurl::<Trit>::default();
-    iss::key(&mut key, security, &mut curl);
+    iss::key(&mut key, security, curl);
     curl.reset();
 
     let ctrits = Box::new(ctrits_from_trits(key));
@@ -46,7 +42,7 @@ pub fn key(subseed: &CTrits, security: usize, curl: &mut CpuCurl<Trit>) -> *cons
 }
 
 #[no_mangle]
-pub fn digest_key(key: &CTrits, curl: &mut CpuCurl<Trit>, curl2: &mut CpuCurl<Trit>) -> *const CTrits {
+pub  fn iota_sign_iss_digest_key(key: &CTrits, curl: &mut CpuCurl<Trit>, curl2: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut digest = vec![0; iss::DIGEST_LENGTH];
 
     if key.encoding == TritEncoding::TRIT {
@@ -63,11 +59,9 @@ pub fn digest_key(key: &CTrits, curl: &mut CpuCurl<Trit>, curl2: &mut CpuCurl<Tr
 }
 
 #[no_mangle]
-pub fn address(digest: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
-
-    let mut curl = CpuCurl::<Trit>::default();
+pub  fn iota_sign_iss_address(digest: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut digest_vec = ctrits_to_trits(digest);
-    iss::address::<Trit, CpuCurl<Trit>>(&mut digest_vec, &mut curl);
+    iss::address::<Trit, CpuCurl<Trit>>(&mut digest_vec, curl);
     curl.reset();
 
     let address = digest_vec.split_off(HASH_LENGTH);
@@ -77,7 +71,7 @@ pub fn address(digest: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
 }
 
 #[no_mangle]
-pub fn signature(bundle: &CTrits, key: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
+pub  fn iota_sign_iss_signature(bundle: &CTrits, key: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut signature = ctrits_to_trits(key);
 
     if bundle.encoding == TritEncoding::TRIT {
@@ -92,7 +86,7 @@ pub fn signature(bundle: &CTrits, key: &CTrits, curl: &mut CpuCurl<Trit>) -> *co
 }
 
 #[no_mangle]
-pub fn subseed_to_signature(
+pub  fn iota_sign_iss_subseed_to_signature(
     hash: &CTrits,
     subkey: &CTrits,
     security: usize,
@@ -154,7 +148,7 @@ pub fn subseed_to_signature(
 }
 
 #[no_mangle]
-pub fn digest_bundle_signature(
+pub  fn iota_sign_iss_digest_bundle_signature(
     bundle: &CTrits,
     signature: &CTrits,
     curl: &mut CpuCurl<Trit>,
