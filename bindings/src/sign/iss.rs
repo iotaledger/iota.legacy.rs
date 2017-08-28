@@ -79,6 +79,7 @@ pub  fn iota_sign_iss_signature(bundle: &CTrits, key: &CTrits, curl: &mut CpuCur
     } else {
         iss::signature::<CpuCurl<Trit>>(&ctrits_to_trits(bundle), &mut signature, curl);
     }
+
     curl.reset();
 
     let ctrits = Box::new(ctrits_from_trits(signature));
@@ -142,7 +143,6 @@ pub  fn iota_sign_iss_subseed_to_signature(
     curl1.reset();
     curl2.reset();
 
-
     let ctrits = Box::new(ctrits_from_trits(signature));
     Box::into_raw(ctrits)
 }
@@ -152,18 +152,16 @@ pub  fn iota_sign_iss_digest_bundle_signature(
     bundle: &CTrits,
     signature: &CTrits,
     curl: &mut CpuCurl<Trit>,
-    curl2: &mut CpuCurl<Trit>
 ) -> *const CTrits {
     let mut signature = ctrits_to_trits(signature);
 
     if bundle.encoding == TritEncoding::TRIT {
-        iss::digest_bundle_signature::<CpuCurl<Trit>>(ctrits_slice_trits(bundle), &mut signature, curl, curl2);
+        iss::digest_bundle_signature::<CpuCurl<Trit>>(ctrits_slice_trits(bundle), &mut signature, curl);
     } else {
-        iss::digest_bundle_signature::<CpuCurl<Trit>>(&ctrits_to_trits(bundle), &mut signature, curl, curl2);
+        iss::digest_bundle_signature::<CpuCurl<Trit>>(&ctrits_to_trits(bundle), &mut signature, curl);
     }
 
     curl.reset();
-
 
     let digest = signature.split_off(HASH_LENGTH);
     let ctrits = Box::new(ctrits_from_trits(digest));

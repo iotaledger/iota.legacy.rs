@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 
 use iota_trytes::*;
 use iota_curl::*;
-use curl::iota_curl_cpu::*;
+use iota_curl_cpu::*;
 
 use shared::*;
 

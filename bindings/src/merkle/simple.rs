@@ -5,7 +5,7 @@ use alloc::string::String;
 use iota_trytes::*;
 use iota_curl_cpu::*;
 use iota_sign::iss;
-use util::c_str_to_static_slice;
+use shared::util::c_str_to_static_slice;
 use iota_merkle;
 
 #[no_mangle]

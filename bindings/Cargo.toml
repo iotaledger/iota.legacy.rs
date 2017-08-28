@@ -15,6 +15,7 @@ default = []
 iota-trytes = { path = "../trytes", features = ["alloc"] }
 iota-curl = { path = "../curl" }
 iota-curl-cpu = { path = "../curl-cpu" }
+iota-kerl= { path = "../kerl" }
 iota-sign = { path = "../sign" }
 iota-merkle = { path = "../merkle" }
 

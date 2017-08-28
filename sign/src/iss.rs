@@ -27,7 +27,8 @@ where
     //add_trits(seed, out);
 
     curl.absorb(&out[0..seed.len()]);
-    curl.squeeze(&mut out[0..HASH_LENGTH])
+    curl.squeeze(&mut out[0..HASH_LENGTH]);
+    curl.reset();
 }
 
 /// Take first 243 trits of `key_space` as subseed, and write key out to `key_space`
@@ -56,6 +57,7 @@ where
 
         key_space[offset..offset + HASH_LENGTH].clone_from_slice(curl.rate());
     }
+    curl.reset();
 }
 
 pub fn digest_key<T, C>(
@@ -90,6 +92,8 @@ pub fn digest_key<T, C>(
 
     digest_curl.squeeze(digest_space);
 
+    key_fragment_curl.reset();
+    digest_curl.reset();
 }
 
 /// since `digests` is normally ephemeral, address is written out to `digests`
@@ -101,6 +105,7 @@ where
 
     curl.absorb(digests);
     curl.squeeze(&mut digests[..ADDRESS_LENGTH]);
+    curl.reset();
 }
 
 pub fn checksum_security(hash: &[Trit]) -> usize {
@@ -142,6 +147,7 @@ where
         }
     }
 
+    curl.reset();
 }
 
 /// Given a `subseed` and a `security` level, generate the key digest, and write it to `out`
@@ -207,6 +213,8 @@ pub fn subseed_to_signature<C>(
         }
     }
 
+    curl1.reset();
+    curl2.reset();
 }
 
 /// Takes an input `signature`, and writes its digest out to the first 243 trits

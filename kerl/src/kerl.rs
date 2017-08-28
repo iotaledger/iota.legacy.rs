@@ -31,6 +31,12 @@ impl Sponge for Kerl {
     }
 }
 
+impl Kerl {
+    pub fn byte_state(&self) -> &[u8] {
+        self.keccak.a_bytes()
+    }
+}
+
 
 impl Curl<Trit> for Kerl
 where
