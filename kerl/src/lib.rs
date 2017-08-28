@@ -1,5 +1,5 @@
 #![no_std]
-#![feature(alloc)]
+#![cfg_attr(test, feature(alloc))]
 #![feature(core_intrinsics)]
 
 #[cfg(test)]

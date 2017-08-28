@@ -2,115 +2,176 @@ use cty::*;
 use alloc::boxed::Box;
 use alloc::Vec;
 
+use shared::*;
+use shared::util::*;
+
+use iota_curl::{Curl, Sponge};
 use iota_trytes::*;
 use iota_sign::iss;
 use iota_curl_cpu::*;
 
-use util::c_str_to_static_slice;
-
 #[no_mangle]
-pub fn subseed(c_seed: *const c_char, index: isize) -> *const u8 {
-    let seed_str = unsafe { c_str_to_static_slice(c_seed) };
-    let seed: Vec<Trit> = seed_str.chars().flat_map(char_to_trits).cloned().collect();
-
-
+pub fn subseed(seed: &CTrits, index: isize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut subseed = vec![0; HASH_LENGTH];
-    let mut curl = CpuCurl::<Trit>::default();
-    iss::subseed(&seed, index, &mut subseed, &mut curl);
 
-    let out_str = Box::new(trits_to_string(subseed.as_slice()).unwrap() + "\0");
-    &out_str.as_bytes()[0] as *const u8
+    if seed.encoding == TritEncoding::TRIT {
+        iss::subseed(ctrits_slice_trits(seed), index, &mut subseed, curl);
+    } else {
+        iss::subseed(&ctrits_to_trits(seed), index, &mut subseed, curl);
+    }
+
+    curl.reset();
+
+    let ctrits = Box::new(ctrits_from_trits(subseed));
+    Box::into_raw(ctrits)
 }
 
 #[no_mangle]
-pub fn key(c_subseed: *const c_char, security: u8) -> *const u8 {
-    let subseed_str = unsafe { c_str_to_static_slice(c_subseed) };
-    let subseed: Vec<Trit> = subseed_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
+pub fn key(subseed: &CTrits, security: usize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
+    let mut key = vec![0; security * iss::KEY_LENGTH];
+    assert_eq!(subseed.length, HASH_LENGTH);
 
-    let mut key = vec![0; iss::KEY_LENGTH];
-    key[..HASH_LENGTH].clone_from_slice(&subseed);
+    if subseed.encoding == TritEncoding::TRIT {
+        key[..HASH_LENGTH].clone_from_slice(ctrits_slice_trits(subseed));
+    } else {
+        key[..HASH_LENGTH].clone_from_slice(&ctrits_to_trits(subseed));
+    }
+
     let mut curl = CpuCurl::<Trit>::default();
     iss::key(&mut key, security, &mut curl);
+    curl.reset();
 
-    let out_str = Box::new(trits_to_string(&key).unwrap() + "\0");
-    &out_str.as_bytes()[0] as *const u8
+    let ctrits = Box::new(ctrits_from_trits(key));
+    Box::into_raw(ctrits)
 }
 
 #[no_mangle]
-pub fn digest_key(c_key: *const c_char) -> *const u8 {
-    let key_str = unsafe { c_str_to_static_slice(c_key) };
-    let mut key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
-
-
+pub fn digest_key(key: &CTrits, curl: &mut CpuCurl<Trit>, curl2: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut digest = vec![0; iss::DIGEST_LENGTH];
-    let mut curl = CpuCurl::<Trit>::default();
-    let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_key::<Trit, CpuCurl<Trit>>(&key, &mut digest, &mut curl, &mut curl2);
 
-    let out_str = Box::new(trits_to_string(&key[..HASH_LENGTH]).unwrap() + "\0");
-    &out_str.as_bytes()[0] as *const u8
+    if key.encoding == TritEncoding::TRIT {
+        iss::digest_key::<Trit, CpuCurl<Trit>>(ctrits_slice_trits(key), &mut digest, curl, curl2);
+    } else {
+        iss::digest_key::<Trit, CpuCurl<Trit>>(&ctrits_to_trits(key), &mut digest, curl, curl2);
+    }
+
+    curl.reset();
+    curl2.reset();
+
+    let ctrits = Box::new(ctrits_from_trits(digest));
+    Box::into_raw(ctrits)
 }
 
 #[no_mangle]
-pub fn address(c_digest: *const c_char) -> *const u8 {
-    let digest_str = unsafe { c_str_to_static_slice(c_digest) };
-    let mut digest: Vec<Trit> = digest_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
+pub fn address(digest: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
 
     let mut curl = CpuCurl::<Trit>::default();
-    iss::address::<Trit, CpuCurl<Trit>>(&mut digest, &mut curl);
+    let mut digest_vec = ctrits_to_trits(digest);
+    iss::address::<Trit, CpuCurl<Trit>>(&mut digest_vec, &mut curl);
+    curl.reset();
 
-    let out_str = Box::new(trits_to_string(&digest[..HASH_LENGTH]).unwrap() + "\0");
-    &out_str.as_bytes()[0] as *const u8
+    let address = digest_vec.split_off(HASH_LENGTH);
+
+    let ctrits = Box::new(ctrits_from_trits(address));
+    Box::into_raw(ctrits)
 }
 
 #[no_mangle]
-pub fn signature(c_bundle: *const c_char, c_key: *const c_char) -> *const u8 {
-    let key_str = unsafe { c_str_to_static_slice(c_key) };
-    let mut key: Vec<Trit> = key_str.chars().flat_map(char_to_trits).cloned().collect();
+pub fn signature(bundle: &CTrits, key: &CTrits, curl: &mut CpuCurl<Trit>) -> *const CTrits {
+    let mut signature = ctrits_to_trits(key);
 
-    let bundle_str = unsafe { c_str_to_static_slice(c_bundle) };
-    let bundle: Vec<Trit> = bundle_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
+    if bundle.encoding == TritEncoding::TRIT {
+        iss::signature::<CpuCurl<Trit>>(ctrits_slice_trits(bundle), &mut signature, curl);
+    } else {
+        iss::signature::<CpuCurl<Trit>>(&ctrits_to_trits(bundle), &mut signature, curl);
+    }
+    curl.reset();
 
-    let mut signature = vec![0; key.len()];
-    let mut curl = CpuCurl::<Trit>::default();
-    iss::signature::<CpuCurl<Trit>>(&bundle, &mut key, &mut curl);
-
-    let out_str = Box::new(trits_to_string(key.as_slice()).unwrap() + "\0");
-    &out_str.as_bytes()[0] as *const u8
+    let ctrits = Box::new(ctrits_from_trits(signature));
+    Box::into_raw(ctrits)
 }
 
 #[no_mangle]
-pub fn digest_bundle_signature(c_bundle: *const c_char, c_signature: *const c_char) -> *const u8 {
-    let signature_str = unsafe { c_str_to_static_slice(c_signature) };
-    let mut signature: Vec<Trit> = signature_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
+pub fn subseed_to_signature(
+    hash: &CTrits,
+    subkey: &CTrits,
+    security: usize,
+    curl1: &mut CpuCurl<Trit>,
+    curl2: &mut CpuCurl<Trit>,
+) -> *const CTrits {
+    let mut signature = vec![0 as Trit; security * iss::KEY_LENGTH];
+    use shared::TritEncoding::*;
 
-    let bundle_str = unsafe { c_str_to_static_slice(c_bundle) };
-    let bundle: Vec<Trit> = bundle_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
+    match (&hash.encoding, &subkey.encoding) {
+        (&TRIT, &TRIT) => {
+            iss::subseed_to_signature(
+                ctrits_slice_trits(hash),
+                ctrits_slice_trits(subkey),
+                &mut signature,
+                security,
+                curl1,
+                curl2,
+            );
+        }
+        (&TRIT, _) => {
+            iss::subseed_to_signature(
+                ctrits_slice_trits(hash),
+                &ctrits_to_trits(subkey),
+                &mut signature,
+                security,
+                curl1,
+                curl2,
+            );
+        }
+        (_, &TRIT) => {
+            iss::subseed_to_signature(
+                &ctrits_to_trits(hash),
+                ctrits_slice_trits(subkey),
+                &mut signature,
+                security,
+                curl1,
+                curl2,
+            );
+        }
+        (_, _) => {
+            iss::subseed_to_signature(
+                &ctrits_to_trits(hash),
+                &ctrits_to_trits(subkey),
+                &mut signature,
+                security,
+                curl1,
+                curl2,
+            );
+        }
+    };
 
-    let mut curl = CpuCurl::<Trit>::default();
-    let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &mut signature, &mut curl);
+    curl1.reset();
+    curl2.reset();
 
-    let out_str = Box::new(trits_to_string(&curl.state[..HASH_LENGTH]).unwrap() + "\0");
-    &out_str.as_bytes()[0] as *const u8
+
+    let ctrits = Box::new(ctrits_from_trits(signature));
+    Box::into_raw(ctrits)
+}
+
+#[no_mangle]
+pub fn digest_bundle_signature(
+    bundle: &CTrits,
+    signature: &CTrits,
+    curl: &mut CpuCurl<Trit>,
+    curl2: &mut CpuCurl<Trit>
+) -> *const CTrits {
+    let mut signature = ctrits_to_trits(signature);
+
+    if bundle.encoding == TritEncoding::TRIT {
+        iss::digest_bundle_signature::<CpuCurl<Trit>>(ctrits_slice_trits(bundle), &mut signature, curl, curl2);
+    } else {
+        iss::digest_bundle_signature::<CpuCurl<Trit>>(&ctrits_to_trits(bundle), &mut signature, curl, curl2);
+    }
+
+    curl.reset();
+
+
+    let digest = signature.split_off(HASH_LENGTH);
+    let ctrits = Box::new(ctrits_from_trits(digest));
+    Box::into_raw(ctrits)
 }

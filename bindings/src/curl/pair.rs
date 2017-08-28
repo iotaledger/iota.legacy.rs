@@ -6,49 +6,51 @@ use iota_trytes::*;
 use iota_curl::*;
 use curl::iota_curl_cpu::*;
 
-use util::c_str_to_static_slice;
+use shared::*;
 
 #[no_mangle]
-pub fn curl_pair_new() -> *mut c_void {
+pub fn curl_pair_new() -> *const CpuCurl<BCTrit> {
     let curl = Box::new(CpuCurl::<BCTrit>::default());
-    Box::into_raw(curl) as *mut c_void
+    Box::into_raw(curl)
 }
 
 #[no_mangle]
-pub fn curl_pair_delete(c_curl: *mut c_void) {
-    unsafe { Box::from_raw(c_curl as *mut CpuCurl<BCTrit>) };
+pub fn curl_pair_delete(c_curl: *mut CpuCurl<BCTrit>) {
+    unsafe { Box::from_raw(c_curl) };
 }
 
 #[no_mangle]
-pub fn curl_pair_absorb(c_curl: *mut c_void, trinary: *const c_char) {
-    let trinary_str = unsafe { c_str_to_static_slice(trinary) };
-    let ttrits: Vec<Trit> = trinary_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
-    let trits: Vec<BCTrit> = ttrits.into_iter().map(trit_to_bct).collect();
+pub fn curl_pair_absorb(c_curl: &mut CpuCurl<BCTrit>, trinary: &CTrits) {
+    let trits: Vec<BCTrit> = {
+        if trinary.encoding == TritEncoding::TRIT {
+            ctrits_slice_trits(trinary)
+                .iter()
+                .map(|&t| trit_to_bct(t))
+                .collect()
+        } else {
+            ctrits_to_trits(trinary)
+                .into_iter()
+                .map(trit_to_bct)
+                .collect()
+        }
+    };
 
-    let curl: &mut CpuCurl<BCTrit> = unsafe { &mut *(c_curl as *mut CpuCurl<BCTrit>) };
-    curl.absorb(&trits);
+    c_curl.absorb(&trits);
 }
 
 #[no_mangle]
-pub fn curl_pair_reset(c_curl: *mut c_void) {
-    let curl: &mut CpuCurl<BCTrit> = unsafe { &mut *(c_curl as *mut CpuCurl<BCTrit>) };
-    curl.reset();
+pub fn curl_pair_reset(c_curl: &mut CpuCurl<BCTrit>) {
+    c_curl.reset();
 }
 
 #[no_mangle]
-pub fn curl_pair_squeeze(c_curl: *mut c_void, trit_count: usize) -> *const u8 {
-    let curl: &mut CpuCurl<BCTrit> = unsafe { &mut *(c_curl as *mut CpuCurl<BCTrit>) };
+pub fn curl_pair_squeeze(c_curl: &mut CpuCurl<BCTrit>, trit_count: usize) -> *const CTrits {
+    let trits: Vec<Trit> = {
+        let mut bctrits = vec![(0, 0); trit_count];
+        c_curl.squeeze(&mut bctrits);
+        bctrits.into_iter().map(bct_to_trit).collect()
+    };
 
-
-    let mut bctrits = vec![(0, 0); trit_count];
-    curl.squeeze(&mut bctrits);
-
-    let trits: Vec<Trit> = bctrits.into_iter().map(bct_to_trit).collect();
-    let trinary_str = Box::new(trits_to_string(trits.as_slice()).unwrap() + "\0");
-
-    &trinary_str.as_bytes()[0] as *const u8
+    let ctrits = Box::new(ctrits_from_trits(trits));
+    Box::into_raw(ctrits)
 }

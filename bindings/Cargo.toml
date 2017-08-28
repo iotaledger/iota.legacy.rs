@@ -18,6 +18,8 @@ iota-curl-cpu = { path = "../curl-cpu" }
 iota-sign = { path = "../sign" }
 iota-merkle = { path = "../merkle" }
 
+iota-bindings-shared = { git = "https://github.com/iotaledger/iota-bindings.git"}
+
 cty = { git = "https://github.com/japaric/cty.git" }
 
 

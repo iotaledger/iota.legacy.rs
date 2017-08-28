@@ -31,12 +31,12 @@ where
 }
 
 /// Take first 243 trits of `key_space` as subseed, and write key out to `key_space`
-pub fn key<T, C>(key_space: &mut [T], security: u8, curl: &mut C)
+pub fn key<T, C>(key_space: &mut [T], security: usize, curl: &mut C)
 where
     T: Copy,
     C: Curl<T>,
 {
-    let length = security as usize * KEY_LENGTH;
+    let length = security * KEY_LENGTH;
 
     assert!(
         length % KEY_LENGTH == 0,

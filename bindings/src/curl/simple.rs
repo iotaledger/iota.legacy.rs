@@ -1,51 +1,45 @@
-use iota_trytes::*;
-use iota_curl::*;
-use curl::iota_curl_cpu::*;
 use cty::*;
 use alloc::Vec;
 use alloc::boxed::Box;
+use core::mem;
 
-use util::c_str_to_static_slice;
+use shared::*;
+
+use curl::iota_curl_cpu::*;
+use iota_trytes::*;
+use iota_curl::*;
 
 #[no_mangle]
-pub fn curl_simple_new() -> *mut c_void {
+pub fn curl_simple_new() -> *const CpuCurl<Trit> {
     let curl = Box::new(CpuCurl::<Trit>::default());
-    Box::into_raw(curl) as *mut c_void
+    Box::into_raw(curl)
 }
 
 #[no_mangle]
-pub fn curl_simple_delete(c_curl: *mut c_void) {
+pub fn curl_simple_delete(c_curl: *mut CpuCurl<Trit>) {
     // Deallocate c_curl
-    unsafe { Box::from_raw(c_curl as *mut CpuCurl<Trit>) };
+    unsafe { Box::from_raw(c_curl) };
 }
 
 #[no_mangle]
-pub fn curl_simple_absorb(c_curl: *mut c_void, trinary: *const c_char) {
-    let trinary_str = unsafe { c_str_to_static_slice(trinary) };
-    let trits: Vec<Trit> = trinary_str
-        .chars()
-        .flat_map(char_to_trits)
-        .cloned()
-        .collect();
-
-    let curl: &mut CpuCurl<Trit> = unsafe { &mut *(c_curl as *mut CpuCurl<Trit>) };
-    curl.absorb(&trits);
+pub fn curl_simple_absorb(c_curl: &mut CpuCurl<Trit>, trinary: &CTrits) {
+    if trinary.encoding == TritEncoding::TRIT {
+        c_curl.absorb(ctrits_slice_trits(trinary));
+    } else {
+        c_curl.absorb(&ctrits_to_trits(trinary));
+    }
 }
 
 #[no_mangle]
-pub fn curl_simple_reset(c_curl: *mut c_void) {
-    let curl: &mut CpuCurl<Trit> = unsafe { &mut *(c_curl as *mut CpuCurl<Trit>) };
-    curl.reset();
+pub fn curl_simple_reset(c_curl: &mut CpuCurl<Trit>) {
+    c_curl.reset();
 }
 
 #[no_mangle]
-pub fn curl_simple_squeeze(c_curl: *mut c_void, trit_count: usize) -> *const u8 {
-    let curl: &mut CpuCurl<Trit> = unsafe { &mut *(c_curl as *mut CpuCurl<Trit>) };
-
+pub fn curl_simple_squeeze(c_curl: &mut CpuCurl<Trit>, trit_count: usize) -> *const CTrits {
     let mut trits = vec![0 as Trit; trit_count];
-    curl.squeeze(&mut trits);
+    c_curl.squeeze(&mut trits);
 
-    let trinary_str = Box::new(trits_to_string(trits.as_slice()).unwrap() + "\0");
-
-    &trinary_str.as_bytes()[0] as *const u8
+    let ctrits = Box::new(ctrits_from_trits(trits));
+    Box::into_raw(ctrits)
 }
