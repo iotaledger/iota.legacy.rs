@@ -109,8 +109,8 @@ pub fn digest_bundle_signature(c_bundle: *const c_char, c_signature: *const c_ch
 
     let mut curl = CpuCurl::<Trit>::default();
     let mut curl2 = CpuCurl::<Trit>::default();
-    iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &mut signature, &mut curl, &mut curl2);
+    iss::digest_bundle_signature::<CpuCurl<Trit>>(&bundle, &mut signature, &mut curl);
 
-    let out_str = Box::new(trits_to_string(&signature[..HASH_LENGTH]).unwrap() + "\0");
+    let out_str = Box::new(trits_to_string(&curl.state[..HASH_LENGTH]).unwrap() + "\0");
     &out_str.as_bytes()[0] as *const u8
 }

@@ -182,12 +182,8 @@ pub fn subseed_to_signature<C>(
 }
 
 /// Takes an input `signature`, and writes its digest out to the first 243 trits
-pub fn digest_bundle_signature<C>(
-    bundle: &[Trit],
-    signature: &mut [Trit],
-    digest_curl: &mut C,
-    signature_fragment_curl: &mut C,
-) where
+pub fn digest_bundle_signature<C>(bundle: &[Trit], signature: &mut [Trit], curl: &mut C)
+where
     C: Curl<Trit>,
 {
     assert_eq!(DIGEST_LENGTH, bundle.len());
@@ -196,21 +192,22 @@ pub fn digest_bundle_signature<C>(
     assert_eq!(length, signature.len());
 
     let mut buffer: [Trit; HASH_LENGTH] = [0; HASH_LENGTH];
-
+    let mut pos = 0;
     for i in 0..(length / HASH_LENGTH) {
         buffer.clone_from_slice(&signature[i * HASH_LENGTH..(i + 1) * HASH_LENGTH]);
         for _ in 0..
             (bundle[i * TRYTE_WIDTH] + bundle[i * TRYTE_WIDTH + 1] * 3 +
                  bundle[i * TRYTE_WIDTH + 2] * 9) - MIN_TRYTE_VALUE
         {
-            signature_fragment_curl.reset();
-            signature_fragment_curl.absorb(&buffer);
-            buffer.clone_from_slice(signature_fragment_curl.rate());
+            curl.reset();
+            curl.absorb(&signature[pos..pos + HASH_LENGTH]);
+            signature[pos..pos + HASH_LENGTH].clone_from_slice(curl.rate());
         }
-        digest_curl.absorb(&buffer);
+        pos += HASH_LENGTH;
     }
 
-    digest_curl.squeeze(&mut signature[..DIGEST_LENGTH])
+    curl.reset();
+    curl.absorb(&signature[..length]);
 }
 
 
@@ -289,9 +286,8 @@ mod test {
             message_hash.as_slice(),
             &mut signature_space,
             &mut c1,
-            &mut c2,
         );
-        digest_space.clone_from_slice(&signature_space[..DIGEST_LENGTH]);
+        c1.squeeze(&mut digest_space);
         c1.reset();
         address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
         sig_address_space.clone_from_slice(&digest_space);
@@ -349,9 +345,8 @@ mod test {
             message_hash.as_slice(),
             &mut signature_space,
             &mut c1,
-            &mut c2,
         );
-        digest_space.clone_from_slice(&signature_space[..DIGEST_LENGTH]);
+        c1.squeeze(&mut digest_space);
         c1.reset();
         address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
         sig_address_space.clone_from_slice(&digest_space);
