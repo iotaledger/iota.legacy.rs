@@ -24,11 +24,11 @@ pub fn split_checksum<'a, T>(t: &'a [T]) -> (&'a [T], &'a [T]) {
     t.split_at(offset)
 }
 
-pub fn checksum_validate(t: &[Trit], kerl: &mut Kerl) -> Option<ChecksumValidationError> {
-    use ChecksumValidationError::*;
+pub fn checksum_validate(t: &[Trit], kerl: &mut Kerl) -> ChecksumValidationResult {
+    use ChecksumValidationResult::*;
 
     if t.len() <= CHECKSUM_LEN {
-        return Some(InvalidLength);
+        return InvalidLength;
     }
 
     let (body, rest) = t.split_at(t.len() - CHECKSUM_LEN);
@@ -37,15 +37,16 @@ pub fn checksum_validate(t: &[Trit], kerl: &mut Kerl) -> Option<ChecksumValidati
     self::checksum(body, &mut checksum, kerl);
 
     if rest != checksum {
-        return Some(InvalidChecksum);
+        return InvalidChecksum;
     }
 
-    None
+    ValidChecksum
 }
 
 #[derive(Debug, Eq, PartialEq)]
 #[repr(u32)]
-pub enum ChecksumValidationError {
+pub enum ChecksumValidationResult {
+    ValidChecksum = 0,
     /// Given Trinary is not of `> 9` trytes.
     InvalidLength = 1,
     /// Checksum did not match input.
@@ -72,7 +73,7 @@ mod test {
         let mut curl = Kerl::default();
         assert_eq!(
             checksum_validate(combined.as_slice(), &mut curl),
-            Some(ChecksumValidationError::InvalidChecksum)
+            ChecksumValidationResult::InvalidChecksum
         );
     }
 
@@ -83,7 +84,7 @@ mod test {
 
         assert_eq!(
             checksum_validate(combined.as_slice(), &mut curl),
-            Some(ChecksumValidationError::InvalidLength)
+            ChecksumValidationResult::InvalidLength
         );
     }
 
@@ -115,6 +116,6 @@ mod test {
             .collect();
 
         let mut kerl = Kerl::default();
-        assert_eq!(checksum_validate(&combined, &mut kerl), None);
+        assert_eq!(checksum_validate(&combined, &mut kerl), ChecksumValidationResult::ValidChecksum);
     }
 }

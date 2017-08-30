@@ -43,6 +43,16 @@ pub fn iota_curl_bctrit_reset(c_curl: &mut CpuCurl<BCTrit>) {
 }
 
 #[no_mangle]
+pub fn iota_curl_bctrit_rounds(c_curl: &CpuCurl<BCTrit>) -> u8 {
+    c_curl.rounds()
+}
+
+#[no_mangle]
+pub fn iota_curl_bctrit_set_rounds(c_curl: &mut CpuCurl<BCTrit>, rounds: u8) {
+    c_curl.set_rounds(rounds);
+}
+
+#[no_mangle]
 pub fn iota_curl_bctrit_squeeze(c_curl: &mut CpuCurl<BCTrit>, trit_count: usize) -> *const CTrits {
     let trits: Vec<Trit> = {
         let mut bctrits = vec![(0, 0); trit_count];

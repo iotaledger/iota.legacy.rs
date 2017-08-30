@@ -8,6 +8,15 @@ use iota_sign::iss;
 use iota_curl_cpu::*;
 
 #[no_mangle]
+pub static IOTA_SIGN_ISS_KEY_LENGTH: usize = iss::KEY_LENGTH;
+#[no_mangle]
+pub static IOTA_SIGN_ISS_DIGEST_LENGTH: usize = iss::DIGEST_LENGTH;
+#[no_mangle]
+pub static IOTA_SIGN_ISS_ADDRESS_LENGTH: usize = iss::ADDRESS_LENGTH;
+#[no_mangle]
+pub static IOTA_SIGN_ISS_SIGNATURE_LENGTH: usize = iss::SIGNATURE_LENGTH;
+
+#[no_mangle]
 pub  fn iota_sign_iss_subseed(seed: &CTrits, index: isize, curl: &mut CpuCurl<Trit>) -> *const CTrits {
     let mut subseed = vec![0; HASH_LENGTH];
 
