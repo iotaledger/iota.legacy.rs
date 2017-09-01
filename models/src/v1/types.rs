@@ -14,6 +14,7 @@ pub trait Transaction<'a> {
     fn trunk(&self) -> HashView<'a>;
     fn branch(&self) -> HashView<'a>;
     fn nonce(&self) -> NonceView<'a>;
+    fn essence(&self) -> &[Trit];
 }
 
 #[derive(Debug, Eq, PartialEq)]

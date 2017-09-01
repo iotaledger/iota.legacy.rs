@@ -6,6 +6,11 @@
 extern crate alloc;
 
 extern crate iota_trytes as trytes;
+extern crate iota_curl as curl;
+extern crate iota_kerl as kerl;
+
+#[macro_use]
+extern crate std;
 
 #[macro_use]
 mod macros;

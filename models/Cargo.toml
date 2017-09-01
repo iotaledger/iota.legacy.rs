@@ -11,6 +11,8 @@ alloc = ["iota-trytes/alloc"]
 
 [dependencies]
 iota-trytes = { path = "../trytes" }
+iota-curl = { path = "../curl" }
+iota-kerl = { path = "../kerl" }
 
 [dev-dependencies]
 iota-trytes = { path = "../trytes", features = ["alloc"] }
