@@ -49,13 +49,11 @@ pub fn round_third(input: usize) -> usize {
 /// given an integer `i`, returns the minimum number of trits required to convert to balanced
 /// ternary
 pub fn min_trits(i: isize) -> usize {
-    let mut num : usize = 0;
+    let mut num: usize = 1;
     let v_abs = i.wrapping_abs();
-    while {
+    while v_abs > (RADIX as isize).pow(num as u32 - 1) {
         num += 1;
-        v_abs > (RADIX as isize).pow(num as u32)
     }
-    {}
     num
 }
 
