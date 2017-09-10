@@ -63,6 +63,15 @@ mod test {
     use alloc::vec::Vec;
 
     #[test]
+    fn test_min_trits() {
+        let tests: [isize; 5] = [0, 1, -1, 3, 8];
+        let expect: [usize; 5] = [1, 1, 1, 2, 3];
+        for (&t, &e) in tests.iter().zip(expect.iter()) {
+            assert_eq!(min_trits(t), e);
+        }
+    }
+
+    #[test]
     fn test_trits2int() {
         let trits: Vec<Trit> = vec![0, 1, -1, 1, 1, -1, -1, 1, 1, 0, 0, 1, 0, 1, 1];
         assert_eq!(trits2int(&trits), 6562317);
