@@ -144,6 +144,37 @@ where
 
 }
 
+/// Given a `subseed` and a `security` level, generate the key digest, and write it to `out`
+pub fn subseed_to_digest<T, C>(subseed: &[T], security: usize, out: &mut [T], curl: &mut C)
+where
+    T: Copy + Clone + Sized,
+    C: Curl<T>,
+{
+    let length = security * KEY_LENGTH / HASH_LENGTH;
+    let mut key_state: [T; STATE_LENGTH] = [curl.rate()[0]; STATE_LENGTH];
+    let mut digest_state: [T; STATE_LENGTH] = [curl.rate()[0]; STATE_LENGTH];
+    curl.absorb(subseed);
+
+    key_state.clone_from_slice(curl.state());
+    for __ in 0..(length) {
+        curl.state_mut().clone_from_slice(&key_state);
+        curl.squeeze(out);
+        key_state.clone_from_slice(curl.state());
+        for _ in 0..(MAX_TRYTE_VALUE - MIN_TRYTE_VALUE + 1) {
+            curl.reset();
+            curl.absorb(out);
+            out.clone_from_slice(curl.rate());
+        }
+
+        curl.state_mut().clone_from_slice(&digest_state);
+        curl.absorb(out);
+        digest_state.clone_from_slice(curl.state());
+
+    }
+    curl.state_mut().clone_from_slice(&digest_state);
+    curl.squeeze(out);
+}
+
 /// Given a `hash` to sign, a `subkey` (or subseed), and a `security` (size of signature in units
 /// of `SIGNATURE_LENGTH`), write output to `signature`
 pub fn subseed_to_signature<C>(
@@ -316,6 +347,7 @@ mod test {
         let mut address_space = vec![0; ADDRESS_LENGTH];
         let mut sig_address_space = vec![0; ADDRESS_LENGTH];
         let mut signature_space = vec![0; SIGNATURE_LENGTH];
+        let mut direct_address = vec![0; ADDRESS_LENGTH];
         let index = 234987621;
 
         subseed::<CpuCurl<Trit>>(&seed, index, &mut key_space, &mut c1);
@@ -329,6 +361,16 @@ mod test {
 
         c1.reset();
         subseed(&seed, index, &mut digest_space, &mut c1);
+        c1.reset();
+        subseed_to_digest(
+            &digest_space,
+            security as usize,
+            &mut direct_address,
+            &mut c1,
+        );
+        c1.reset();
+        address(&mut direct_address, &mut c1);
+        c1.reset();
         subseed_to_signature(
             message_hash.as_slice(),
             digest_space.as_mut_slice(),
@@ -337,7 +379,6 @@ mod test {
             &mut c1,
             &mut c2,
         );
-        //signature_space.clone_from_slice(&key_space);
 
         c1.reset();
         c2.reset();
@@ -351,7 +392,7 @@ mod test {
         address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
         sig_address_space.clone_from_slice(&digest_space);
 
-        //assert_eq!(address_space, sig_address_space);
         assert_eq!(address_space, sig_address_space);
+        assert_eq!(address_space, direct_address);
     }
 }

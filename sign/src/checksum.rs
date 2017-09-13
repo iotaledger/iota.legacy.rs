@@ -4,11 +4,10 @@ use trytes::TRITS_PER_TRYTE;
 use trytes::HASH_LENGTH;
 use trytes::Trit;
 
-pub const CHECKSUM_TRYTES : usize = 9;
+pub const CHECKSUM_TRYTES: usize = 9;
 pub const CHECKSUM_LEN: usize = CHECKSUM_TRYTES * TRITS_PER_TRYTE;
 
-pub fn trits_checksum(t: &[Trit], out: &mut [Trit], kerl: &mut Kerl)
-{
+pub fn trits_checksum(t: &[Trit], out: &mut [Trit], kerl: &mut Kerl) {
     assert_eq!(out.len(), CHECKSUM_LEN);
 
     let mut trits = [0 as Trit; HASH_LENGTH];
@@ -17,15 +16,14 @@ pub fn trits_checksum(t: &[Trit], out: &mut [Trit], kerl: &mut Kerl)
     kerl.absorb(t);
     kerl.squeeze(&mut trits);
 
-    out.clone_from_slice(&trits[HASH_LENGTH-CHECKSUM_LEN..HASH_LENGTH]);
+    out.clone_from_slice(&trits[HASH_LENGTH - CHECKSUM_LEN..HASH_LENGTH]);
 }
 
 pub fn trits_without_checksum<'a, T>(t: &'a [T]) -> &'a [T] {
     &t[0..t.len() - CHECKSUM_LEN]
 }
 
-pub fn trits_validate_checksum(t: &[Trit], kerl: &mut Kerl) -> Option<ChecksumValidationError>
-{
+pub fn trits_validate_checksum(t: &[Trit], kerl: &mut Kerl) -> Option<ChecksumValidationError> {
     use ChecksumValidationError::*;
 
     if t.len() <= CHECKSUM_LEN {
@@ -109,7 +107,10 @@ mod test {
     #[test]
     fn checksum_kerl() {
         let combined: Vec<Trit> = "EUHMAFIYBYZOXAVQQYRQ9RCNMTYX9KNEZFWXYMQIYPSRZRVDOLXDPUEARYPTWSZCAXJLXRYUUQKSHIJYZICCXCXUHX"
-            .chars().flat_map(char_to_trits).cloned().collect();
+            .chars()
+            .flat_map(char_to_trits)
+            .cloned()
+            .collect();
 
         let mut kerl = Kerl::default();
         assert_eq!(trits_validate_checksum(&combined, &mut kerl), None);

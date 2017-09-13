@@ -55,7 +55,7 @@ where
             self.keccak.fill_block();
             self.keccak.squeeze(&mut bytes);
             self.reset();
-            bytes_to_trits(&mut bytes.to_vec(), chunk);
+            bytes_to_trits(&mut bytes, chunk);
             for b in bytes.iter_mut() {
                 *b = *b ^ 0xFF;
             }
@@ -80,9 +80,7 @@ where
         0
     }
 
-    fn set_rounds(&mut self, rounds: u8) {
-
-    }
+    fn set_rounds(&mut self, rounds: u8) {}
 }
 
 
