@@ -1,0 +1,25 @@
+[package]
+name = "iota-merkle"
+version = "0.1.0"
+authors = ["Paul D Handy <paul.d.handy@gmail.com>",
+           "Andreas C. Osowski <andreas@osowski.de>"]
+keywords = ["no_std"]
+
+[features]
+default = []
+parallel = []
+
+[dependencies]
+iota-curl = { path = "../curl" }
+iota-trytes = { path = "../trytes" }
+iota-tmath = { path = "../tmath" }
+iota-sign = { path = "../sign" }
+iota-curl-cpu = { path = "../curl-cpu" }
+
+[dev-dependencies]
+iota-curl-cpu = { path = "../curl-cpu" }
+
+[dev-dependencies.iota-trytes]
+path = "../trytes"
+features = ["alloc"]
+
