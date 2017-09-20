@@ -55,7 +55,7 @@ where
             self.keccak.fill_block();
             self.keccak.squeeze(&mut bytes);
             self.reset();
-            bytes_to_trits(&mut bytes, chunk);
+            bytes_to_trits(&mut bytes.to_vec(), chunk);
             for b in bytes.iter_mut() {
                 *b = *b ^ 0xFF;
             }
