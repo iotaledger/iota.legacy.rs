@@ -145,34 +145,31 @@ where
 }
 
 /// Given a `subseed` and a `security` level, generate the key digest, and write it to `out`
-pub fn subseed_to_digest<T, C>(subseed: &[T], security: usize, out: &mut [T], curl: &mut C)
-where
+pub fn subseed_to_digest<T, C>(
+    subseed: &[T],
+    security: usize,
+    out: &mut [T],
+    c1: &mut C,
+    c2: &mut C,
+    c3: &mut C,
+) where
     T: Copy + Clone + Sized,
     C: Curl<T>,
 {
     let length = security * KEY_LENGTH / HASH_LENGTH;
-    let mut key_state: [T; STATE_LENGTH] = [curl.rate()[0]; STATE_LENGTH];
-    let mut digest_state: [T; STATE_LENGTH] = [curl.rate()[0]; STATE_LENGTH];
-    curl.absorb(subseed);
-
-    key_state.clone_from_slice(curl.state());
-    for __ in 0..(length) {
-        curl.state_mut().clone_from_slice(&key_state);
-        curl.squeeze(out);
-        key_state.clone_from_slice(curl.state());
+    c1.absorb(subseed);
+    for _ in 0..(length) {
+        c1.squeeze(out);
         for _ in 0..(MAX_TRYTE_VALUE - MIN_TRYTE_VALUE + 1) {
-            curl.reset();
-            curl.absorb(out);
-            out.clone_from_slice(curl.rate());
+            c2.reset();
+            c2.absorb(out);
+            out.clone_from_slice(c2.rate());
         }
 
-        curl.state_mut().clone_from_slice(&digest_state);
-        curl.absorb(out);
-        digest_state.clone_from_slice(curl.state());
+        c3.absorb(out);
 
     }
-    curl.state_mut().clone_from_slice(&digest_state);
-    curl.squeeze(out);
+    c3.squeeze(out);
 }
 
 /// Given a `hash` to sign, a `subkey` (or subseed), and a `security` (size of signature in units
@@ -342,6 +339,7 @@ mod test {
 
         let mut c1 = CpuCurl::<Trit>::default();
         let mut c2 = CpuCurl::<Trit>::default();
+        let mut c3 = CpuCurl::<Trit>::default();
         let mut key_space = vec![0; KEY_LENGTH];
         let mut digest_space = vec![0; DIGEST_LENGTH];
         let mut address_space = vec![0; ADDRESS_LENGTH];
@@ -356,10 +354,11 @@ mod test {
         c1.reset();
         digest_key::<Trit, CpuCurl<Trit>>(&key_space, &mut digest_space, &mut c1, &mut c2);
         c1.reset();
+        c2.reset();
         address::<Trit, CpuCurl<Trit>>(&mut digest_space, &mut c1);
+        c1.reset();
         address_space.clone_from_slice(&digest_space);
 
-        c1.reset();
         subseed(&seed, index, &mut digest_space, &mut c1);
         c1.reset();
         subseed_to_digest(
@@ -367,8 +366,11 @@ mod test {
             security as usize,
             &mut direct_address,
             &mut c1,
+            &mut c2,
+            &mut c3,
         );
         c1.reset();
+        c2.reset();
         address(&mut direct_address, &mut c1);
         c1.reset();
         subseed_to_signature(
