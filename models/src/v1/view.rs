@@ -1,11 +1,11 @@
 use trytes::*;
 use inner::*;
 
+use get::*;
+
 use super::NonceView;
 use super::types::*;
 use super::constants::*;
-use super::builder::*;
-
 #[derive(Clone, Eq, PartialEq)]
 pub struct TransactionView<'a>(&'a [Trit]);
 
@@ -17,8 +17,8 @@ impl<'a> TransactionView<'a> {
         Ok(TransactionView(base))
     }
 
-    pub fn to_builder(&self) -> TransactionBuilder {
-        TransactionBuilder::from_trits(self).unwrap()
+    pub unsafe fn from_trits_raw(base: &'a [Trit]) -> Self {
+        TransactionView(base)
     }
 }
 
@@ -29,61 +29,102 @@ impl<'a> ::core::ops::Deref for TransactionView<'a> {
     }
 }
 
+impl<'a, 'b> Transaction<'a> for &'b TransactionView<'a> {
+    fn signature_or_message(&self) -> &[Trit] {
+        &self.0[0..ADDRESS_OFFSET]
+    }
+
+    fn address(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_address(self.0)) }
+    }
+    fn tag(&self) -> TagView<'a> {
+        unsafe { TagView::from_trits_raw(tx_tag(self.0)) }
+    }
+    fn bundle(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_bundle(self.0)) }
+    }
+    fn trunk(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_trunk(self.0)) }
+    }
+    fn branch(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_branch(self.0)) }
+    }
+    fn nonce(&self) -> NonceView<'a> {
+        unsafe { NonceView::from_trits_raw(tx_nonce(self.0)) }
+    }
+
+    fn value(&self) -> isize {
+        tx_value(self.0)
+    }
+
+    fn timestamp(&self) -> usize {
+        tx_timestamp(self.0)
+    }
+
+    fn current_index(&self) -> usize {
+        tx_current_index(self.0)
+    }
+
+    fn last_index(&self) -> usize {
+        tx_last_index(self.0)
+    }
+
+    fn essence(&self) -> &[Trit] {
+        tx_essence(self.0)
+    }
+}
+
 impl<'a> Transaction<'a> for TransactionView<'a> {
     fn signature_or_message(&self) -> &[Trit] {
         &self.0[0..ADDRESS_OFFSET]
     }
 
     fn address(&self) -> HashView<'a> {
-        HashView::from_trits(&self.0[ADDRESS_OFFSET..VALUE_OFFSET]).unwrap()
+        unsafe { HashView::from_trits_raw(tx_address(self.0)) }
+    }
+    fn tag(&self) -> TagView<'a> {
+        unsafe { TagView::from_trits_raw(tx_tag(self.0)) }
+    }
+    fn bundle(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_bundle(self.0)) }
+    }
+    fn trunk(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_trunk(self.0)) }
+    }
+    fn branch(&self) -> HashView<'a> {
+        unsafe { HashView::from_trits_raw(tx_branch(self.0)) }
+    }
+    fn nonce(&self) -> NonceView<'a> {
+        unsafe { NonceView::from_trits_raw(tx_nonce(self.0)) }
     }
 
     fn value(&self) -> isize {
-        num::trits2int(&self.0[VALUE_OFFSET..TAG_OFFSET])
-    }
-
-    fn tag(&self) -> TagView<'a> {
-        TagView::from_trits(&self.0[TAG_OFFSET..TIMESTAMP_OFFSET]).unwrap()
+        tx_value(self.0)
     }
 
     fn timestamp(&self) -> usize {
-        num::trits2int(&self.0[TIMESTAMP_OFFSET..CURRENT_INDEX_OFFSET]) as usize
+        tx_timestamp(self.0)
     }
 
     fn current_index(&self) -> usize {
-        num::trits2int(&self.0[CURRENT_INDEX_OFFSET..LAST_INDEX_OFFSET]) as usize
+        tx_current_index(self.0)
     }
 
     fn last_index(&self) -> usize {
-        num::trits2int(&self.0[LAST_INDEX_OFFSET..BUNDLE_OFFSET]) as usize
-    }
-
-    fn bundle(&self) -> HashView<'a> {
-        HashView::from_trits(&self.0[BUNDLE_OFFSET..TRUNK_OFFSET]).unwrap()
-    }
-
-    fn trunk(&self) -> HashView<'a> {
-        HashView::from_trits(&self.0[TRUNK_OFFSET..BRANCH_OFFSET]).unwrap()
-    }
-
-    fn branch(&self) -> HashView<'a> {
-        HashView::from_trits(&self.0[BRANCH_OFFSET..NONCE_OFFSET]).unwrap()
-    }
-
-    fn nonce(&self) -> NonceView<'a> {
-        NonceView::from_trits(&self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS]).unwrap()
+        tx_last_index(self.0)
     }
 
     fn essence(&self) -> &[Trit] {
-        &self.0[ESSENCE_OFFSET..][..ESSENCE_TRITS]
+        tx_essence(self.0)
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    use v1::*;
     use alloc::Vec;
-    use super::super::builder::*;
 
     #[test]
     fn tx_view_and_build() {
@@ -161,16 +202,17 @@ mod test {
         assert_eq!(trits_to_string(&txv.nonce()).unwrap(), nonce_ex);
 
         // test builder.
-        let mut builder = TransactionBuilder::default();
-        builder.set_address(&txv.address())
-            .set_value(txv.value())
-            .set_timestamp(txv.timestamp())
-            .set_current_index(current_index_ex)
-            .set_last_index(last_index_ex)
-            .set_bundle(&txv.bundle())
-            .set_trunk(&txv.trunk())
-            .set_branch(&txv.branch())
-            .set_nonce(&txv.nonce());
+        let mut tx = tx_alloc_stack();
+        let mut builder = TransactionViewMut::from_trits(&mut tx).unwrap();
+        builder.set_address(&txv.address());
+        builder.set_value(txv.value());
+        builder.set_timestamp(txv.timestamp());
+        builder.set_current_index(current_index_ex);
+        builder.set_last_index(last_index_ex);
+        builder.set_bundle(&txv.bundle());
+        builder.set_trunk(&txv.trunk());
+        builder.set_branch(&txv.branch());
+        builder.set_nonce(&txv.nonce());
 
         let trytes = trits_to_string(&builder).unwrap();
         assert_eq!(trytes, TX1);

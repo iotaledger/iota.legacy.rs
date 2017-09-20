@@ -62,7 +62,7 @@ macro_rules! typed_own {
 
             #[cfg(feature = "alloc")]
             fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-                let s = trits_to_string(self.0).unwrap();
+                let s = trits_to_string(&self.0).unwrap();
                 f.write_str(&s)
             }
 
@@ -87,6 +87,11 @@ macro_rules! typed_view {
                     return Err(::ModelParseError::InvalidLength);
                 }
                 Ok($name(base))
+            }
+
+            #[inline]
+            pub unsafe fn from_trits_raw(base: &'a [Trit]) -> Self {
+                $name(base)
             }
         }
 

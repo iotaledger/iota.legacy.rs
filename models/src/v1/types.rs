@@ -1,5 +1,5 @@
 use trytes::*;
-use ::inner::*;
+use inner::*;
 
 use super::NonceView;
 pub trait Transaction<'a> {
@@ -17,8 +17,21 @@ pub trait Transaction<'a> {
     fn essence(&self) -> &[Trit];
 }
 
+pub trait TransactionMut<'a> {
+    fn set_signature_or_message(&mut self, t: &[Trit]);
+    fn set_address(&mut self, h: &HashView);
+    fn set_value(&mut self, v: isize);
+    fn set_tag(&mut self, t: &TagView);
+    fn set_timestamp(&mut self, t: usize);
+    fn set_current_index(&mut self, idx: usize);
+    fn set_last_index(&mut self, idx: usize);
+    fn set_bundle(&mut self, h: &HashView);
+    fn set_trunk(&mut self, h: &HashView);
+    fn set_branch(&mut self, h: &HashView);
+    fn set_nonce(&mut self, h: &NonceView);
+}
+
 #[derive(Debug, Eq, PartialEq)]
 pub enum TransactionParseError {
     InvalidLength,
 }
-

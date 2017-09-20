@@ -2,10 +2,9 @@ use curl::*;
 use kerl::*;
 use inner::Hash;
 
-use super::view::*;
 use super::*;
 
-pub fn bundle_hash<'a>(transactions: &[&TransactionView<'a>], kerl: &mut Kerl) -> Hash {
+pub fn bundle_hash<'a, T: Transaction<'a>>(transactions: &[&T], kerl: &mut Kerl) -> Hash {
     // We conciously do not validate all transaction's fields here.
     // This loop is easier than expecting the input to be sorted.
     for i in 0..transactions.len() {

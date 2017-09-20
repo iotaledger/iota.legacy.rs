@@ -2,10 +2,10 @@ use core::fmt;
 
 use super::Transaction;
 use super::TransactionView;
-use super::TransactionBuilder;
+use super::TransactionViewMut;
 
 #[cfg(feature = "alloc")]
-fn fmt_tx(tx: &TransactionView, f: &mut fmt::Formatter) -> fmt::Result {
+fn fmt_tx<'a, T: Transaction<'a>>(tx: &T, f: &mut fmt::Formatter) -> fmt::Result {
     use trytes::*;
 
     f.write_str("(")
@@ -35,7 +35,7 @@ fn fmt_tx(tx: &TransactionView, f: &mut fmt::Formatter) -> fmt::Result {
 }
 
 #[cfg(not(feature = "alloc"))]
-fn fmt_tx(tx: &TransactionView, f: &mut fmt::Formatter) -> fmt::Result {
+fn fmt_tx<'a, T: Transaction<'a>>(tx: &T, f: &mut fmt::Formatter) -> fmt::Result {
     f.write_str("(")
         .and_then(|_| fmt::Debug::fmt(&tx.signature_or_message(), f))
         .and_then(|_| f.write_str(", "))
@@ -69,9 +69,9 @@ impl<'a> fmt::Debug for TransactionView<'a> {
     }
 }
 
-impl fmt::Debug for TransactionBuilder {
+impl<'a> fmt::Debug for TransactionViewMut<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("TransactionBuilder").and_then(
+        f.write_str("TransactionViewMut").and_then(
             |_| fmt_tx(&self.view(), f),
         )
     }
