@@ -1,7 +1,7 @@
 use trytes::*;
 use inner::*;
 
-use super::Nonce;
+use super::NonceView;
 use super::types::*;
 use super::constants::*;
 use super::builder::*;
@@ -19,7 +19,14 @@ impl<'a> TransactionView<'a> {
     }
 
     pub fn to_builder(&self) -> TransactionBuilder {
-        TransactionBuilder::from_trits(self.0).unwrap()
+        TransactionBuilder::from_trits(self).unwrap()
+    }
+}
+
+impl<'a> ::core::ops::Deref for TransactionView<'a> {
+    type Target = [Trit];
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -28,16 +35,16 @@ impl<'a> Transaction<'a> for TransactionView<'a> {
         &self.0[0..ADDRESS_OFFSET]
     }
 
-    fn address(&self) -> Hash<'a> {
-        Hash::from_trits(&self.0[ADDRESS_OFFSET..VALUE_OFFSET]).unwrap()
+    fn address(&self) -> HashView<'a> {
+        HashView::from_trits(&self.0[ADDRESS_OFFSET..VALUE_OFFSET]).unwrap()
     }
 
     fn value(&self) -> isize {
         num::trits2int(&self.0[VALUE_OFFSET..TAG_OFFSET])
     }
 
-    fn tag(&self) -> Tag<'a> {
-        Tag::from_trits(&self.0[TAG_OFFSET..TIMESTAMP_OFFSET]).unwrap()
+    fn tag(&self) -> TagView<'a> {
+        TagView::from_trits(&self.0[TAG_OFFSET..TIMESTAMP_OFFSET]).unwrap()
     }
 
     fn timestamp(&self) -> usize {
@@ -52,20 +59,20 @@ impl<'a> Transaction<'a> for TransactionView<'a> {
         num::trits2int(&self.0[LAST_INDEX_OFFSET..BUNDLE_OFFSET]) as usize
     }
 
-    fn bundle(&self) -> Hash<'a> {
-        Hash::from_trits(&self.0[BUNDLE_OFFSET..TRUNK_OFFSET]).unwrap()
+    fn bundle(&self) -> HashView<'a> {
+        HashView::from_trits(&self.0[BUNDLE_OFFSET..TRUNK_OFFSET]).unwrap()
     }
 
-    fn trunk(&self) -> Hash<'a> {
-        Hash::from_trits(&self.0[TRUNK_OFFSET..BRANCH_OFFSET]).unwrap()
+    fn trunk(&self) -> HashView<'a> {
+        HashView::from_trits(&self.0[TRUNK_OFFSET..BRANCH_OFFSET]).unwrap()
     }
 
-    fn branch(&self) -> Hash<'a> {
-        Hash::from_trits(&self.0[BRANCH_OFFSET..NONCE_OFFSET]).unwrap()
+    fn branch(&self) -> HashView<'a> {
+        HashView::from_trits(&self.0[BRANCH_OFFSET..NONCE_OFFSET]).unwrap()
     }
 
-    fn nonce(&self) -> Nonce<'a> {
-        Nonce::from_trits(&self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS]).unwrap()
+    fn nonce(&self) -> NonceView<'a> {
+        NonceView::from_trits(&self.0[NONCE_OFFSET..TRANSACTION_LEN_TRITS]).unwrap()
     }
 }
 

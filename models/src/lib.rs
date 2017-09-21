@@ -9,9 +9,13 @@ extern crate iota_trytes as trytes;
 
 #[macro_use]
 mod macros;
+mod error;
 
 mod inner;
+pub use error::*;
+pub use inner::*;
+
 pub mod v1;
 pub mod v2;
 
-pub use v2::*;
+pub use v1::*;

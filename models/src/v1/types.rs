@@ -1,19 +1,19 @@
 use trytes::*;
 use ::inner::*;
 
-use super::Nonce;
+use super::NonceView;
 pub trait Transaction<'a> {
     fn signature_or_message(&self) -> &[Trit];
-    fn address(&self) -> Hash<'a>;
+    fn address(&self) -> HashView<'a>;
     fn value(&self) -> isize;
-    fn tag(&self) -> Tag<'a>;
+    fn tag(&self) -> TagView<'a>;
     fn timestamp(&self) -> usize;
     fn current_index(&self) -> usize;
     fn last_index(&self) -> usize;
-    fn bundle(&self) -> Hash<'a>;
-    fn trunk(&self) -> Hash<'a>;
-    fn branch(&self) -> Hash<'a>;
-    fn nonce(&self) -> Nonce<'a>;
+    fn bundle(&self) -> HashView<'a>;
+    fn trunk(&self) -> HashView<'a>;
+    fn branch(&self) -> HashView<'a>;
+    fn nonce(&self) -> NonceView<'a>;
 }
 
 #[derive(Debug, Eq, PartialEq)]
