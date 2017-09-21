@@ -10,7 +10,9 @@ extern crate iota_sign;
 extern crate iota_trytes;
 extern crate iota_curl_cpu;
 extern crate iota_curl;
+extern crate iota_merkle;
 
 mod util;
 pub mod sign;
 pub mod curl;
+pub mod merkle;

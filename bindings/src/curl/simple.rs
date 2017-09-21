@@ -22,7 +22,11 @@ pub fn curl_simple_delete(c_curl: *mut c_void) {
 #[no_mangle]
 pub fn curl_simple_absorb(c_curl: *mut c_void, trinary: *const c_char) {
     let trinary_str = unsafe { c_str_to_static_slice(trinary) };
-    let trits: Vec<Trit> = trinary_str.chars().flat_map(char_to_trits).cloned().collect();
+    let trits: Vec<Trit> = trinary_str
+        .chars()
+        .flat_map(char_to_trits)
+        .cloned()
+        .collect();
 
     let curl: &mut CpuCurl<Trit> = unsafe { &mut *(c_curl as *mut CpuCurl<Trit>) };
     curl.absorb(&trits);
