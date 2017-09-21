@@ -15,8 +15,8 @@ pub trait Transaction<'a> {
     fn branch(&self) -> HashView<'a>;
     fn tag(&self) -> TagView<'a>;
     fn attachment_timestamp(&self) -> usize;
-    fn attachment_timestamp_low(&self) -> usize;
-    fn attachment_timestamp_high(&self) -> usize;
+    fn attachment_timestamp_lower(&self) -> usize;
+    fn attachment_timestamp_upper(&self) -> usize;
     fn nonce(&self) -> NonceView<'a>;
     fn essence(&self) -> &[Trit];
 }
@@ -34,8 +34,8 @@ pub trait TransactionMut<'a> {
     fn set_branch(&mut self, h: &HashView);
     fn set_tag(&mut self, t: &TagView);
     fn set_attachment_timestamp(&mut self, timestamp: usize);
-    fn set_attachment_timestamp_low(&mut self, timestamp: usize);
-    fn set_attachment_timestamp_high(&mut self, timestamp: usize);
+    fn set_attachment_timestamp_lower(&mut self, timestamp: usize);
+    fn set_attachment_timestamp_upper(&mut self, timestamp: usize);
     fn set_nonce(&mut self, h: &NonceView);
 }
 

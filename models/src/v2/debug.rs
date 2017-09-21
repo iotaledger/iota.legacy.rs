@@ -43,9 +43,9 @@ fn fmt_tx<'a, T: Transaction<'a>>(tx: &T, f: &mut fmt::Formatter) -> fmt::Result
         .and_then(|_| f.write_str(", "))
         .and_then(|_| fmt::Debug::fmt(&tx.tag(), f))
         .and_then(|_| f.write_str(", "))
-        .and_then(|_| fmt::Debug::fmt(&tx.attachment_timestamp_low(), f))
+        .and_then(|_| fmt::Debug::fmt(&tx.attachment_timestamp_lower(), f))
         .and_then(|_| f.write_str(", "))
-        .and_then(|_| fmt::Debug::fmt(&tx.attachment_timestamp_high(), f))
+        .and_then(|_| fmt::Debug::fmt(&tx.attachment_timestamp_upper(), f))
         .and_then(|_| f.write_str(", "))
         .and_then(|_| fmt::Debug::fmt(&tx.nonce(), f))
 }

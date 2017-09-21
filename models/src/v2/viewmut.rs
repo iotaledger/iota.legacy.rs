@@ -95,12 +95,12 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_attachment_timestamp(self.0, timestamp);
     }
 
-    fn set_attachment_timestamp_low(&mut self, timestamp: usize) {
-        tx_set_attachment_timestamp_low(self.0, timestamp);
+    fn set_attachment_timestamp_lower(&mut self, timestamp: usize) {
+        tx_set_attachment_timestamp_lower(self.0, timestamp);
     }
 
-    fn set_attachment_timestamp_high(&mut self, timestamp: usize) {
-        tx_set_attachment_timestamp_high(self.0, timestamp);
+    fn set_attachment_timestamp_upper(&mut self, timestamp: usize) {
+        tx_set_attachment_timestamp_upper(self.0, timestamp);
     }
 
     fn set_nonce(&mut self, h: &NonceView) {

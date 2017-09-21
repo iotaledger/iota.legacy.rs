@@ -61,12 +61,12 @@ impl<'a, 'b> Transaction<'a> for &'b TransactionView<'a> {
         tx_attachment_timestamp(self.0)
     }
 
-    fn attachment_timestamp_high(&self) -> usize {
-        tx_attachment_timestamp_high(self.0)
+    fn attachment_timestamp_upper(&self) -> usize {
+        tx_attachment_timestamp_upper(self.0)
     }
 
-    fn attachment_timestamp_low(&self) -> usize {
-        tx_attachment_timestamp_low(self.0)
+    fn attachment_timestamp_lower(&self) -> usize {
+        tx_attachment_timestamp_lower(self.0)
     }
 
     fn value(&self) -> isize {
@@ -122,12 +122,12 @@ impl<'a> Transaction<'a> for TransactionView<'a> {
         tx_attachment_timestamp(self.0)
     }
 
-    fn attachment_timestamp_high(&self) -> usize {
-        tx_attachment_timestamp_high(self.0)
+    fn attachment_timestamp_upper(&self) -> usize {
+        tx_attachment_timestamp_upper(self.0)
     }
 
-    fn attachment_timestamp_low(&self) -> usize {
-        tx_attachment_timestamp_low(self.0)
+    fn attachment_timestamp_lower(&self) -> usize {
+        tx_attachment_timestamp_lower(self.0)
     }
 
     fn value(&self) -> isize {
@@ -227,8 +227,8 @@ mod test {
         let tag_ex = "TEST9TWELVE9999999999999999";
         let obsolete_tag_ex = "TEST9TWELVE9999999999999999";
         let attachment_timestamp_ex = 1506017115846;
-        let attachment_timestamp_low_ex: usize = 0;
-        let attachment_timestamp_high_ex: usize = (-1637966580329_isize) as usize;
+        let attachment_timestamp_lower_ex: usize = 0;
+        let attachment_timestamp_upper_ex: usize = (-1637966580329_isize) as usize;
 
         let nonce_ex = "NRYCUDSTZEEJQORYXWMQATVERBP";
 
@@ -246,8 +246,8 @@ mod test {
         assert_eq!(trits_to_string(&txv.branch()).unwrap(), branch_ex);
         assert_eq!(trits_to_string(&txv.tag()).unwrap(), tag_ex);
         assert_eq!(txv.attachment_timestamp(), attachment_timestamp_ex);
-        assert_eq!(txv.attachment_timestamp_low(), attachment_timestamp_low_ex);
-        assert_eq!(txv.attachment_timestamp_high(), attachment_timestamp_high_ex);
+        assert_eq!(txv.attachment_timestamp_lower(), attachment_timestamp_lower_ex);
+        assert_eq!(txv.attachment_timestamp_upper(), attachment_timestamp_upper_ex);
         assert_eq!(trits_to_string(&txv.nonce()).unwrap(), nonce_ex);
 
         // test builder.
@@ -266,8 +266,8 @@ mod test {
             builder.set_branch(&txv.branch());
             builder.set_tag(&txv.tag());
             builder.set_attachment_timestamp(attachment_timestamp_ex);
-            builder.set_attachment_timestamp_low(attachment_timestamp_low_ex);
-            builder.set_attachment_timestamp_high(attachment_timestamp_high_ex);
+            builder.set_attachment_timestamp_lower(attachment_timestamp_lower_ex);
+            builder.set_attachment_timestamp_upper(attachment_timestamp_upper_ex);
             builder.set_nonce(&txv.nonce());
         }
 

@@ -93,15 +93,15 @@ pub fn iota_models_v2_tx_set_attachment_timestamp(tx: &mut CTrits, timestamp: us
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_attachment_timestamp_low(tx: &mut CTrits, timestamp: usize) {
+pub fn iota_models_v2_tx_set_attachment_timestamp_lower(tx: &mut CTrits, timestamp: usize) {
     let tx_slice = ctrits_slice_trits_mut(tx);
-    v2::set::tx_set_attachment_timestamp_low(tx_slice, timestamp);
+    v2::set::tx_set_attachment_timestamp_lower(tx_slice, timestamp);
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_attachment_timestamp_high(tx: &mut CTrits, timestamp: usize) {
+pub fn iota_models_v2_tx_set_attachment_timestamp_upper(tx: &mut CTrits, timestamp: usize) {
     let tx_slice = ctrits_slice_trits_mut(tx);
-    v2::set::tx_set_attachment_timestamp_high(tx_slice, timestamp);
+    v2::set::tx_set_attachment_timestamp_upper(tx_slice, timestamp);
 }
 
 #[no_mangle]

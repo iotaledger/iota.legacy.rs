@@ -82,6 +82,18 @@ pub fn iota_models_v2_tx_attachment_timestamp(ctrits: &CTrits) -> usize {
 }
 
 #[no_mangle]
+pub fn iota_models_v2_tx_attachment_timestamp_lower(ctrits: &CTrits) -> usize {
+    let slice = v2::get::tx_tag(ctrits_slice_trits(ctrits));
+    v2::get::tx_attachment_timestamp_lower(slice)
+}
+
+#[no_mangle]
+pub fn iota_models_v2_tx_attachment_timestamp_upper(ctrits: &CTrits) -> usize {
+    let slice = v2::get::tx_tag(ctrits_slice_trits(ctrits));
+    v2::get::tx_attachment_timestamp_upper(slice)
+}
+
+#[no_mangle]
 pub fn iota_models_v2_tx_nonce(ctrits: &CTrits) -> *const CTrits {
     let slice = v2::get::tx_nonce(ctrits_slice_trits(ctrits));
     let out = Box::new(ctrits_from_trits(slice.to_vec()));

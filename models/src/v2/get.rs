@@ -47,18 +47,18 @@ pub fn tx_tag(trits: &[Trit]) -> &[Trit] {
 
 pub fn tx_attachment_timestamp(trits: &[Trit]) -> usize {
     num::trits2int(
-        &trits[ATTACHMENT_TIMESTAMP_OFFSET..ATTACHMENT_TIMESTAMP_LOW_OFFSET],
+        &trits[ATTACHMENT_TIMESTAMP_OFFSET..ATTACHMENT_TIMESTAMP_LOWER_OFFSET],
     ) as usize
 }
 
-pub fn tx_attachment_timestamp_low(trits: &[Trit]) -> usize {
+pub fn tx_attachment_timestamp_lower(trits: &[Trit]) -> usize {
     num::trits2int(
-        &trits[ATTACHMENT_TIMESTAMP_LOW_OFFSET..ATTACHMENT_TIMESTAMP_HIGH_OFFSET],
+        &trits[ATTACHMENT_TIMESTAMP_LOWER_OFFSET..ATTACHMENT_TIMESTAMP_UPPER_OFFSET],
     ) as usize
 }
 
-pub fn tx_attachment_timestamp_high(trits: &[Trit]) -> usize {
-    num::trits2int(&trits[ATTACHMENT_TIMESTAMP_HIGH_OFFSET..NONCE_OFFSET]) as usize
+pub fn tx_attachment_timestamp_upper(trits: &[Trit]) -> usize {
+    num::trits2int(&trits[ATTACHMENT_TIMESTAMP_UPPER_OFFSET..NONCE_OFFSET]) as usize
 }
 
 pub fn tx_nonce<'a>(trits: &'a [Trit]) -> &'a [Trit] {

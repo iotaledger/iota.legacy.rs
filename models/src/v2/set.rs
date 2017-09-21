@@ -108,23 +108,23 @@ pub unsafe fn tx_set_tag_raw(tx: &mut [Trit], t: &[Trit]) {
 pub fn tx_set_attachment_timestamp(tx: &mut [Trit], timestamp: usize) {
     num::int2trits(
         timestamp as isize,
-        &mut tx[ATTACHMENT_TIMESTAMP_OFFSET..ATTACHMENT_TIMESTAMP_LOW_OFFSET],
+        &mut tx[ATTACHMENT_TIMESTAMP_OFFSET..ATTACHMENT_TIMESTAMP_LOWER_OFFSET],
     );
 }
 
 #[inline]
-pub fn tx_set_attachment_timestamp_low(tx: &mut [Trit], timestamp: usize) {
+pub fn tx_set_attachment_timestamp_lower(tx: &mut [Trit], timestamp: usize) {
     num::int2trits(
         timestamp as isize,
-        &mut tx[ATTACHMENT_TIMESTAMP_LOW_OFFSET..ATTACHMENT_TIMESTAMP_HIGH_OFFSET],
+        &mut tx[ATTACHMENT_TIMESTAMP_LOWER_OFFSET..ATTACHMENT_TIMESTAMP_UPPER_OFFSET],
     );
 }
 
 #[inline]
-pub fn tx_set_attachment_timestamp_high(tx: &mut [Trit], timestamp: usize) {
+pub fn tx_set_attachment_timestamp_upper(tx: &mut [Trit], timestamp: usize) {
     num::int2trits(
         timestamp as isize,
-        &mut tx[ATTACHMENT_TIMESTAMP_HIGH_OFFSET..NONCE_OFFSET],
+        &mut tx[ATTACHMENT_TIMESTAMP_UPPER_OFFSET..NONCE_OFFSET],
     );
 }
 
