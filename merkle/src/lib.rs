@@ -1,11 +1,14 @@
+#![no_std]
 #![feature(alloc)]
 #![feature(const_fn)]
 #![feature(conservative_impl_trait)]
-//#![no_std]
-extern crate core;
 
 #[macro_use]
 extern crate alloc;
+
+#[macro_use]
+extern crate std;
+
 
 extern crate iota_trytes as trytes;
 extern crate iota_tmath as tmath;

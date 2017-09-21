@@ -210,6 +210,7 @@ pub fn len(node: &MerkleBranch) -> usize {
 }
 
 pub fn write_branch(node: &MerkleBranch, index: usize, out: &mut [Trit]) {
+    println!("write_branch idx: {}", index);
     match *node {
         MerkleBranch::Sibling(hash, ref next) => {
             out[index..index + HASH_LENGTH].clone_from_slice(&hash);
@@ -218,19 +219,6 @@ pub fn write_branch(node: &MerkleBranch, index: usize, out: &mut [Trit]) {
         _ => {}
     }
 }
-
-/*
-pub fn prnt(node: &MerkleBranch) {
-    match *node {
-        MerkleBranch::Sibling(hash, ref next) => {
-            prnt(next);
-            let h_str = trits_to_string(&hash).unwrap();
-            println!("{}", h_str);
-        }
-        _ => {}
-    }
-}
-*/
 
 pub fn root<C: Curl<Trit>>(address: &[Trit], hashes: &[Trit], index: usize, curl: &mut C) -> usize {
     let mut i = 1;
@@ -300,14 +288,5 @@ mod tests {
         assert_eq!(leaf_count, count(&root_node));
         let branch_length = len(&some_branch);
         assert_eq!(tree_depth - 1, branch_length);
-        let mut siblings: Vec<Trit> = vec![0; branch_length * HASH_LENGTH];
-        write_branch(
-            &some_branch,
-            HASH_LENGTH * (branch_length - 1),
-            &mut siblings,
-        );
-        let s_str = trits_to_string(&siblings).unwrap();
-        println!("siblings: {}", s_str);
-        //prnt(&some_branch);
     }
 }
