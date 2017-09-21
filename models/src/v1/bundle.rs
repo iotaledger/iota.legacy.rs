@@ -4,8 +4,8 @@ use inner::Hash;
 
 use super::*;
 
-pub fn bundle_hash<'a, T: Transaction<'a>>(transactions: &[&T], kerl: &mut Kerl) -> Hash {
-    // We conciously do not validate all transaction's fields here.
+pub fn bundle_hash<'a, T: Transaction<'a>>(transactions: &[T], kerl: &mut Kerl) -> Hash {
+    // We conciously do not validate all transaction's currentIndex fields here.
     // This loop is easier than expecting the input to be sorted.
     for i in 0..transactions.len() {
         for tx in transactions {
