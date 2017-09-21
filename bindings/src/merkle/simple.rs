@@ -62,7 +62,8 @@ pub fn iota_merkle_count(tree: &iota_merkle::MerkleTree) -> usize {
 pub fn iota_merkle_slice(tree: &iota_merkle::MerkleTree) -> *const u8 {
     let mut out_trits: Vec<Trit> = vec![0; HASH_LENGTH];
     iota_merkle::slice(tree, &mut out_trits);
-    let slice_str = trits_to_string(&out_trits).unwrap();
+    let mut slice_str = trits_to_string(&out_trits).unwrap();
+    slice_str.push('\0');
     let ptr = slice_str.as_ptr();
     mem::forget(slice_str);
 
@@ -94,7 +95,8 @@ pub fn iota_merkle_siblings(branch: &iota_merkle::MerkleBranch) -> *const u8 {
     let mut out_trits: Vec<Trit> = vec![0; len];
     iota_merkle::write_branch(&branch, len - HASH_LENGTH, &mut out_trits);
 
-    let slice_str = trits_to_string(&out_trits).unwrap();
+    let mut slice_str = trits_to_string(&out_trits).unwrap();
+    slice_str.push('\0');
     let ptr = slice_str.as_ptr();
     mem::forget(slice_str);
 
