@@ -1,39 +1,46 @@
-use cty::*;
-use core::mem;
 use alloc::*;
 use alloc::boxed::Box;
-use alloc::string::String;
 use iota_trytes::*;
 use iota_curl_cpu::*;
-use iota_sign::iss;
-use shared::util::c_str_to_static_slice;
+use iota_curl::Curl;
 use iota_merkle;
+
+use shared::util::c_str_to_static_slice;
+use shared::*;
 
 #[no_mangle]
 pub fn iota_merkle_create(
-    c_seed: *const c_char,
+    seed: &CTrits,
     index: isize,
     count: usize,
     security: u8,
 ) -> *mut iota_merkle::MerkleTree {
-    let seed: Vec<Trit> = {
-        let seed_str = unsafe { c_str_to_static_slice(c_seed) };
-        seed_str.chars().flat_map(char_to_trits).cloned().collect()
-    };
-
     let mut c1 = CpuCurl::<Trit>::default();
     let mut c2 = CpuCurl::<Trit>::default();
     let mut c3 = CpuCurl::<Trit>::default();
-    let mut key_space = [0 as Trit; iss::KEY_LENGTH];
-    let out = Box::new(iota_merkle::create(
-        &seed,
-        index,
-        count,
-        security as usize,
-        &mut c1,
-        &mut c2,
-        &mut c3,
-    ));
+
+    let out = if seed.encoding == TritEncoding::TRIT {
+        Box::new(iota_merkle::create(
+            ctrits_slice_trits(seed),
+            index,
+            count,
+            security as usize,
+            &mut c1,
+            &mut c2,
+            &mut c3,
+        ))
+    } else {
+        let seed_vec = ctrits_to_trits(seed);
+        Box::new(iota_merkle::create(
+            &seed_vec,
+            index,
+            count,
+            security as usize,
+            &mut c1,
+            &mut c2,
+            &mut c3,
+        ))
+    };
 
     Box::into_raw(out)
 }
@@ -59,15 +66,12 @@ pub fn iota_merkle_count(tree: &iota_merkle::MerkleTree) -> usize {
 }
 
 #[no_mangle]
-pub fn iota_merkle_slice(tree: &iota_merkle::MerkleTree) -> *const u8 {
+pub fn iota_merkle_slice(tree: &iota_merkle::MerkleTree) -> *const CTrits {
     let mut out_trits: Vec<Trit> = vec![0; HASH_LENGTH];
     iota_merkle::slice(tree, &mut out_trits);
-    let mut slice_str = trits_to_string(&out_trits).unwrap();
-    slice_str.push('\0');
-    let ptr = slice_str.as_ptr();
-    mem::forget(slice_str);
 
-    ptr
+    let out = Box::new(ctrits_from_trits(out_trits));
+    Box::into_raw(out)
 }
 
 #[no_mangle]
@@ -90,45 +94,26 @@ pub fn iota_merkle_branch_len(branch: &iota_merkle::MerkleBranch) -> usize {
 }
 
 #[no_mangle]
-pub fn iota_merkle_siblings(branch: &iota_merkle::MerkleBranch) -> *const u8 {
+pub fn iota_merkle_siblings(branch: &iota_merkle::MerkleBranch) -> *const CTrits {
     let len = iota_merkle::len(branch) * HASH_LENGTH;
     let mut out_trits: Vec<Trit> = vec![0; len];
     iota_merkle::write_branch(&branch, len - HASH_LENGTH, &mut out_trits);
 
-    let mut slice_str = trits_to_string(&out_trits).unwrap();
-    slice_str.push('\0');
-    let ptr = slice_str.as_ptr();
-    mem::forget(slice_str);
-
-    ptr
+    let out = Box::new(ctrits_from_trits(out_trits));
+    Box::into_raw(out)
 }
 
 #[no_mangle]
-pub fn iota_merkle_root(
-    c_addr: *const c_char,
-    c_siblings: *const c_char,
-    index: usize,
-) -> *const u8 {
-    let addr_str = unsafe { c_str_to_static_slice(c_addr) };
-    let addr: Vec<Trit> = addr_str.chars().flat_map(char_to_trits).cloned().collect();
-
-    let siblings_str = unsafe { c_str_to_static_slice(c_siblings) };
-    let siblings: Vec<Trit> = siblings_str
-        .split("\n")
-        .flat_map(|a| {
-            a.chars()
-                .flat_map(char_to_trits)
-                .cloned()
-                .collect::<Vec<Trit>>()
-        })
-        .collect();
-
+pub fn iota_merkle_root(addr: &CTrits, siblings: &CTrits, index: usize) -> *const CTrits {
     let mut curl = CpuCurl::<Trit>::default();
-    let num_before_end = iota_merkle::root(&addr, &siblings, index, &mut curl);
 
-    let out_str = trits_to_string(&curl.state[..HASH_LENGTH]).unwrap() + "\0";
-    let ptr = out_str.as_ptr();
-    mem::forget(out_str);
+    iota_merkle::root(
+        ctrits_slice_trits(addr),
+        ctrits_slice_trits(siblings),
+        index,
+        &mut curl,
+    );
 
-    ptr
+    let out = Box::new(ctrits_from_trits(curl.rate().to_vec()));
+    Box::into_raw(out)
 }
