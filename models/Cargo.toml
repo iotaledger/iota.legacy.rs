@@ -16,3 +16,4 @@ iota-kerl = { path = "../kerl" }
 
 [dev-dependencies]
 iota-trytes = { path = "../trytes", features = ["alloc"] }
+iota-curl-cpu = { path = "../curl-cpu" }

@@ -8,6 +8,7 @@ use super::NonceView;
 use super::view::TransactionView;
 use super::constants::*;
 use super::types::*;
+
 use super::set::*;
 
 
@@ -58,8 +59,8 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_value(self.0, v);
     }
 
-    fn set_tag(&mut self, t: &TagView) {
-        tx_set_tag(self.0, t);
+    fn set_obsolete_tag(&mut self, t: &TagView) {
+        tx_set_obsolete_tag(self.0, t);
     }
 
     fn set_timestamp(&mut self, t: usize) {
@@ -84,6 +85,22 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
 
     fn set_branch(&mut self, h: &HashView) {
         tx_set_branch(self.0, h);
+    }
+
+    fn set_tag(&mut self, t: &TagView) {
+        tx_set_tag(self.0, t);
+    }
+
+    fn set_attachment_timestamp(&mut self, timestamp: usize) {
+        tx_set_attachment_timestamp(self.0, timestamp);
+    }
+
+    fn set_attachment_timestamp_low(&mut self, timestamp: usize) {
+        tx_set_attachment_timestamp_low(self.0, timestamp);
+    }
+
+    fn set_attachment_timestamp_high(&mut self, timestamp: usize) {
+        tx_set_attachment_timestamp_high(self.0, timestamp);
     }
 
     fn set_nonce(&mut self, h: &NonceView) {

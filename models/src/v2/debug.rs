@@ -19,7 +19,7 @@ fn fmt_tx<'a, T: Transaction<'a>>(tx: &T, f: &mut fmt::Formatter) -> fmt::Result
 
     #[cfg(not(feature = "alloc"))]
     {
-        r2 = r1.and_then(|_| fmt::Debug::fmt(&tx.signature_or_message(), f))
+        r2 = r1.and_then(|_| fmt::Debug::fmt(&tx.signature_or_message(), f));
     }
 
     r2.and_then(|_| f.write_str(", "))
@@ -27,7 +27,7 @@ fn fmt_tx<'a, T: Transaction<'a>>(tx: &T, f: &mut fmt::Formatter) -> fmt::Result
         .and_then(|_| f.write_str(", "))
         .and_then(|_| fmt::Debug::fmt(&tx.value(), f))
         .and_then(|_| f.write_str(", "))
-        .and_then(|_| fmt::Debug::fmt(&tx.tag(), f))
+        .and_then(|_| fmt::Debug::fmt(&tx.obsolete_tag(), f))
         .and_then(|_| f.write_str(", "))
         .and_then(|_| fmt::Debug::fmt(&tx.timestamp(), f))
         .and_then(|_| f.write_str(", "))
@@ -40,6 +40,12 @@ fn fmt_tx<'a, T: Transaction<'a>>(tx: &T, f: &mut fmt::Formatter) -> fmt::Result
         .and_then(|_| fmt::Debug::fmt(&tx.trunk(), f))
         .and_then(|_| f.write_str(", "))
         .and_then(|_| fmt::Debug::fmt(&tx.branch(), f))
+        .and_then(|_| f.write_str(", "))
+        .and_then(|_| fmt::Debug::fmt(&tx.tag(), f))
+        .and_then(|_| f.write_str(", "))
+        .and_then(|_| fmt::Debug::fmt(&tx.attachment_timestamp_low(), f))
+        .and_then(|_| f.write_str(", "))
+        .and_then(|_| fmt::Debug::fmt(&tx.attachment_timestamp_high(), f))
         .and_then(|_| f.write_str(", "))
         .and_then(|_| fmt::Debug::fmt(&tx.nonce(), f))
 }
