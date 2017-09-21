@@ -8,7 +8,7 @@ use iota_models::v1;
 
 
 #[no_mangle]
-pub fn iota_tx_v1_bundle_hash(
+pub fn iota_models_v1_bundle_hash(
     ctrits_ptr: *const CTrits,
     ctrits_len: usize,
     kerl: &mut Kerl,
