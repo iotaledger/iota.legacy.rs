@@ -214,7 +214,9 @@ pub fn write_branch(node: &MerkleBranch, index: usize, out: &mut [Trit]) {
     match *node {
         MerkleBranch::Sibling(hash, ref next) => {
             out[index..index + HASH_LENGTH].clone_from_slice(&hash);
-            write_branch(next, index - HASH_LENGTH, out);
+            if index != 0 {
+                write_branch(next, index.saturating_sub(HASH_LENGTH), out);
+            }
         }
         _ => {}
     }
