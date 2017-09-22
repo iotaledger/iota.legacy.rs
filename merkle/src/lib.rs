@@ -6,10 +6,6 @@
 #[macro_use]
 extern crate alloc;
 
-#[macro_use]
-extern crate std;
-
-
 extern crate iota_trytes as trytes;
 extern crate iota_tmath as tmath;
 extern crate iota_curl as curl;

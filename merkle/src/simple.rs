@@ -210,7 +210,6 @@ pub fn len(node: &MerkleBranch) -> usize {
 }
 
 pub fn write_branch(node: &MerkleBranch, index: usize, out: &mut [Trit]) {
-    println!("write_branch idx: {}", index);
     match *node {
         MerkleBranch::Sibling(hash, ref next) => {
             out[index..index + HASH_LENGTH].clone_from_slice(&hash);
