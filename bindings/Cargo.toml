@@ -18,7 +18,7 @@ iota-curl-cpu = { path = "../curl-cpu" }
 iota-kerl= { path = "../kerl" }
 iota-sign = { path = "../sign" }
 iota-merkle = { path = "../merkle" }
-iota-models = { path = "../models" }
+iota-models = { path = "../models", features = ["alloc"] }
 
 iota-bindings-shared = { git = "https://github.com/iotaledger/iota-bindings.git"}
 
