@@ -21,3 +21,4 @@ pub mod sign;
 pub mod curl;
 pub mod merkle;
 pub mod models;
+pub mod trytes;
