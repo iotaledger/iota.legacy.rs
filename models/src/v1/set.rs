@@ -30,7 +30,7 @@ pub unsafe fn tx_set_address_raw(tx: &mut [Trit], h: &[Trit]) {
 }
 
 #[inline]
-pub fn tx_set_value(tx: &mut [Trit], v: isize) {
+pub fn tx_set_value(tx: &mut [Trit], v: i64) {
     num::int2trits(v, &mut tx[VALUE_OFFSET..TAG_OFFSET]);
 }
 
@@ -45,21 +45,21 @@ pub unsafe fn tx_set_tag_raw(tx: &mut [Trit], t: &[Trit]) {
 }
 
 #[inline]
-pub fn tx_set_timestamp(tx: &mut [Trit], t: usize) {
-    num::int2trits(t as isize, &mut tx[TIMESTAMP_OFFSET..CURRENT_INDEX_OFFSET]);
+pub fn tx_set_timestamp(tx: &mut [Trit], t: u64) {
+    num::int2trits(t as i64, &mut tx[TIMESTAMP_OFFSET..CURRENT_INDEX_OFFSET]);
 }
 
 #[inline]
-pub fn tx_set_current_index(tx: &mut [Trit], idx: usize) {
+pub fn tx_set_current_index(tx: &mut [Trit], idx: u64) {
     num::int2trits(
-        idx as isize,
+        idx as i64,
         &mut tx[CURRENT_INDEX_OFFSET..LAST_INDEX_OFFSET],
     );
 }
 
 #[inline]
-pub fn tx_set_last_index(tx: &mut [Trit], idx: usize) {
-    num::int2trits(idx as isize, &mut tx[LAST_INDEX_OFFSET..BUNDLE_OFFSET]);
+pub fn tx_set_last_index(tx: &mut [Trit], idx: u64) {
+    num::int2trits(idx as i64, &mut tx[LAST_INDEX_OFFSET..BUNDLE_OFFSET]);
 }
 
 #[inline]

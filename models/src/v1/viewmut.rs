@@ -54,7 +54,7 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_address(self.0, h);
     }
 
-    fn set_value(&mut self, v: isize) {
+    fn set_value(&mut self, v: i64) {
         tx_set_value(self.0, v);
     }
 
@@ -62,15 +62,15 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_tag(self.0, t);
     }
 
-    fn set_timestamp(&mut self, t: usize) {
+    fn set_timestamp(&mut self, t: u64) {
         tx_set_timestamp(self.0, t);
     }
 
-    fn set_current_index(&mut self, idx: usize) {
+    fn set_current_index(&mut self, idx: u64) {
         tx_set_current_index(self.0, idx);
     }
 
-    fn set_last_index(&mut self, idx: usize) {
+    fn set_last_index(&mut self, idx: u64) {
         tx_set_last_index(self.0, idx);
     }
 

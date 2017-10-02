@@ -22,6 +22,5 @@ pub use inner::*;
 
 pub mod v1;
 pub mod v2;
-pub mod vnext;
 
 pub use v2::*;

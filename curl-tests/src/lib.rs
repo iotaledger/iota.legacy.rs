@@ -284,7 +284,7 @@ mod inner {
             tcurl.reset();
             bcurl.reset();
             let len_trytes = {
-                let l = (trits.len()) as isize;
+                let l = (trits.len()) as i64;
                 let mut len = vec![0; num::min_trits(l) as usize];
                 num::int2trits(l, len.as_mut_slice());
                 len

@@ -23,7 +23,7 @@ pub unsafe fn iota_models_v2_tx_set_address(tx: &mut CTrits, ctrits: &CTrits) {
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_value(tx: &mut CTrits, v: isize) {
+pub fn iota_models_v2_tx_set_value(tx: &mut CTrits, v: i64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_value(tx_slice, v);
 }
@@ -37,19 +37,19 @@ pub unsafe fn iota_models_v2_tx_set_obsolete_tag(tx: &mut CTrits, ctrits: &CTrit
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_timestamp(tx: &mut CTrits, timestamp: usize) {
+pub fn iota_models_v2_tx_set_timestamp(tx: &mut CTrits, timestamp: u64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_timestamp(tx_slice, timestamp);
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_current_index(tx: &mut CTrits, index: usize) {
+pub fn iota_models_v2_tx_set_current_index(tx: &mut CTrits, index: u64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_current_index(tx_slice, index);
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_last_index(tx: &mut CTrits, index: usize) {
+pub fn iota_models_v2_tx_set_last_index(tx: &mut CTrits, index: u64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_current_index(tx_slice, index);
 }
@@ -87,19 +87,19 @@ pub unsafe fn iota_models_v2_tx_set_tag(tx: &mut CTrits, ctrits: &CTrits) {
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_attachment_timestamp(tx: &mut CTrits, timestamp: usize) {
+pub fn iota_models_v2_tx_set_attachment_timestamp(tx: &mut CTrits, timestamp: u64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_attachment_timestamp(tx_slice, timestamp);
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_attachment_timestamp_lower(tx: &mut CTrits, timestamp: usize) {
+pub fn iota_models_v2_tx_set_attachment_timestamp_lower(tx: &mut CTrits, timestamp: u64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_attachment_timestamp_lower(tx_slice, timestamp);
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_set_attachment_timestamp_upper(tx: &mut CTrits, timestamp: usize) {
+pub fn iota_models_v2_tx_set_attachment_timestamp_upper(tx: &mut CTrits, timestamp: u64) {
     let tx_slice = ctrits_slice_trits_mut(tx);
     v2::set::tx_set_attachment_timestamp_upper(tx_slice, timestamp);
 }

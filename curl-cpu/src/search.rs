@@ -25,9 +25,9 @@ mod cpu_search {
         while index.is_none() {
             size = min(
                 num::round_third(
-                    offset + size * 2 / 3 +
-                        (&mut curl.state_mut()[offset + size * 2 / 3..offset + size]).incr(),
-                ),
+                    (offset + size * 2 / 3 +
+                        (&mut curl.state_mut()[offset + size * 2 / 3..offset + size]).incr()) as i64,
+                ) as usize,
                 HASH_LENGTH,
             ) - offset;
             let mut cpy = curl.clone();

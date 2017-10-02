@@ -57,31 +57,31 @@ impl<'a, 'b> Transaction<'a> for &'b TransactionView<'a> {
         unsafe { TagView::from_trits_raw(tx_tag(self.0)) }
     }
 
-    fn attachment_timestamp(&self) -> usize {
+    fn attachment_timestamp(&self) -> u64 {
         tx_attachment_timestamp(self.0)
     }
 
-    fn attachment_timestamp_upper(&self) -> usize {
+    fn attachment_timestamp_upper(&self) -> u64 {
         tx_attachment_timestamp_upper(self.0)
     }
 
-    fn attachment_timestamp_lower(&self) -> usize {
+    fn attachment_timestamp_lower(&self) -> u64 {
         tx_attachment_timestamp_lower(self.0)
     }
 
-    fn value(&self) -> isize {
+    fn value(&self) -> i64 {
         tx_value(self.0)
     }
 
-    fn timestamp(&self) -> usize {
+    fn timestamp(&self) -> u64 {
         tx_timestamp(self.0)
     }
 
-    fn current_index(&self) -> usize {
+    fn current_index(&self) -> u64 {
         tx_current_index(self.0)
     }
 
-    fn last_index(&self) -> usize {
+    fn last_index(&self) -> u64 {
         tx_last_index(self.0)
     }
 
@@ -118,31 +118,31 @@ impl<'a> Transaction<'a> for TransactionView<'a> {
         unsafe { TagView::from_trits_raw(tx_tag(self.0)) }
     }
 
-    fn attachment_timestamp(&self) -> usize {
+    fn attachment_timestamp(&self) -> u64 {
         tx_attachment_timestamp(self.0)
     }
 
-    fn attachment_timestamp_upper(&self) -> usize {
+    fn attachment_timestamp_upper(&self) -> u64 {
         tx_attachment_timestamp_upper(self.0)
     }
 
-    fn attachment_timestamp_lower(&self) -> usize {
+    fn attachment_timestamp_lower(&self) -> u64 {
         tx_attachment_timestamp_lower(self.0)
     }
 
-    fn value(&self) -> isize {
+    fn value(&self) -> i64 {
         tx_value(self.0)
     }
 
-    fn timestamp(&self) -> usize {
+    fn timestamp(&self) -> u64 {
         tx_timestamp(self.0)
     }
 
-    fn current_index(&self) -> usize {
+    fn current_index(&self) -> u64 {
         tx_current_index(self.0)
     }
 
-    fn last_index(&self) -> usize {
+    fn last_index(&self) -> u64 {
         tx_last_index(self.0)
     }
 
@@ -227,8 +227,8 @@ mod test {
         let tag_ex = "TEST9TWELVE9999999999999999";
         let obsolete_tag_ex = "TEST9TWELVE9999999999999999";
         let attachment_timestamp_ex = 1506017115846;
-        let attachment_timestamp_lower_ex: usize = 0;
-        let attachment_timestamp_upper_ex: usize = (-1637966580329_isize) as usize;
+        let attachment_timestamp_lower_ex: u64 = 0;
+        let attachment_timestamp_upper_ex: u64 = (-1637966580329_i64) as u64;
 
         let nonce_ex = "NRYCUDSTZEEJQORYXWMQATVERBP";
 

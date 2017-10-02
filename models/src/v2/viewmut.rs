@@ -55,7 +55,7 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_address(self.0, h);
     }
 
-    fn set_value(&mut self, v: isize) {
+    fn set_value(&mut self, v: i64) {
         tx_set_value(self.0, v);
     }
 
@@ -63,15 +63,15 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_obsolete_tag(self.0, t);
     }
 
-    fn set_timestamp(&mut self, t: usize) {
+    fn set_timestamp(&mut self, t: u64) {
         tx_set_timestamp(self.0, t);
     }
 
-    fn set_current_index(&mut self, idx: usize) {
+    fn set_current_index(&mut self, idx: u64) {
         tx_set_current_index(self.0, idx);
     }
 
-    fn set_last_index(&mut self, idx: usize) {
+    fn set_last_index(&mut self, idx: u64) {
         tx_set_last_index(self.0, idx);
     }
 
@@ -91,15 +91,15 @@ impl<'a> TransactionMut<'a> for TransactionViewMut<'a> {
         tx_set_tag(self.0, t);
     }
 
-    fn set_attachment_timestamp(&mut self, timestamp: usize) {
+    fn set_attachment_timestamp(&mut self, timestamp: u64) {
         tx_set_attachment_timestamp(self.0, timestamp);
     }
 
-    fn set_attachment_timestamp_lower(&mut self, timestamp: usize) {
+    fn set_attachment_timestamp_lower(&mut self, timestamp: u64) {
         tx_set_attachment_timestamp_lower(self.0, timestamp);
     }
 
-    fn set_attachment_timestamp_upper(&mut self, timestamp: usize) {
+    fn set_attachment_timestamp_upper(&mut self, timestamp: u64) {
         tx_set_attachment_timestamp_upper(self.0, timestamp);
     }
 

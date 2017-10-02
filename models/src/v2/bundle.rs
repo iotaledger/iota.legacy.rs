@@ -9,7 +9,7 @@ pub fn bundle_hash<'a, T: Transaction<'a>>(transactions: &[T], kerl: &mut Kerl) 
     // This loop is easier than expecting the input to be sorted.
     for i in 0..transactions.len() {
         for tx in transactions {
-            if tx.current_index() == i {
+            if tx.current_index() == i as u64 {
                 kerl.absorb(tx.essence());
                 break;
             }

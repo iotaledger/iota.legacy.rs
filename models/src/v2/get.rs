@@ -9,7 +9,7 @@ pub fn tx_address<'a>(trits: &'a [Trit]) -> &'a [Trit] {
     &trits[ADDRESS_OFFSET..VALUE_OFFSET]
 }
 
-pub fn tx_value(trits: &[Trit]) -> isize {
+pub fn tx_value(trits: &[Trit]) -> i64 {
     num::trits2int(&trits[VALUE_OFFSET..OBSOLETE_TAG_OFFSET])
 }
 
@@ -17,16 +17,16 @@ pub fn tx_obsolete_tag(trits: &[Trit]) -> &[Trit] {
     &trits[OBSOLETE_TAG_OFFSET..TIMESTAMP_OFFSET]
 }
 
-pub fn tx_timestamp(trits: &[Trit]) -> usize {
-    num::trits2int(&trits[TIMESTAMP_OFFSET..CURRENT_INDEX_OFFSET]) as usize
+pub fn tx_timestamp(trits: &[Trit]) -> u64 {
+    num::trits2int(&trits[TIMESTAMP_OFFSET..CURRENT_INDEX_OFFSET]) as u64
 }
 
-pub fn tx_current_index(trits: &[Trit]) -> usize {
-    num::trits2int(&trits[CURRENT_INDEX_OFFSET..LAST_INDEX_OFFSET]) as usize
+pub fn tx_current_index(trits: &[Trit]) -> u64 {
+    num::trits2int(&trits[CURRENT_INDEX_OFFSET..LAST_INDEX_OFFSET]) as u64
 }
 
-pub fn tx_last_index(trits: &[Trit]) -> usize {
-    num::trits2int(&trits[LAST_INDEX_OFFSET..BUNDLE_OFFSET]) as usize
+pub fn tx_last_index(trits: &[Trit]) -> u64 {
+    num::trits2int(&trits[LAST_INDEX_OFFSET..BUNDLE_OFFSET]) as u64
 }
 
 pub fn tx_bundle(trits: &[Trit]) -> &[Trit] {
@@ -45,20 +45,20 @@ pub fn tx_tag(trits: &[Trit]) -> &[Trit] {
     &trits[TAG_OFFSET..ATTACHMENT_TIMESTAMP_OFFSET]
 }
 
-pub fn tx_attachment_timestamp(trits: &[Trit]) -> usize {
+pub fn tx_attachment_timestamp(trits: &[Trit]) -> u64 {
     num::trits2int(
         &trits[ATTACHMENT_TIMESTAMP_OFFSET..ATTACHMENT_TIMESTAMP_LOWER_OFFSET],
-    ) as usize
+    ) as u64
 }
 
-pub fn tx_attachment_timestamp_lower(trits: &[Trit]) -> usize {
+pub fn tx_attachment_timestamp_lower(trits: &[Trit]) -> u64 {
     num::trits2int(
         &trits[ATTACHMENT_TIMESTAMP_LOWER_OFFSET..ATTACHMENT_TIMESTAMP_UPPER_OFFSET],
-    ) as usize
+    ) as u64
 }
 
-pub fn tx_attachment_timestamp_upper(trits: &[Trit]) -> usize {
-    num::trits2int(&trits[ATTACHMENT_TIMESTAMP_UPPER_OFFSET..NONCE_OFFSET]) as usize
+pub fn tx_attachment_timestamp_upper(trits: &[Trit]) -> u64 {
+    num::trits2int(&trits[ATTACHMENT_TIMESTAMP_UPPER_OFFSET..NONCE_OFFSET]) as u64
 }
 
 pub fn tx_nonce<'a>(trits: &'a [Trit]) -> &'a [Trit] {

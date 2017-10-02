@@ -53,19 +53,19 @@ impl<'a, 'b> Transaction<'a> for &'b TransactionView<'a> {
         unsafe { NonceView::from_trits_raw(tx_nonce(self.0)) }
     }
 
-    fn value(&self) -> isize {
+    fn value(&self) -> i64 {
         tx_value(self.0)
     }
 
-    fn timestamp(&self) -> usize {
+    fn timestamp(&self) -> u64 {
         tx_timestamp(self.0)
     }
 
-    fn current_index(&self) -> usize {
+    fn current_index(&self) -> u64 {
         tx_current_index(self.0)
     }
 
-    fn last_index(&self) -> usize {
+    fn last_index(&self) -> u64 {
         tx_last_index(self.0)
     }
 
@@ -98,19 +98,19 @@ impl<'a> Transaction<'a> for TransactionView<'a> {
         unsafe { NonceView::from_trits_raw(tx_nonce(self.0)) }
     }
 
-    fn value(&self) -> isize {
+    fn value(&self) -> i64 {
         tx_value(self.0)
     }
 
-    fn timestamp(&self) -> usize {
+    fn timestamp(&self) -> u64 {
         tx_timestamp(self.0)
     }
 
-    fn current_index(&self) -> usize {
+    fn current_index(&self) -> u64 {
         tx_current_index(self.0)
     }
 
-    fn last_index(&self) -> usize {
+    fn last_index(&self) -> u64 {
         tx_last_index(self.0)
     }
 

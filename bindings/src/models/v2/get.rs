@@ -21,7 +21,7 @@ pub fn iota_models_v2_tx_address(ctrits: &CTrits) -> *const CTrits {
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_value(ctrits: &CTrits) -> isize {
+pub fn iota_models_v2_tx_value(ctrits: &CTrits) -> i64 {
     v2::get::tx_value(ctrits_slice_trits(ctrits))
 }
 
@@ -33,17 +33,17 @@ pub fn iota_models_v2_tx_obsolete_tag(ctrits: &CTrits) -> *const CTrits {
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_timestamp(ctrits: &CTrits) -> usize {
+pub fn iota_models_v2_tx_timestamp(ctrits: &CTrits) -> u64 {
     v2::get::tx_timestamp(ctrits_slice_trits(ctrits))
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_current_index(ctrits: &CTrits) -> usize {
+pub fn iota_models_v2_tx_current_index(ctrits: &CTrits) -> u64 {
     v2::get::tx_current_index(ctrits_slice_trits(ctrits))
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_last_index(ctrits: &CTrits) -> usize {
+pub fn iota_models_v2_tx_last_index(ctrits: &CTrits) -> u64 {
     v2::get::tx_last_index(ctrits_slice_trits(ctrits))
 }
 
@@ -76,19 +76,19 @@ pub fn iota_models_v2_tx_tag(ctrits: &CTrits) -> *const CTrits {
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_attachment_timestamp(ctrits: &CTrits) -> usize {
+pub fn iota_models_v2_tx_attachment_timestamp(ctrits: &CTrits) -> u64 {
     let slice = v2::get::tx_tag(ctrits_slice_trits(ctrits));
     v2::get::tx_attachment_timestamp(slice)
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_attachment_timestamp_lower(ctrits: &CTrits) -> usize {
+pub fn iota_models_v2_tx_attachment_timestamp_lower(ctrits: &CTrits) -> u64 {
     let slice = v2::get::tx_tag(ctrits_slice_trits(ctrits));
     v2::get::tx_attachment_timestamp_lower(slice)
 }
 
 #[no_mangle]
-pub fn iota_models_v2_tx_attachment_timestamp_upper(ctrits: &CTrits) -> usize {
+pub fn iota_models_v2_tx_attachment_timestamp_upper(ctrits: &CTrits) -> u64 {
     let slice = v2::get::tx_tag(ctrits_slice_trits(ctrits));
     v2::get::tx_attachment_timestamp_upper(slice)
 }
