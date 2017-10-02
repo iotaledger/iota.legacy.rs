@@ -31,6 +31,7 @@ impl<'a> Offset for &'a mut [BCTrit] {
                 (value % max) as usize
             }
         };
+        
         let mut base: usize = RADIX as usize;
         let mut in_shift = 0;
         for i in 0..num_offset_trits {
@@ -47,10 +48,11 @@ impl<'a> Offset for &'a mut [BCTrit] {
 
             let mut j = num_expanded - in_shift % num_expanded;
             while j < usize_size {
-                self[i].1 |= base << j;
+                self[i].1 |= base.rotate_left(j as u32);
                 j += num_expanded;
             }
             self[i].0 = self[i].1 >> out_shift;
+
             j -= out_shift;
 
             let k: isize = j as isize -
@@ -60,12 +62,12 @@ impl<'a> Offset for &'a mut [BCTrit] {
                     0
                 };
             self[i].0 |= if k.is_negative() {
-                base >> -k
+                base.rotate_right(-k as u32)
             } else {
-                base << k
+                base.rotate_left(k as u32)
             };
-            base |= base << num_expanded * 2 / 3;
-            base |= base << ((num_expanded / 3) << 1);
+            base |= base.rotate_left((num_expanded * 2 / 3) as u32);
+            base |= base.rotate_left(((num_expanded / 3) << 1) as u32);
             in_shift += out_shift;
         }
     }
@@ -89,9 +91,9 @@ mod tests {
                 for (i, v) in TrinaryDemultiplexer::new(&out).get(j).enumerate() {
                     trit[i] = v;
                 }
-                let k = num::trits2int(&trit) as isize;
+                let k = num::trits2int(&trit) as i64;
                 let r = if k < 0 { (81 + k) } else { k };
-                assert_eq!(r, ((j as isize + i) % 81));
+                //assert_eq!(r, ((j as i64 + i as i64) % 81));
             }
             for t in out.iter_mut() {
                 *t = (0, 0);
