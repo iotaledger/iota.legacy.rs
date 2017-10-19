@@ -1,5 +1,5 @@
 #![no_std]
-#![cfg_attr(test, feature(alloc))]
+#![feature(alloc)]
 #![feature(core_intrinsics)]
 
 #[cfg(test)]
@@ -9,7 +9,6 @@ extern crate std;
 #[cfg(test)]
 extern crate rand;
 
-#[cfg(test)]
 #[macro_use]
 extern crate alloc;
 
