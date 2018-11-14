@@ -11,7 +11,7 @@ extern crate iota_curl_cpu as cpucurl;
 
 use test::Bencher;
 
-use alloc::Vec;
+use alloc::vec::Vec;
 use trytes::*;
 use curl::*;
 use cpucurl::*;

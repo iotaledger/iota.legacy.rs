@@ -1,9 +1,6 @@
-use alloc::Vec;
 use alloc::boxed::Box;
-use core::slice;
 use shared::*;
 
-use iota_kerl::Kerl;
 use iota_models::v2;
 
 #[no_mangle]

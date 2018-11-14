@@ -137,7 +137,7 @@ impl<'a> TrinaryMultiplexer<'a> {
 mod test {
     use super::*;
     use string::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
     // demux is already testing the other functionality
 

@@ -235,7 +235,7 @@ mod tests {
     use super::*;
     use trytes::*;
     use std::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
 
     fn tbt(trytes: &str) {

@@ -49,7 +49,7 @@ impl Default for CpuCurl<Trit> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
     use curl_tests;
 
     struct TritTransformer;

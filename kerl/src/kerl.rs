@@ -93,7 +93,7 @@ where
 #[cfg(test)]
 mod tests {
     use trytes::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
     use super::*;
 

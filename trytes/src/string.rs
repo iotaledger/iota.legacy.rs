@@ -40,7 +40,7 @@ pub fn trits_to_string(t: &[Trit]) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
     #[test]
     fn fromtostr_test1() {

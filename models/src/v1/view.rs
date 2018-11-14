@@ -123,7 +123,7 @@ impl<'a> Transaction<'a> for TransactionView<'a> {
 mod test {
     use super::*;
 
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
     #[test]
     fn tx_view_and_build() {

@@ -1,4 +1,4 @@
-use alloc::Vec;
+use alloc::vec::Vec;
 use alloc::boxed::Box;
 use core::slice;
 use shared::*;

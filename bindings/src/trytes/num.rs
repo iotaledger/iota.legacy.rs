@@ -1,5 +1,3 @@
-use alloc::boxed::Box;
-use iota_curl_cpu::CpuCurl;
 use iota_trytes::num::*;
 use shared::*;
 

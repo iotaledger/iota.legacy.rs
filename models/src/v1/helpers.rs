@@ -5,7 +5,7 @@ use curl::*;
 use Hash;
 
 #[cfg(feature = "alloc")]
-use alloc::Vec;
+use alloc::vec::Vec;
 
 #[cfg(feature = "alloc")]
 pub fn tx_alloc_heap() -> Vec<Trit> {

@@ -74,7 +74,7 @@ mod test {
     use super::*;
     use multiplex::mux::*;
     use string::char_to_trits;
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
     static T1: &'static str = "99JMJHGHGFVJHBJHGJLERDTFYGHUSDKJSDSIJO";
     static T2: &'static str = "ASDLKJQLWKEJLASJDFLAKDJFSLDKVJASDFJALK";

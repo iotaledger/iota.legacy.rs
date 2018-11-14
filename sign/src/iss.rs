@@ -251,7 +251,7 @@ where
 mod test {
     use super::*;
     use curl_cpu::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
 
     #[test]
     fn test_nothing_crashes() {

@@ -7,7 +7,7 @@ extern crate iota_curl as curl;
 extern crate core;
 extern crate alloc;
 
-use alloc::Vec;
+use alloc::vec::Vec;
 use core::fmt;
 
 use curl::*;

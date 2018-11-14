@@ -1,11 +1,10 @@
-use alloc::*;
+use alloc::vec::Vec;
 use alloc::boxed::Box;
 use iota_trytes::*;
 use iota_curl_cpu::*;
 use iota_curl::Curl;
 use iota_merkle;
 
-use shared::util::c_str_to_static_slice;
 use shared::*;
 
 #[no_mangle]

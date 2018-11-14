@@ -55,7 +55,7 @@ impl Default for CpuCurl<BCTrit> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
     use curl_tests;
 
 

@@ -27,7 +27,7 @@ pub fn bundle_hash<'a, T: Transaction<'a>>(transactions: &[T], kerl: &mut Kerl) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::Vec;
+    use alloc::vec::Vec;
     use trytes::*;
 
     const TX1: &'static str = "OKKLHSYIJ9LATZYZHZGLGMZPP9BKJXURJFJJKXXCITYJKMUAZSTIASYBHPTI\
