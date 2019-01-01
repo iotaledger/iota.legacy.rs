@@ -43,6 +43,17 @@ mod tests {
     use alloc::vec::Vec;
 
     #[test]
+    fn test_char_to_trit() {
+        for (i, c) in TRYTE_ALPHABET.iter().enumerate() {
+            let ts = TRYTE_TO_TRITS_MAPPINGS[i];
+            let m = char_to_trits(*c);
+
+            assert_eq!(&ts, m);
+
+        }
+    }
+
+    #[test]
     fn fromtostr_test1() {
         let trytes = "UYSSM9KIH";
 
